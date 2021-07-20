@@ -1,0 +1,76 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var array $slugs
+ * @var array $types
+ * @var string $resourceName
+ * @var array $query
+ */
+
+// TODO Better use of the new view references().
+
+$translate = $this->plugin('translate');
+$hyperlink = $this->plugin('hyperlink');
+$url = $this->plugin('url');
+$siteSlug = $site->slug();
+
+$references = $this->plugin('references');
+
+$this->htmlElement('body')->appendAttribute('class', 'reference browse list');
+$resourceName = empty($resourceName) ? 'items' : $resourceName;
+$query = empty($query) ? ['site_id' => $site->id()] : $query;
+?>
+
+<div id="primary" class="reference">
+    <h2><?= $translate('References') ?></h2>
+    <?php if (empty($types)): ?>
+        <p><?= $translate('No references available.') ?></p>
+    <?php else: ?>
+        <?php
+    if (count($types) == 1): ?>
+        <ul class="references">
+        <?php foreach ($slugs as $slug => $slugData): ?>
+            <li><?php
+                echo $hyperlink(
+                    sprintf('%s (%d)', $slugData['label'], $references->count($slugData['term'], $query, ['resource_name' => $resourceName])),
+                    $url('site/reference/list', ['site-slug' => $siteSlug, 'slug' => $slug]),
+                    ['title' => sprintf($translate('Browse %s'), $slugData['label'])]
+                );
+            ?></li>
+        <?php endforeach; ?>
+        </ul>
+    <?php else: ?>
+        <ul class="references">
+        <?php
+        // References are ordered: classes, then properties.
+        $type = null;
+        $first = true;
+        foreach ($slugs as $slug => $slugData):
+            $changedType = $slugData['type'] != $type;
+            if ($changedType):
+                if ($first):
+                    $first = false;
+                else: ?>
+                    </ul></li>
+                <?php endif; ?>
+            <li><?php
+                echo $slugData['type'] === 'resource_classes' ? $translate('Main types') : $translate('Metadata');
+                $type = $slugData['type'];
+                ?><ul>
+            <?php
+            endif; ?>
+            <li><?php
+                echo $hyperlink(
+                    sprintf('%s (%d)', $slugData['label'], $references->count($slugData['term'], $query, ['resource_name' => $resourceName])),
+                    $url('site/reference/list', ['site-slug' => $siteSlug, 'slug' => $slug]),
+                    ['title' => sprintf($translate('Browse %s'), $slugData['label'])]
+                );
+            ?></li>
+        <?php
+        endforeach; ?>
+        </ul></li>
+        </ul>
+    <?php endif; ?>
+    <?php endif; ?>
+</div>

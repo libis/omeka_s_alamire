@@ -1,0 +1,310 @@
+/* main: style.scss */
+body{
+  font-size: 14px;
+}
+
+.subtitle{
+  font-weight: 600;
+}
+
+.navbar{
+  .navbar-item img {
+    max-height: 40px;
+  }
+  .navigation{
+    display:flex;
+    flex-grow: 0;
+    flex-shrink: 0;
+    align-items: center;
+
+    li{
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: $family-secondary;
+      display: block;
+      line-height: 1.5;
+      padding: 0.5rem 0.75rem;
+      position: relative;
+      flex-grow: 0;
+      flex-shrink: 0;
+      height: 100%;
+      font-size:0.9rem;
+      font-weight: 400;
+
+      @media screen and (min-width: 1024px){
+        align-items: center;
+        display: flex;
+      }
+
+      a{
+        color: #6f6b6b;
+      }
+    }
+  }
+}
+
+.logo-1{
+  text-align: center;
+  font-size: 12px;
+  margin-top: 10px;
+  line-height: 17px;
+  font-weight: bold;
+  text-align: center;
+  font-family: 'Dosis', sans-serif;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+
+  img{
+    margin-bottom: 5px;
+    height: 40px;;
+  }
+}
+
+.left-nav{
+  li{
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: $family-secondary;
+    display: block;
+    line-height: 1.5;
+    padding: 0;
+    position: relative;
+    height: 100%;
+    font-weight: 400;
+    margin:5px 0;
+
+    a{
+      color: #6f6b6b;
+
+      &:hover{
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+//modal-menu
+.field.has-addons .control:not(:last-child){
+  width: 100%;
+}
+
+.modal{
+  .input{
+    padding:1rem;
+    border-radius: 0;
+  }
+
+  .navigation{
+    padding-top: 1rem;
+
+    li{
+      padding-top: 0.5rem;
+      font-family: $family-secondary;
+      font-style: italic;
+      font-size: 1.2rem;
+
+      ul{
+        padding-top: 0;
+        padding-left: 1rem;
+      }
+    }
+    a{
+      color:white;
+    }
+  }
+}
+
+
+#content{
+  //padding: 2rem 0;
+}
+
+//breadcrumb
+.breadcrumb-section{
+  padding-top: 2rem;
+  padding-bottom: 0rem;
+
+  .breadcrumb{
+    li::before {
+      padding-right: 0.75em;
+    }
+  }
+}
+
+//catches blocks without templates like html & pageTitle
+.no-section{
+  h2{
+    font-size: 2.5rem;
+    font-family: $family-secondary;
+  }
+}
+
+//hero
+.hero-body{
+  //background: linear-gradient(355deg, rgba(74,44,64,0.3) 0%, rgba(74,44,64,0.8) 100%);
+  .subtitle, .title {
+    color: #fff !important;
+  }
+
+  .hero-text{
+    max-width: 600px;
+    color:white;
+    font-weight: 600;
+
+    .link{
+      margin-top: 1rem;
+      text-align: right;
+
+      a{
+        font-weight: bold;
+
+        i{
+          margin-right: 6px;
+        }
+      }
+    }
+  }
+}
+
+//card
+.card,.featured-block,.box{
+  //box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.08);
+}
+.card-header{
+  box-shadow: none;
+  .card-header-title{
+    padding: 1rem 1.5rem;
+  }
+}
+
+.card-content{
+  padding: 0rem 1.5rem 1.5rem 1.5rem;
+}
+
+.card-footer-item{
+  justify-content: right;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.card-bg-img-2{
+  height: 200px;
+}
+.card-bg-img-3{
+  height: 250px;
+}
+
+//overlay columns
+.featured-block{
+  min-height: 320px;
+  position: relative;
+  padding: 2rem;
+  transition: all 400ms ease-out;
+
+  &:hover{
+    opacity: 0.8;
+  }
+
+  a{color:white;}
+
+  .content-type{
+    font-weight: 600;
+  }
+
+  .overlay{
+    position: absolute;
+    bottom: 2rem;
+
+    .title{
+      max-width: 350px;
+    }
+
+    p, .subtitle{
+      color:white;
+      font-weight: 600;
+    }
+  }
+}
+
+.datering{
+  font-size: 0.8rem;
+}
+
+.color-section{
+  background:#f0f0f0;
+  padding:3rem 1.5rem !important;
+  margin-bottom:3rem;
+}
+
+.pagination{
+  justify-content: end;
+  span{
+    padding-left: 0.8rem;
+    font-style: italic;
+  }
+  form{
+    padding: 0 5px;
+    input{
+      padding:3px;
+    }
+
+    span{
+      font-style: normal;
+      padding:0;
+    }
+  }
+}
+
+//search
+.facets{
+  padding: 1rem;
+  background: #f1f1f1;
+
+  ul{
+    font-size: 0.9rem;
+  }
+
+  .search-facet > h3{
+    margin-bottom: 0.2rem;
+  }
+  .search-facet-items{
+    margin-bottom: 0.5rem;
+  }
+
+  .more-link, .less-link{
+    i{
+      margin-right: 9px;
+    }
+  }
+}
+
+.list {
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.list{
+  display:block !important;
+
+  .grid-col{
+    width:100%;
+    display: block;
+
+    .grid-item{
+      display:flex;
+      .resource-thumbnail{
+        padding-right:1rem;
+        max-width: 100px;
+      }
+    }
+  }
+}
+
+footer{
+  background-color: white !important;
+  font-size: 10px;
+}

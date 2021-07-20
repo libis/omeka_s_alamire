@@ -1,0 +1,37 @@
+/* main: style.scss */
+$family-primary: 'Arial', sans-serif;
+$family-secondary: 'Dosis', serif;
+$primary: #cc6633;
+$text: #333;
+$link: $primary;
+$navbar-item-color: #fff;
+$section-padding: 3rem 1.5rem 3rem 1.5rem;
+$navbar-height:4rem;
+
+//card
+$card-shadow: none;
+$card-header-background-color: transparent !default
+$card-header-padding: 0.75rem 1rem !default
+$card-header-shadow: none;
+$card-header-weight: 600 !default
+$card-content-background-color: transparent !default
+$card-content-padding: 1.5rem !default
+$card-footer-background-color: transparent !default
+$card-footer-padding: 0.75rem !default
+
+//box
+$box-radius: 0px;
+$box-shadow: none;
+$box-background-color: #f0f0f0;
+$box-color: $text;
+$box-padding: 1.5rem !default;
+
+$modal-background-background-color:rgba($primary,0.86);
+
+//form
+$control-radius:0;
+$input-radius:0;
+
+
+
+@import "../../../../node_modules/bulma/bulma.sass";

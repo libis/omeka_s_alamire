@@ -1,0 +1,18 @@
+<div class="section image-only-section">
+    <div class="container">
+      <div class="columns">
+        <?php foreach($attachments as $attachment):
+            $media = $attachment->media();
+            if($media):
+              $url = $media->thumbnailUrl('large');
+              $url = str_replace('http:', '', $url);
+            ?>
+            <div class="column">
+              <img src="<?= $url;?>" />
+              <figcaption><?php echo $attachments[0]->caption();?></figcaption>
+            </div>
+            <?php endif;?>
+        <?php endforeach;?>
+      </div>
+    </div>
+</div>

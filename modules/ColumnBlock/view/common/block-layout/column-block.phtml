@@ -1,0 +1,65 @@
+<section class="section color-section">
+  <div class="container">
+  <!-- overview blocks -->
+  <?php if(sizeof($attachments) == 3 || sizeof($attachments) == 2):?>
+
+    <?php if($block->dataValue('title')):?>
+      <h3 class="title is-3"><?php echo $block->dataValue('title');?></h3>
+    <?php endif;?>
+    <div class="columns">
+      <?php for($i = 1; $i <= sizeof($attachments); $i++){ ?>
+        <div class="column">
+          <div class="card equal-height">
+            <a href="<?php echo $block->dataValue('link'.$i);?>">
+              <?php
+                $url='';
+                if($attachments[$i-1]):
+                  $media = $attachments[$i-1]->media();
+                  if($media):
+                    if(sizeof($attachments) <= 2):
+                      $url = $media->thumbnailUrl('large');
+                      $url = str_replace('http:', '', $url);
+                    else:
+                      $url = $media->thumbnailUrl('medium');
+                      $url = str_replace('http:', '', $url);
+                    endif;
+                  endif;
+                endif;
+              ?>
+              <!--<div class="card-image">
+                <figure class="image">
+                  <img src="<?php echo  $url;?>" alt="Placeholder image">
+                </figure>
+              </div>-->
+              <div class="card-bg-img-<?php echo sizeof($attachments);?>"
+                style="background:url(<?php echo  $url;?>) no-repeat center 20%;background-color:#7fb5b2;background-size: cover;"
+                >
+              </div>
+              <header class="card-header">
+                <p class="card-header-title title is-5 is-family-secondary">
+                    <a href="<?php echo $block->dataValue('link'.$i);?>"><?php echo $block->dataValue('title'.$i);?></a>
+                </p>
+              </header>
+              <div class="card-content">
+                <div class="content">
+                  <?php echo $block->dataValue('text'.$i);?>
+                </div>
+              </div>
+              <?php if($block->dataValue('link'.$i) && $block->dataValue('linktext'.$i)):?>
+              <footer class="card-footer">
+                <a class="card-footer-item" href="<?php echo $block->dataValue('link'.$i);?>">
+                  <?php echo $block->dataValue('linktext'.$i);?></a>
+                </footer>
+              <?php endif;?>
+            </a>
+          </div>
+        </div>
+      <?php } ?>
+    </div>
+    <?php else:?>
+      <p>
+        Om dit blok te gebruiken moet je minstens 2 afbeeldingen (attachments) selecteren.
+      </p>
+    <?php endif;?>
+</div>
+</section>

@@ -1,0 +1,20 @@
+<?php
+$translate = $this->plugin('translate');
+$searchValue = $this->escapeHtml($this->params()->fromQuery('fulltext_search', ''));
+?>
+  <form class="has-icons-right" action="<?php echo $this->escapeHtml($this->url('site/resource', ['controller' => 'index','action' => 'search'], true)); ?>" id="search-form">
+    <div class="field has-addons">
+      <div class="control">
+        <input class="input is-medium" type="search" name="fulltext_search" value="<?php echo $searchValue; ?>"
+            placeholder="<?php echo $translate('Search'); ?>"
+            aria-label="<?php echo $translate('Search'); ?>">
+      </div>
+      <div class="control">
+        <a class="button is-primary is-medium">
+          <span class="icon is-large">
+            <i class="fas fa-search"></i>
+          </span>
+        </a>
+      </div>
+    </div>
+  </form>

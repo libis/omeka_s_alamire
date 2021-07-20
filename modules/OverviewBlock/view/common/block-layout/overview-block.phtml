@@ -1,0 +1,49 @@
+<!-- overview blocks -->
+<?php if($attachments):?>
+  <section class="section">
+    <div class="container">
+      <div class="columns">
+          <?php  for($i = 1; $i <= sizeof($attachments); $i++){ ?>
+            <div class="column">
+              <?php
+                  $media = $attachments[$i-1]->media();
+                  $url = '';
+                  if($media):
+                    if($media->mediaType() == 'text/html'):
+                      $url = $media->originalUrl();
+                      $url = str_replace('http:', '', $url);
+                    else:
+                      $url = $media->thumbnailUrl('large');
+                      $url = str_replace('http:', '', $url);
+                    endif;
+                  endif;
+              ?>
+              <a href="<?php echo $block->dataValue('link'.$i);?>">
+              <div class="featured-block" style="background:url(<?php echo  $url;?>) no-repeat center 20%;background-color:#7fb5b2;background-size: cover;">
+
+                  <div class="overlay">
+                    <!-- make whole card clickable -->
+                    <div class="content-type is-size-7">
+                      Content
+                    </div>
+                    <p class="title is-2 is-family-secondary">
+                        <a href="<?php echo $block->dataValue('link'.$i);?>"><?php echo $block->dataValue('title'.$i);?></a>
+                    </p>
+                    <p class="subtitle is-5"><?php echo $block->dataValue('text'.$i);?></p>
+
+                    <?php if($block->dataValue('link'.$i) && $block->dataValue('linktext'.$i)):?>
+                        <div class="link"><a href="<?php echo $block->dataValue('link'.$i);?>"><?php echo $block->dataValue('linktext'.$i);?></a></div>
+                    <?php endif;?>
+                  </div>
+              </div>
+              </a>
+            </div>
+          <?php } ?>
+        </div>
+    </div>
+</section>
+<?php else:?>
+  <p>
+    Om dit blok te gebruiken moet je 3 afbeeldingen (attachments) selecteren.
+  </p>
+<?php endif;?>

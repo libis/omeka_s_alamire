@@ -1,0 +1,23 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var int $total
+ * @var string $label
+ * @var string $term
+ * @var array $query
+ * @var array $options
+ * @var string $slug
+ */
+
+$translate = $this->plugin('translate');
+$this->htmlElement('body')->appendAttribute('class', 'reference browse list');
+?>
+
+<div id="primary" class="reference">
+    <h2><?= sprintf($translate('Browse items by "%s" (%d headings)'), $label, $total) ?></h2>
+    <?php if ($total): ?>
+    <?= $this->references()->displayListForTerm($term, $query, $options) ?>
+    <?php else: ?>
+    <p><?= $this->escapeHtml(sprintf($translate('There is no references for "%s".'), $label)) ?></p>
+    <?php endif; ?>
+</div>

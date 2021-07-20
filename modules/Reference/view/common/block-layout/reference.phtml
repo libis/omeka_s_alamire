@@ -1,0 +1,26 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var string $term
+ * @var array $query
+ * @var array $options
+ */
+
+$translate = $this->plugin('translate');
+$total = $this->references()->count($term, $query, $options);
+?>
+
+<div class="reference-block">
+    <?php if ($options['heading']): ?>
+    <h3><?= str_replace('{total}', $total, $translate($options['heading'])) ?></h3>
+    <?php endif; ?>
+    <?php
+    if ($total):
+        echo $this->references()->displayListForTerm($term, $query, $options);
+    else:
+    ?>
+    <p><?= $translate('There is no references.') ?></p>
+    <?php
+    endif;
+    ?>
+</div>

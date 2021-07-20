@@ -1,0 +1,38 @@
+<section class="section">
+  <div class="container">
+    <?php if($block->dataValue('title')):?>
+      <h3 class="title is-3"><?php echo $block->dataValue('title');?></h3>
+    <?php endif;?>
+    <?php if($block->dataValue('title1') && $block->dataValue('title2') && !$block->dataValue('title3')):?>
+      <?php $layout = "is-".$block->dataValue('layout');?>
+    <?php else:?>
+      <?php $layout = "";?>
+    <?php endif;?>
+    <div class="columns">
+      <?php for($i = 1; $i <= 3; $i++){ ?>
+        <?php if($block->dataValue('title'.$i)):?>
+          <?php if($i == 1):?>
+            <div class="column <?php echo $layout;?>">
+          <?php else:?>
+            <div class="column">
+          <?php endif;?>
+          <div class="box equal-height">
+            <div class="media-content">
+              <div class="content">
+                <h2 class="is-size-4 is-family-secondary">
+                        <a href="<?php echo $block->dataValue('link'.$i);?>"><?php echo $block->dataValue('title'.$i);?></a>
+                </h2>
+                <?php echo $block->dataValue('text'.$i);?>
+                <?php if($block->dataValue('link'.$i) && $block->dataValue('linktext'.$i)):?>
+                    <a class="card-footer-item" href="<?php echo $block->dataValue('link'.$i);?>">
+                    <?php echo $block->dataValue('linktext'.$i);?></a>
+                <?php endif;?>
+              </div>
+            </div>
+          </div>
+        </div>
+        <?php endif;?>
+      <?php } ?>
+    </div>
+  </div>
+</section>

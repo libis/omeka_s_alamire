@@ -1,0 +1,103 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'item resource show');
+$embedMedia = $this->siteSetting('item_media_embed', false);
+$itemMedia = $item->media();
+?>
+<section class="section breadcrumb-section">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><?php echo $item->displayTitle(); ?></li>
+      </ul>
+    </nav>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <h1 class="title is-2 is-family-secondary"><?php echo $item->displayTitle(); ?></h1>
+  </div>
+</section>
+<section class="section color-section">
+  <div class="container">
+    <?php if (!$embedMedia && $itemMedia): ?>
+      <?php if(sizeof($itemMedia) > 1):?>
+         <div class="slider-for">
+           <?php foreach($itemMedia as $media):?>
+             <div class="has-text-centered">
+               <?php $url = str_replace('http:', '', $media->thumbnailUrl('large'));?>
+               <img src="<?php echo $url;?>">
+             </div>
+           <?php endforeach;?>
+         </div>
+         <!--<div class="slider-nav" role="toolbar">
+           <?php foreach($itemMedia as $media):?>
+               <?php $url = str_replace('http:', '', $media->thumbnailUrl('square'));?>
+               <img src="<?php echo $url;?>">
+           <?php endforeach;?>
+         </div>-->
+       <?php else: ?>
+         <div class="beeld">
+           <?php $url = str_replace('http:', '', $itemMedia[0]->thumbnailUrl('large'));?>
+           <img src="<?php echo $url;?>">
+         </div>
+       <?php endif;?>
+      <?php endif; ?>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <!--<h3><?php echo $translate('Item'); ?></h3>-->
+    <?php $this->trigger('view.show.before'); ?>
+    <?php if ($embedMedia && $itemMedia): ?>
+        <div class="media-embeds">
+        <?php foreach ($itemMedia as $media):
+            echo $media->render();
+        endforeach;
+        ?>
+        </div>
+    <?php endif; ?>
+    <?php echo $item->displayValues(); ?>
+    <div class="property">
+        <?php $itemSets = $item->itemSets(); ?>
+        <?php if (count($itemSets) > 0): ?>
+        <h4><?php echo $translate('Item sets'); ?></h4>
+        <?php foreach ($itemSets as $itemSet): ?>
+        <div class="value"><a href="<?php echo $escape($itemSet->url()); ?>"><?php echo $itemSet->displayTitle(); ?></a></div>
+        <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+  </div>
+</section>
+<?php
+$page = $this->params()->fromQuery('page', 1);
+$property = $this->params()->fromQuery('property');
+$subjectValues = $item->displaySubjectValues($page, 25, $property);
+?>
+<?php if ($subjectValues): ?>
+<div id="item-linked">
+    <h3><?php echo $translate('Linked resources'); ?></h3>
+    <?php echo $subjectValues; ?>
+</div>
+<?php endif; ?>
+
+<?php $this->trigger('view.show.after'); ?>
+<script>
+  $(document).ready(function(){
+    $('.slider-for').slick({
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      arrows: true,
+      fade: true,
+      centerMode: true
+    });
+    /*$('.slider-nav').slick({
+      slidesToShow: 10,
+      slidesToScroll: 1,
+      asNavFor: '.slider-for',
+      focusOnSelect: true
+    });*/
+  });
+</script>

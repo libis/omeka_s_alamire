@@ -1,0 +1,47 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var array $metadata
+ * @var array $query
+ * @var array $options
+ */
+
+$translate = $this->plugin('translate');
+$hyperlink = $this->plugin('hyperlink');
+$url = $this->plugin('url');
+$api = $this->plugin('api');
+$siteSlug = $site->slug();
+
+$totals = $this->references()->count($metadata, $query, $options);
+
+$this->htmlElement('body')->appendAttribute('class', 'reference browse list');
+?>
+
+<ul class="references">
+    <?php foreach ($metadata as $term): ?>
+    <li><?php
+    if (@$options['total']):
+        // TODO Get the properties and classes labels one time.
+        $element = $api->searchOne('properties', ['term' => $term])->getContent() ?: $api->searchOne('resource_classes', ['term' => $term])->getContent();
+        $total = $totals[$term];
+        echo $hyperlink(
+            sprintf($translate('%s (%d)'), $element->label(), $total),
+            // TODO Define the link to the reference page.
+            $url('site/page', ['site-slug' => $siteSlug, 'page-slug' => str_replace(':', '-', $term)]),
+            ['title' => sprintf($translate('Browse %s'), $element->label())]
+        );
+    else:
+        $element = $api->searchOne('properties', ['term' => $term])->getContent() ?: $api->searchOne('resource_classes', ['term' => $term])->getContent();
+        $total = $totals[$term];
+        echo $hyperlink(
+            $element->label(),
+            // TODO Define the link to the reference page.
+            $url('site/page', ['site-slug' => $siteSlug, 'page-slug' => str_replace(':', '-', $term)]),
+            ['title' => sprintf($translate('Browse %s'), $element->label())]
+        );
+    endif;
+    ?>
+    </li>
+    <?php endforeach; ?>
+</ul>

@@ -1,0 +1,111 @@
+<?php
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+$this->htmlElement('body')->appendAttribute('class', 'item resource browse');
+
+$query = $this->params()->fromQuery();
+$itemSetShow = isset($itemSet);
+if ($itemSetShow):
+    $this->htmlElement('body')->appendAttribute('class', 'item-set');
+    $query['item_set_id'] = $itemSet->id();
+endif;
+$sortHeadings = [
+    [
+        'label' => $translate('Title'),
+        'value' => 'dcterms:title'
+    ],
+    [
+        'label' => $translate('Identifier'),
+        'value' => 'dcterms:identifier'
+    ],
+    [
+        'label' => $translate('Class'),
+        'value' => 'resource_class_label'
+    ],
+    [
+        'label' => $translate('Created'),
+        'value' => 'created'
+    ],
+];
+?>
+<section class="section breadcrumb-section">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><?php echo sprintf($this->translate('Items')); ?></li>
+      </ul>
+    </nav>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <?php if ($itemSetShow): ?>
+        <h1 class="title is-2 is-family-secondary"><?php echo $itemSet->displayTitle(); ?></h1>
+        <h3 class="title is-3"><?php echo $translate('Item set'); ?></h3>
+        <div class="metadata">
+            <?php echo $itemSet->displayValues(); ?>
+        </div>
+        <div class="item-set-items">
+        <?php echo '<h3>' . $escape($translate('Items')) . '</h3>'; ?>
+    <?php else: ?>
+        <h1 class="title is-2 is-family-secondary"><?php echo $translate('Items'); ?></h1>
+    <?php endif; ?>
+
+    <?php echo $this->searchFilters(); ?>
+
+    <div class="level">
+      <div class="level-left">
+        <?php echo $this->pagination(); ?>
+      </div>
+      <div class="level-right">
+        <div class="level-item">
+          <?php echo $this->sortSelector($sortHeadings); ?>
+        </div>
+        <div class="level-item">
+          <?php echo $this->hyperlink($translate('Advanced search'), $this->url('site/resource', ['controller' => 'item', 'action' => 'search'], ['query' => $query], true), ['class' => 'advanced-search']); ?>
+        </div>
+       </div>  
+    </div>
+
+    <?php $this->trigger('view.browse.before'); ?>
+    <div class="grid">
+      <div class="grid-col grid-col--1"></div>
+      <div class="grid-col grid-col--2"></div>
+      <div class="grid-col grid-col--3"></div>
+      <div class="grid-col grid-col--4"></div>
+      <?php
+      $headingTerm = $this->siteSetting('browse_heading_property_term');
+      $bodyTerm = $this->siteSetting('browse_body_property_term');
+      foreach ($items as $item):
+          $heading = $headingTerm ? $item->value($headingTerm, ['default' => $translate('[Untitled]')]) : $item->displayTitle();
+          $body = $bodyTerm ? $item->value($bodyTerm) : $item->displayDescription();
+      ?>
+          <div class="grid-item">
+            <?php echo $item->linkRaw($this->thumbnail($item, 'medium')); ?>
+            <p class="title is-5 is-family-secondary">
+              <?php echo $item->link($heading); ?>
+            </p>
+            <div class="content">
+              <div class="description">
+                <?php if ($body): ?>
+                <p class="truncate"><?php echo $escape($body); ?></p>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
+      <?php endforeach; ?>
+    </div>
+    <?php echo ($itemSetShow) ? '</div>' : ''; ?>
+    <?php $this->trigger('view.browse.after'); ?>
+    <?php echo $this->pagination(); ?>
+  </div>
+</section>
+<script>
+  $('.grid').colcade({
+    columns: '.grid-col',
+    items: '.grid-item'
+  });
+  var module = document.getElementsByClassName("truncate");
+  $clamp(module, {clamp: 3});
+</script>

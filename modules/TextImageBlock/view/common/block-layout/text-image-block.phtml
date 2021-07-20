@@ -1,0 +1,59 @@
+<section class="section">
+    <div class="container">
+      <div class="columns">
+        <?php if(!$block->dataValue('reverse')):?>
+          <div class="column">
+            <h2 class="title is-3 is-family-secondary"><?php echo $block->dataValue('title');?></h2>
+            <?php echo $block->dataValue('text');?>
+            <?php if($block->dataValue('link')):?>
+                <a class="link link--ext spacer" href="<?php echo $block->dataValue('link');?>"><?php echo $block->dataValue('label');?></a>
+            <?php endif;?>
+          </div>
+          <div class="column">
+            <?php if($attachments):
+              $media = $attachments[0]->media();
+              if($media):
+                $url = $media->thumbnailUrl('large');
+                $url = str_replace('http:', '', $url);
+                if($block->dataValue('itemurl')):
+                  $itemUrl = $media->item()->url();
+                  $itemUrl = str_replace('http:', '', $itemUrl);
+                  ?>
+                  <a href="<?php echo $itemUrl;?>"><img src="<?php echo $url;?>"></a>
+                <?php else:?>
+                  <img src="<?php echo $url;?>">
+                <?php endif;?>
+              <?php endif;?>
+            <figcaption><?php echo $attachments[0]->caption();?></figcaption>
+            <?php endif;?>
+          </div>
+        <?php else:?>
+          <div class="column">
+            <?php if($attachments):
+              $media = $attachments[0]->media();
+              if($media):
+                $url = $media->thumbnailUrl('large');
+                $url = str_replace('http:', '', $url);
+                if($block->dataValue('itemurl')):
+                  $itemUrl = $media->item()->url();
+                  $itemUrl = str_replace('http:', '', $itemUrl);
+                  ?>
+                  <a href="<?php echo $itemUrl;?>"><img src="<?php echo $url;?>"></a>
+                <?php else:?>
+                  <img src="<?php echo $url;?>">
+                <?php endif;?>
+              <?php endif;?>
+            <figcaption><?php echo $attachments[0]->caption();?></figcaption>
+            <?php endif;?>
+          </div>
+          <div class="column">
+            <h2 class="title is-3 is-family-secondary"><?php echo $block->dataValue('title');?></h2>
+            <?php echo $block->dataValue('text');?>
+            <?php if($block->dataValue('link')):?>
+                <a class="link link--ext spacer" href="<?php echo $block->dataValue('link');?>"><?php echo $block->dataValue('label');?></a>
+            <?php endif;?>
+          </div>
+        <?php endif;?>
+      </div>
+  </div>
+</section>

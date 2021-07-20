@@ -1,0 +1,171 @@
+<?php
+/*
+ * Copyright BibLibre, 2016
+ * Copyright Daniel Berthereau, 2017-2020
+ *
+ * This software is governed by the CeCILL license under French law and abiding
+ * by the rules of distribution of free software.  You can use, modify and/ or
+ * redistribute the software under the terms of the CeCILL license as circulated
+ * by CEA, CNRS and INRIA at the following URL "http://www.cecill.info".
+ *
+ * As a counterpart to the access to the source code and rights to copy, modify
+ * and redistribute granted by the license, users are provided only with a
+ * limited warranty and the software's author, the holder of the economic
+ * rights, and the successive licensors have only limited liability.
+ *
+ * In this respect, the user's attention is drawn to the risks associated with
+ * loading, using, modifying and/or developing or reproducing the software by
+ * the user in light of its specific status of free software, that may mean that
+ * it is complicated to manipulate, and that also therefore means that it is
+ * reserved for developers and experienced professionals having in-depth
+ * computer knowledge. Users are therefore encouraged to load and test the
+ * software's suitability as regards their requirements in conditions enabling
+ * the security of their systems and/or data to be ensured and, more generally,
+ * to use and operate it in the same conditions as regards security.
+ *
+ * The fact that you are presently reading this means that you have had
+ * knowledge of the CeCILL license and that you accept its terms.
+ */
+
+/**
+ * @var \Zend\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var \Search\Query $query
+ * @var \Search\Response $response
+ * @var array $sortOptions
+ * @var array $facets
+ * @var bool $isPartial Allow to use this partial in admin board when true.
+ */
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$translatePlural = $plugins->get('translatePlural');
+$assetUrl = $plugins->get('assetUrl');
+$partial = $plugins->get('partial');
+
+// Used in case of a redirect of item-set/show to search, when used like item/browse.
+$itemSetId = $this->params()->fromRoute('item-set-id');
+
+$this->headLink()->appendStylesheet($assetUrl('css/search.css', 'Search'));
+$this->headScript()->appendFile($assetUrl('js/search.js', 'Search'), 'text/javascript', ['defer' => 'defer']);
+?>
+<section class="section breadcrumb-section">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="breadcrumbs">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><?php echo $page->name(); ?></li>
+      </ul>
+    </nav>
+  </div>
+</section>
+<?php if (empty($isPartial)): ?>
+<section class="section">
+  <div class="container" role="main">
+  <?php endif; ?>
+
+  <?php if ($itemSetId): ?>
+
+      <?php $itemSet = $this->api()->read('item_sets', ['id' => $itemSetId])->getContent(); ?>
+      <?php $this->vars()->offsetSet('itemSet', $itemSet); ?>
+      <?php $this->vars()->offsetSet('resourceType', 'item_sets'); // TODO Check if really needed. ?>
+      <?php $this->htmlElement('body')->appendAttribute('class', 'search-page item-set resource browse'); ?>
+      <?= $this->pageTitle($itemSet->displayTitle(), 2) ?>
+      <h1 class="title is-2 is-family-secondary"><?= $translate('Item set') ?></h1>
+      <div class="metadata">
+          <?= $itemSet->displayValues() ?>
+      </div>
+      <div class="item-set-items">
+          <h2 class="title is-3 is-family-secondary"><?= $translate('Items') ?></h2>
+      </div>
+
+  <?php else: ?>
+
+      <?php $this->htmlElement('body')->appendAttribute('class', 'search-page resource browse'); ?>
+      <h1 class="title is-2 is-family-secondary"><?php echo $translate($page->name()); ?></h1>
+
+  <?php endif; ?>
+  <div class="content">
+    <form class="has-icons-right" action="" id="search-form">
+      <div class="field has-addons">
+        <div class="control">
+          <input class="input is-medium" type="text" name="q" id="q" placeholder="Search resources" value="<?php echo $query->getQuery();?>"   aria-label="<?php echo $translate('Search'); ?>">
+          <input name="sort" type="hidden" value="<?php echo $query->getSort();?>" />
+        </div>
+        <div class="control">
+          <a class="button is-primary is-medium">
+            <span class="icon is-large">
+              <i class="fas fa-search"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+<?php //echo $query->getQuery().'&sort='.$query->getSort().'&'.json_encode($query->getFilters());?>
+  <?php if (isset($response)): ?>
+  <div class="columns">
+      <?= $partial('search/facets', ['facets' => $facets]) ?>
+      <div class="column is-three-quarter">
+          <?php if ($response->getTotalResults()): ?>
+              <?= $partial('search/results-header', [
+                  'query' => $query,
+                  'response' => $response,
+                  'sortOptions' => $sortOptions,
+              ]) ?>
+
+              <?php $itemSetsCount = $response->getResourceTotalResults('item_sets'); ?>
+              <?= $partial('search/resource-list', [
+                  'site' => $site,
+                  'title' => sprintf($translatePlural('%s item set', '%s item sets', $itemSetsCount), $itemSetsCount),
+                  'response' => $response,
+                  'resourceName' => 'item_sets',
+              ]) ?>
+
+              <?php $itemsCount = $response->getResourceTotalResults('items'); ?>
+              <?= $partial('search/resource-list', [
+                  'site' => $site,
+                  'title' => sprintf($translatePlural('%s item', '%s items', $itemsCount), $itemsCount),
+                  'response' => $response,
+                  'resourceName' => 'items',
+              ]) ?>
+
+              <?= $partial('search/results-footer', [
+                  'query' => $query,
+                  'response' => $response,
+                  'sortOptions' => $sortOptions,
+              ]) ?>
+
+          <?php elseif (empty($query) && empty($itemSetId)): ?>
+
+              <div class="noresults"><?= $translate('Fill a query and get results.') ?></div>
+
+          <?php elseif (empty($query) && $itemSetId): ?>
+
+              <div class="noresults"><?= $translate('This item set has no items.') ?></div>
+
+          <?php else: ?>
+
+              <div class="noresults"><?= $translate('Your query returned no results') ?></div>
+
+          <?php endif; ?>
+
+      </div>
+
+
+  </div>
+
+  <?php else: ?>
+
+  <div class="search-results-wrapper">
+      <div class="search-results">
+          <div class="noresults"><?= $translate('An error occured and your query returned no results.') ?></div>
+      </div>
+  </div>
+
+  <?php endif; ?>
+
+  <?php if (empty($isPartial)): ?>
+  </div>
+  <?php endif; ?>
+  </div>
+</section>

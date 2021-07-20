@@ -1,0 +1,61 @@
+/* compileCompressed: "../css/$1.min.css", compileExpanded: "../css/$1.css" */
+@charset "utf-8";
+
+@import "bulma";
+@import "slick";
+@import "base";
+
+//masonry
+.grid {
+  display: flex;
+  margin: 0 -0.8rem;
+}
+
+.grid-col {
+  flex-grow: 1;
+  width: 33%;
+}
+
+/* 2 columns by default, hide columns 2 & 3 */
+.grid-col:nth-child(2), .grid-col:nth-child(3) { display: none }
+
+/* 3 columns at medium size */
+@media ( min-width: 768px ) {
+  .grid-col:nth-child(2) { display: block; } /* show column 2 */
+}
+
+/* 4 columns at large size */
+@media ( min-width: 1080px ) {
+  .grid-col:nth-child(2) { display: block; } /* show column 3 */
+}
+
+.grid-item {
+  margin: .8rem .8rem 1rem .8rem;
+
+  .title{
+    margin-bottom: 0.75rem;
+  }
+
+}
+
+@for $i from 1 through 15 {
+  .grid-item#{$i} {
+    $h: (random(400) + 100) + px;
+    height: $h;
+    line-height: $h;
+  }
+}
+
+//fixes
+.section + .section {
+    padding-top: 0;
+}
+
+.equal-height {
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+}
+.equal-height .card-footer {
+   margin-top: auto;
+}

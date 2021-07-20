@@ -1,0 +1,16 @@
+<?php
+$layouts = [];
+foreach ($page->blocks() as $block) {
+    if (!array_key_exists($block->layout(), $layouts)) {
+        // Prepare render only once per layout type.
+        $layouts[$block->layout()] = null;
+        $this->blockLayout()->prepareRender($block->layout());
+    }
+    if($block->layout() == 'pageTitle' || $block->layout() == 'html'):
+      echo '<section class="section no-section"><div class="container">';
+    endif;
+    echo $this->blockLayout()->render($block);
+    if($block->layout() == 'pageTitle' || $block->layout() == 'html'):
+      echo '</div></section>';
+    endif;
+}

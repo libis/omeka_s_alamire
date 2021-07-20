@@ -1,0 +1,112 @@
+<?php
+$translate = $this->plugin('translate');
+?>
+<section class="section" style="background:#f0f0f0;padding:3rem 1.5rem;margin-bottom:3rem;">
+  <div class="container">
+    <?php if ($this->heading): ?>
+      <h2 class="title is-3 is-family-secondary"><?php echo $this->heading; ?></h2>
+    <?php endif; ?>
+
+    <?php if($block->dataValue('text')):?>
+      <div class="content">
+              <?php echo $block->dataValue('text');?>
+      </div>
+    <?php endif; ?>
+
+    <?php if($this->resources):?>
+    <div class="columns <?php echo $block->dataValue('columns');?>">
+      <?php
+      $headingTerm = $this->siteSetting('browse_heading_property_term', 'dcterms:title');
+      $bodyTerm = $this->siteSetting('browse_body_property_term', 'dcterms:description');
+      $templates = array(
+        'Beeld' => 'beeldbank',
+        'Verhaal' => 'verhalen',
+        'Project' => 'projecten',
+        'Film' => 'films',
+        'Filmkopie' => 'filmkopies',
+        'Collecite' => 'collecties',
+        'Nieuws' => 'nieuws',
+        'Agendapunt' => 'agenda',
+        'Agendapunt BKV' => 'agenda-bkv',
+        'Nieuws BKV' => 'nieuws-bkv',
+        'Object BKV' => 'objecten'
+      );
+      foreach ($this->resources as $resource):
+          $heading = $resource->value($headingTerm, ['default' => $translate('[Untitled]')]);
+          $body = $resource->value($bodyTerm);
+          $type = $resource->resourceTemplate();
+          if($type):
+            $type= $type->label();
+          else:
+            $type= "Object";
+          endif;
+      ?>
+      <div class="column <?php echo $block->dataValue('columns');?>">
+            <?php
+              $media = $resource->media();
+              if($media):
+                if(sizeof($this->resources) <= 2):
+                  $mediaurl = $media[0]->thumbnailUrl('large');
+                  $mediaurl = str_replace('http:', '', $mediaurl);
+                else:
+                  $mediaurl = $media[0]->thumbnailUrl('medium');
+                  $mediaurl = str_replace('http:', '', $mediaurl);
+                endif;
+              else:
+                $mediaurl = "";
+              endif;
+
+              if($type == 'Verhaal' || $type == 'Project' || $type == 'Agendapunt BKV' || $type == 'Nieuws BKV' || $type == 'Object BKV'):
+                $url = "/page/".$resource->value('dcterms:relation');
+              else:
+                $url = $resource->url();
+                $date = '';
+              endif;
+            ?>
+            <a href="<?php echo $url;?>">
+            <div class="card equal-height">
+              <div class="card-bg-img-2"
+                style="background:url(<?php echo  $mediaurl;?>) no-repeat center 20%;background-color:#7fb5b2;background-size: cover;"
+                >
+              </div>
+              <header class="card-header">
+                <p class="card-header-title title is-5 is-family-secondary">
+                    <a href="<?php echo $url;?>"><?php echo $resource->value('dcterms:title');?></a>
+                </p>
+              </header>
+              <div class="card-content">
+                <div class="content">
+                  <?php if($resource->value('dcterms:date')):?>
+                      <p class="datering"><?php echo $resource->value('dcterms:date');?></p>
+                  <?php endif;?>
+                  <?php if ($body): ?>
+                    <?php
+                      if(strlen($body) > 200):
+                        $body = substr($body, 0, 200);
+                        $body = substr($body, 0, strrpos($body, ' ')).' ...';
+                      endif;
+                    ?>
+                    <p>
+                      <?php echo $body; ?>
+                    </p>
+                  <?php endif; ?>
+                </div>
+              </div>
+              <footer class="card-footer">
+                <a class="card-footer-item" href="<?php echo $url;?>"><?php echo $type.' bekijken';?></a>
+              </footer>
+            </div>
+          </a>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <?php if ($this->linkText):?>
+      <div class="has-text-centered">
+          <a href="<?php echo '/'.$type.'?q='?>" class="button is-primary">
+            <?php echo $this->linkText;?>
+          </a>
+      </div>
+    <?php endif;?>
+    <?php endif;?>
+  </div>
+</section>

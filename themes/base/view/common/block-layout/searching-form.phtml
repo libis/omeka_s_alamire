@@ -1,0 +1,23 @@
+<?php
+/**
+ * @var \Zend\View\Renderer\PhpRenderer $this
+ * @var string $heading
+ */
+
+$escape = $this->plugin('escapeHtml');
+?>
+<form class="has-icons-right" action="<?php echo $this->escapeHtml($this->url('site/resource', ['controller' => 'index','action' => 'search'], true)); ?>" id="search-form">
+  <div class="field has-addons">
+    <div class="control">
+      <input class="input is-medium" type="text" name="q" id="q" placeholder="Search resources" value=""   aria-label="<?php echo $translate('Search'); ?>">
+
+    </div>
+    <div class="control">
+      <a class="button is-primary is-medium">
+        <span class="icon is-large">
+          <i class="fas fa-search"></i>
+        </span>
+      </a>
+    </div>
+  </div>
+</form>

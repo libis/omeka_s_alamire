@@ -1,0 +1,135 @@
+<?php
+use Zend\Form\Element\Textarea;
+?>
+<p>
+  Only blocks that have content will appear.
+</p>
+<h4>Title (optional title above the tiles)</h4>
+<div class="field">
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('title')); ?>" name="o:block[__blockIndex__][o:data][title]">
+  </div>
+</div>
+<hr />
+<a href="#" class="expand" aria-label="Expand" title="Expand"><strong>Blocks</strong></a>
+<div class="collapsible">
+<h4>Title block 1</h4>
+<div class="field">
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('title1')); ?>" name="o:block[__blockIndex__][o:data][title1]">
+  </div>
+</div>
+<h4>Text block 1</h4>
+<?php
+  $textarea = new Textarea("o:block[__blockIndex__][o:data][text1]");
+  $textarea->setAttribute('class', 'block-html full wysiwyg');
+  if ($block) {
+      $textarea->setAttribute('value', $block->dataValue('text1'));
+  }
+  echo $this->formRow($textarea);
+?>
+<div class="field">
+  <div class="field-meta">
+      <label>Link 1</label>
+  </div>
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('link1')) ?>" name="o:block[__blockIndex__][o:data][link1]">
+  </div>
+</div>
+<div class="field">
+  <div class="field-meta">
+      <label>Link text 1</label>
+  </div>
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('linktext1')) ?>" name="o:block[__blockIndex__][o:data][linktext1]">
+  </div>
+</div>
+<hr />
+<h4>Title block 2</h4>
+<div class="field">
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('title2')); ?>" name="o:block[__blockIndex__][o:data][title2]">
+  </div>
+</div>
+<h4>Text block 2</h4>
+<?php
+  $textarea = new Textarea("o:block[__blockIndex__][o:data][text2]");
+  $textarea->setAttribute('class', 'block-html full wysiwyg');
+  if ($block) {
+      $textarea->setAttribute('value', $block->dataValue('text2'));
+  }
+  echo $this->formRow($textarea);
+?>
+<div class="field">
+  <div class="field-meta">
+      <label>Link 2</label>
+  </div>
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('link2')) ?>" name="o:block[__blockIndex__][o:data][link2]">
+  </div>
+</div>
+<div class="field">
+  <div class="field-meta">
+      <label>Link text 2</label>
+  </div>
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('linktext2')) ?>" name="o:block[__blockIndex__][o:data][linktext2]">
+  </div>
+</div>
+<hr />
+
+<h4>Title block 3</h4>
+<div class="field">
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('title3')); ?>" name="o:block[__blockIndex__][o:data][title3]">
+  </div>
+</div>
+<h4>Text block 3</h4>
+<?php
+  $textarea = new Textarea("o:block[__blockIndex__][o:data][text3]");
+  $textarea->setAttribute('class', 'block-html full wysiwyg');
+  if ($block) {
+      $textarea->setAttribute('value', $block->dataValue('text3'));
+  }
+  echo $this->formRow($textarea);
+?>
+<div class="field">
+  <div class="field-meta">
+      <label>Link 3</label>
+  </div>
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('link3')) ?>" name="o:block[__blockIndex__][o:data][link3]">
+  </div>
+</div>
+<div class="field">
+  <div class="field-meta">
+      <label>Link text 3</label>
+  </div>
+  <div class="inputs">
+      <input type="text" class="" value="<?php echo (!isset($block) ? '' : $block->dataValue('linktext3')) ?>" name="o:block[__blockIndex__][o:data][linktext3]">
+  </div>
+</div>
+</div>
+<hr />
+<?php if(isset($block)):
+  $span = $block->dataValue('layout');
+else:
+  $span = "half";
+endif;?>
+
+<div class="field">
+  <div class="field-meta">
+      <label>Width of the blockq (only in case of 2 blocks)</label>
+      <a href="#" class="expand" aria-label="Expand" title="Expand"></a>
+      <div class="collapsible">
+        <div class="field-description">12 equals full width</div>
+      </div>
+  </div>
+  <div class="inputs">
+      <select type="text" class="" name="o:block[__blockIndex__][o:data][layout]">
+        <option '.($span == "half" ? 'selected' : "").' value="half">1/2 1/2</option>
+        <option '.($span == "one-third" ? 'selected' : "").' value="one-third">1/3 2/3</option>
+        <option '.($span == "two-thirds" ? 'selected' : "").' value="two-thirds">2/3 1/3</option>
+      </select>
+  </div>
+</div>
