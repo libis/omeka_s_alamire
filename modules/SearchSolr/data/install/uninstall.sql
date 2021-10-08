@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS `solr_map`;
+DROP TABLE IF EXISTS `solr_core`;

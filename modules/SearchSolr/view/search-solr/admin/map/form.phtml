@@ -1,0 +1,42 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \SearchSolr\Form\Admin\SolrMapForm $form
+ * @var string $schema
+ * @var array $sourceLabels
+ */
+
+$translate = $this->plugin('translate');
+
+$this->headLink()->appendStylesheet($this->assetUrl('css/search-solr-admin.css', 'SearchSolr'));
+$this->headScript()->appendScript(
+    'var schema = ' . json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';
+var sourceLabels = ' . json_encode($sourceLabels, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ';'
+);
+$this->headScript()->appendFile($this->assetUrl('js/search-solr-admin.js', 'SearchSolr'), 'text/javascript', ['defer' => 'defer']);
+
+$form->prepare();
+?>
+
+<?= $this->form()->openTag($form) ?>
+<div id="page-actions">
+    <?= $this->cancelButton() ?>
+    <button><?= $translate('Save') ?></button>
+</div>
+<h4><?= $translate('Metadata to extract') ?></h4>
+<?php
+echo $this->formRow($form->get('o:source'));
+echo $this->formCollection($form->get('o:pool'));
+?>
+<h4><?= $translate('Metadata to index') ?></h4>
+<?php
+echo $this->formRow($form->get('o:field_name'));
+echo $this->formCollection($form->get('o:settings'));
+
+echo $this->formRow($form->get('csrf'));
+
+$this->trigger('view.add.form.after');
+?>
+<?= $this->form()->closeTag() ?>
+
+<?php $this->trigger('view.add.after'); ?>

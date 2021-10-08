@@ -1,0 +1,249 @@
+<?php
+/*
+ * Copyright BibLibre, 2016
+ * Copyright Daniel Berthereau, 2017-2021
+ *
+ * This software is governed by the CeCILL license under French law and abiding
+ * by the rules of distribution of free software.  You can use, modify and/ or
+ * redistribute the software under the terms of the CeCILL license as circulated
+ * by CEA, CNRS and INRIA at the following URL "http://www.cecill.info".
+ *
+ * As a counterpart to the access to the source code and rights to copy, modify
+ * and redistribute granted by the license, users are provided only with a
+ * limited warranty and the software's author, the holder of the economic
+ * rights, and the successive licensors have only limited liability.
+ *
+ * In this respect, the user's attention is drawn to the risks associated with
+ * loading, using, modifying and/or developing or reproducing the software by
+ * the user in light of its specific status of free software, that may mean that
+ * it is complicated to manipulate, and that also therefore means that it is
+ * reserved for developers and experienced professionals having in-depth
+ * computer knowledge. Users are therefore encouraged to load and test the
+ * software's suitability as regards their requirements in conditions enabling
+ * the security of their systems and/or data to be ensured and, more generally,
+ * to use and operate it in the same conditions as regards security.
+ *
+ * The fact that you are presently reading this means that you have had
+ * knowledge of the CeCILL license and that you accept its terms.
+ */
+
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \AdvancedSearch\Api\Representation\SearchEngineRepresentation[] $engines
+ * @var \AdvancedSearch\Api\Representation\SearchConfigRepresentation[] $searchConfigs
+ * @var \AdvancedSearch\Api\Representation\SearchSuggesterRepresentation[] $suggesters
+ */
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$escape = $plugins->get('escapeHtml');
+$escapeAttr = $plugins->get('escapeHtmlAttr');
+$url = $plugins->get('url');
+$assetUrl = $plugins->get('assetUrl');
+
+$this->headLink()
+    ->appendStylesheet($assetUrl('css/advanced-search-configure.css', 'AdvancedSearch'));
+$this->headScript()
+    ->appendFile($assetUrl('js/advanced-search-configure.js', 'AdvancedSearch'), 'text/javascript', ['defer' => 'defer']);
+?>
+
+<?php $this->htmlElement('body')->appendAttribute('class', 'search-admin resource browse'); ?>
+
+<?= $this->pageTitle($translate('Search manager')) ?>
+
+<div id="page-actions">
+    <a class="button" href="<?= $url('admin/search/engine', ['action' => 'add']) ?>"><?= $translate('Add new search engine') ?></a>
+    <?php if (!empty($engines)): ?>
+        <a class="button" href="<?= $url('admin/search/config', ['action' => 'add']) ?>"><?= $translate('Add new page') ?></a>
+        <a class="button" href="<?= $url('admin/search/suggester', ['action' => 'add']) ?>"><?= $translate('Add new suggester') ?></a>
+    <?php endif; ?>
+</div>
+
+<h2><?= $translate('Search engines') ?></h2>
+<?php if (count($engines) > 0): ?>
+    <table class="tablesaw" data-tablesaw-mode="stack">
+        <thead>
+            <tr>
+                <th><?= $translate('Name') ?></th>
+                <th><?= $translate('Adapter') ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($engines as $engine): ?>
+                <?php $searchAdapter = $engine->adapter();
+                $isInternal = $searchAdapter && $searchAdapter instanceof \AdvancedSearch\Adapter\InternalAdapter;
+                ?>
+                <tr>
+                    <td>
+                        <span><?= $engine->name() ?></span>
+                        <ul class="actions">
+                            <?php if ($searchAdapter): ?>
+                                <li>
+                                    <?= $engine->link('', 'edit', [
+                                        'class' => 'o-icon-edit',
+                                        'aria-label' => $translate('Edit'),
+                                        'title' => $translate('Edit'),
+                                    ]) ?>
+                                </li>
+                                <li>
+                                <?php if ($isInternal): ?>
+                                    <span
+                                    class="o-icon- fa fa-refresh fa-sync sidebar-content disabled"
+                                    aria-label="<?= $escape($translate('No reindex for internal engine')) ?>"
+                                    title="<?= $escape($translate('No reindex for internal engine')) ?>"></span>
+                                <?php else: ?>
+                                    <a href="#"
+                                    data-sidebar-content-url="<?= $escape($engine->url('index-confirm')) ?>"
+                                    class="o-icon- fa fa-refresh fa-sync sidebar-content"
+                                    aria-label="<?= $escape($translate('Reindex')) ?>"
+                                    title="<?= $escape($translate('Reindex')) ?>"></a>
+                                <?php endif; ?>
+                                </li>
+                            <?php endif; ?>
+                            <li>
+                                <a href="#"
+                                data-sidebar-content-url="<?= $escape($engine->url('delete-confirm')) ?>"
+                                class="o-icon-delete sidebar-content"
+                                aria-label="<?= $escape($translate('Delete')) ?>"
+                                title="<?= $escape($translate('Delete')) ?>"></a>
+                            </li>
+                        </ul>
+                    </td>
+                    <td><?= $engine->adapterLabel() ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php else: ?>
+    <p><?= $translate('No search engines created yet.') ?></p>
+<?php endif; ?>
+
+<h2><?= $translate('Page configs') ?></h2>
+<?php if (count($searchConfigs) > 0): ?>
+    <table class="tablesaw" data-tablesaw-mode="stack">
+        <thead>
+            <tr>
+                <th><?= $translate('Name') ?></th>
+                <th><?= $translate('Path') ?></th>
+                <th><?= $translate('Search engine') ?></th>
+                <th><?= $translate('Form') ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($searchConfigs as $searchConfig): ?>
+                <tr>
+                    <td>
+                        <span><?= $searchConfig->name() ?></span>
+                        <ul class="actions">
+                            <li>
+                                <?= $searchConfig->link('', 'edit', [
+                                    'class' => 'o-icon-edit',
+                                    'title' => $translate('Edit'),
+                                ]) ?>
+                            </li>
+                            <?php if ($searchConfig->engine()->adapter()): ?>
+                            <li>
+                                <?= $searchConfig->link('', 'configure', [
+                                    'class' => 'o-icon- fa fa-sliders fa-sliders-h',
+                                    'title' => $translate('Configure facets and sort fields'),
+                                ]) ?>
+                            </li>
+                            <?php endif; ?>
+                            <li>
+                                <a href="#"
+                                data-sidebar-content-url="<?= $escape($searchConfig->url('delete-confirm')) ?>"
+                                class="o-icon-delete sidebar-content"
+                                aria-label="<?= $escape($translate('Delete')) ?>"
+                                title="<?= $escape($translate('Delete')) ?>"></a>
+                            </li>
+                        </ul>
+                    </td>
+                    <td><?= $searchConfig->path() ?></td>
+                    <td><?= $searchConfig->engine()->name() ?></td>
+                    <td>
+                        <?php
+                            $formAdapter = $searchConfig->formAdapter();
+                            if ($formAdapter) {
+                                echo $formAdapter->getLabel();
+                            } else {
+                                echo $searchConfig->formAdapterName();
+                            }
+                        ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php else: ?>
+    <p><?= $translate('No search page configs created yet.') ?></p>
+<?php endif; ?>
+
+<h2><?= $translate('Suggesters') ?></h2>
+<?php if (count($suggesters) > 0): ?>
+    <table class="tablesaw" data-tablesaw-mode="stack">
+        <thead>
+            <tr>
+                <th><?= $translate('Name') ?></th>
+                <th><?= $translate('Search engine') ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($suggesters as $suggester): ?>
+                <?php $searchAdapter = $suggester->engine()->adapter();
+                $isInternal = $searchAdapter && $searchAdapter instanceof \AdvancedSearch\Adapter\InternalAdapter;
+                ?>
+                <tr>
+                    <td>
+                        <span><?= $suggester->name() ?></span>
+                        <ul class="actions">
+                            <li>
+                            <?php if ($searchAdapter): ?>
+                                <?= $suggester->link('', 'edit', [
+                                    'class' => 'o-icon-edit',
+                                    'title' => $translate('Edit'),
+                                ]) ?>
+                            <?php else: ?>
+                                <?= $this->hyperlink('', '#', [
+                                    'class' => 'o-icon-edit disabled',
+                                    'title' => $translate('Edit disabled: search adapter not available'),
+                                ]) ?>
+                            <?php endif; ?>
+                            </li>
+                            <li>
+                            <?php if ($isInternal): ?>
+                                <a href="#"
+                                data-sidebar-content-url="<?= $escape($suggester->url('index-confirm')) ?>"
+                                class="o-icon- fa fa-refresh fa-sync sidebar-content"
+                                aria-label="<?= $escape($translate('Reindex')) ?>"
+                                title="<?= $escape($translate('Reindex')) ?>"></a>
+                            <?php else: ?>
+                                <span class="o-icon- fa fa-refresh fa-sync sidebar-content disabled"
+                                    title="<?= $escapeAttr($translate('Reindex disabled: search adapter does not support it.')) ?>"
+                                </span>
+                            <?php endif; ?>
+                            </li>
+                            <li>
+                                <a href="#"
+                                data-sidebar-content-url="<?= $escape($suggester->url('delete-confirm')) ?>"
+                                class="o-icon-delete sidebar-content"
+                                aria-label="<?= $escape($translate('Delete')) ?>"
+                                title="<?= $escape($translate('Delete')) ?>"></a>
+                            </li>
+                        </ul>
+                    </td>
+                    <td><?= $suggester->engine()->name() ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php else: ?>
+    <p><?= $translate('No search suggesters created yet.') ?></p>
+<?php endif; ?>
+
+<div class="sidebar">
+    <a href="#"
+        class="sidebar-close o-icon-close"
+        aria-label="<?= $escape($translate('Close')) ?>"
+        title="<?= $escape($translate('Close')) ?>"></a>
+    <div class="sidebar-content"></div>
+</div>

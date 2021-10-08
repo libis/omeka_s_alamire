@@ -1,0 +1,126 @@
+{
+    "name": "daniel-km/omeka-s-module-block-plus",
+    "type": "library",
+    "description": "Module for Omeka S that adds some new blocks for the static pages and improves the existing ones.",
+    "license": "CECILL-2.1",
+    "authors": [
+        {
+            "name": "Daniel Berthereau",
+            "email": "Daniel.packagist@Berthereau.net"
+        }
+    ],
+    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-BlockPlus",
+    "support": {
+        "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-BlockPlus/-/issues",
+        "forum": "https://forum.omeka.org/"
+    },
+    "keywords": [
+        "Omeka S",
+        "module",
+        "feature",
+        "theme",
+        "admin",
+        "gallery",
+        "tree structure"
+    ],
+    "require": {
+        "oomphinc/composer-installers-extender": "^2.0",
+        "asset/thumbnail-grid-expanding-preview": "0.1",
+        "d3/d3": "3.5.17",
+        "thetechy/jslists": "0.4.5"
+    },
+    "replace": {
+        "jsor/jcarousel": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "BlockPlus\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BlockPlusTest\\": "test/BlockPlusTest/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "type": "omeka-addon-asset",
+                "name": "asset/thumbnail-grid-expanding-preview",
+                "version": "0.1",
+                "dist": {
+                    "type": "zip",
+                    "reference": "",
+                    "url": "https://github.com/Daniel-KM/ThumbnailGridExpandingPreview/archive/0.1.zip"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "type": "omeka-addon-asset",
+                "name": "d3/d3",
+                "version": "3.5.17",
+                "dist": {
+                    "type": "file",
+                    "reference": "",
+                    "url": "https://d3js.org/d3.v3.min.js"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "type": "omeka-addon-asset",
+                "name": "jsor/jcarousel",
+                "version": "0.3.9",
+                "dist": {
+                    "type": "zip",
+                    "reference": "",
+                    "url": "https://github.com/jsor/jcarousel/archive/refs/heads/master.zip"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "type": "omeka-addon-asset",
+                "name": "thetechy/jslists",
+                "version": "0.4.5",
+                "dist": {
+                    "type": "zip",
+                    "reference": "",
+                    "url": "https://github.com/TheTechy/jslists/archive/refs/heads/master.zip"
+                }
+            }
+        }
+    ],
+    "extra": {
+        "installer-types": ["omeka-addon-asset"],
+        "installer-paths": {
+            "asset/vendor/{$name}/": [
+                "type:omeka-addon-asset"
+            ]
+        }
+    },
+    "scripts": {
+        "pre-install-cmd": "@build-pre",
+        "pre-update-cmd": "@build-pre",
+        "post-install-cmd": "@build",
+        "post-update-cmd": "@build",
+        "build-pre": [
+            "@php -r 'shell_exec(\"rm -rf ./asset/vendor/thumbnail-grid-expanding-preview\");'"
+        ],
+        "build": [
+            "@php -r '@rename(__DIR__ . \"/asset/vendor/thumbnail-grid-expanding-preview\", __DIR__ . \"/asset/vendor/ThumbnailGridExpandingPreview\");'",
+            "@php -r '@rename(__DIR__ . \"/asset/vendor/ThumbnailGridExpandingPreview/vendor/imagesloaded\", __DIR__ . \"/asset/vendor/imagesloaded\");'",
+            "@php -r '@rename(__DIR__ . \"/asset/vendor/ThumbnailGridExpandingPreview/vendor/jquery-smartresize\", __DIR__ . \"/asset/vendor/jquery-smartresize\");'",
+            "@php -r '@rename(__DIR__ . \"/asset/vendor/ThumbnailGridExpandingPreview/vendor/modernizr\", __DIR__ . \"/asset/vendor/modernizr/\");'",
+
+            "#@php -r 'sleep(1);'",
+            "@php -r '@rmdir(__DIR__ . \"/asset/vendor/ThumbnailGridExpandingPreview/vendor\");'",
+            "@php -r 'shell_exec(\"rm -rf ./asset/vendor/thumbnail-grid-expanding-preview\");'"
+        ]
+    }
+}

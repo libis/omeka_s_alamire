@@ -5,6 +5,10 @@
 @import "slick";
 @import "base";
 
+header{
+  margin-bottom:2rem;
+}
+
 //masonry
 .grid {
   display: flex;
@@ -47,8 +51,11 @@
 }
 
 //fixes
-.section + .section {
-    padding-top: 0;
+.section:first-of-type{
+  padding-top: 0;
+}
+.section + .section  {
+    padding-top: 0 !important;
 }
 
 .equal-height {

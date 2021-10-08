@@ -9,13 +9,19 @@ $showPagePagination = $this->siteSetting('show_page_pagination', true);
     $nav = $site->publicNav();
     $container = $nav->getContainer();
     $activePage = $nav->findActive($container);
+    $type = $this->pagesMetadata('type') ?: null;
+    $next = $this->pagesMetadata('next',$page) ?: null;
+    $previous = $this->pagesMetadata('previous',$page) ?: null;
 
     if ($activePage):
       if ($activePage['depth'] !== 0): ?>
       <section class="section breadcrumb-section">
         <div class="container">
           <nav class="breadcrumb" aria-label="breadcrumbs">
-            <ul><li><?php echo $nav->breadcrumbs()->setSeparator('</li><li>'); ?></li></ul>
+            <ul>
+              <li><a hrerf="<?php echo $site->url().'/page/home'?>">Home</a></li>
+              <li><?php echo $nav->breadcrumbs()->setSeparator('</li><li>'); ?></li>
+            </ul>
           </nav>
         </div>
       </section>
@@ -32,5 +38,15 @@ $showPagePagination = $this->siteSetting('show_page_pagination', true);
 <?php echo $this->content; ?>
 <?php $this->trigger('view.show.after'); ?>
 <?php if ($showPagePagination): ?>
-<?php echo $this->sitePagePagination(); ?>
+<?php //echo $this->sitePagePagination(); ?>
 <?php endif; ?>
+
+<div class="has-text-centered" style="margin-bottom:2rem;">
+  <?php if($previous && ($this->pageMetadata('type',$previous) == 'exhibit_page' || $this->pageMetadata('type',$previous) == 'exhibit')):?>
+    <a class="button is-outlined" href="<?php echo $previous->url();?>">Vorige</a>
+  <?php endif;?>
+  <?php if($next  && ($this->pageMetadata('type',$next) == 'exhibit_page'|| $this->pageMetadata('type',$next) == 'exhibit')):?>
+    <a class="button is-outlined" href="<?php echo $next->url();?>">Volgende</a>
+  <?php endif;?>
+
+</div>

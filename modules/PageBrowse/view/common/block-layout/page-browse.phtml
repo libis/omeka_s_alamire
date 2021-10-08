@@ -1,0 +1,77 @@
+<?php
+$translate = $this->plugin('translate');
+?>
+<section class="section">
+  <div class="container">
+    <?php if ($this->heading): ?>
+      <h2 class="title is-3 is-family-secondary"><?php echo $block->dataValue('heading');?></h2>
+    <?php endif; ?>
+
+    <?php if($block->dataValue('text')):?>
+      <div class="columns">
+        <div class="column is-8">
+          <div class="content">
+              <?php echo $block->dataValue('text');?>
+          </div>
+        </div>
+      </div>
+    <?php endif; ?>
+
+    <div class="columns is-multiline">
+      <?php
+
+      foreach ($pages as $page):
+        $heading = $page->page()->title();
+        $body = $page->dataValue('summary');
+
+      ?>
+      <div class="column is-4">
+            <?php
+              $asset = $page->dataValue('cover');
+              if (!$asset) {
+                  $mediaurl = "";
+              }else{
+                try {
+                    $media = $this->api()->read('assets', ['id' => $asset])->getContent();
+                    $mediaurl = $media->assetUrl('medium');
+                } catch (NotFoundException $e) {
+                    $mediaurl = "";
+                }
+              }
+
+              $url = $page->page()->url();
+            ?>
+
+            <div class="card equal-height">
+              <a href="<?php echo $url;?>">
+              <div class="card-bg-img-2"
+                style="background:url(<?php echo  $mediaurl;?>) no-repeat center 20%;background-color:#aaa;background-size: cover;"
+                >
+              </div>
+              <div class="card-top">
+
+                <h5 class="title is-5 is-family-secondary">
+                    <?php echo $heading;?>
+                </h5>
+              </div>
+              <div class="card-content">
+                <div class="content">
+                  <?php if ($body): ?>
+                    <?php
+                      if(strlen($body) > 200):
+                        $body = substr($body, 0, 200);
+                        $body = substr($body, 0, strrpos($body, ' ')).' ...';
+                      endif;
+                    ?>
+                      <?php echo $body; ?>
+                  <?php endif; ?>
+                </div>
+              </div>
+            </a>
+          </div>
+      </div>
+      <?php endforeach; ?>
+    </div>
+
+  </div>
+</section>

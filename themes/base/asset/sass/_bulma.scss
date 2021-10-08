@@ -7,6 +7,7 @@ $link: $primary;
 $navbar-item-color: #fff;
 $section-padding: 3rem 1.5rem 3rem 1.5rem;
 $navbar-height:4rem;
+$column-gap:1.25rem;
 
 //card
 $card-shadow: none;
@@ -26,7 +27,7 @@ $box-background-color: #f0f0f0;
 $box-color: $text;
 $box-padding: 1.5rem !default;
 
-$modal-background-background-color:rgba($primary,0.86);
+$modal-background-background-color:rgba(#333,0.5);
 
 //form
 $control-radius:0;

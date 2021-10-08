@@ -1,0 +1,918 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-07-05 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: Module.php:98
+#, php-format
+msgid "The composer library \"%s\" is not installed. See readme."
+msgstr ""
+
+#: src/Adapter/SolariumAdapter.php:120
+msgid "Relevance"
+msgstr ""
+
+#: src/Adapter/SolariumAdapter.php:125
+msgid "Asc"
+msgstr ""
+
+#: src/Adapter/SolariumAdapter.php:126
+msgid "Desc"
+msgstr ""
+
+#: src/Form/Admin/ConfigFieldset.php:101
+#, php-format
+msgid "%s (unavailable: option multi-index not set)"
+msgstr ""
+
+#: src/Generic/AbstractModule.php:66
+#, php-format
+msgid "This module requires the module \"%s\"."
+msgstr ""
+
+#: src/Generic/AbstractModule.php:73
+#, php-format
+msgid "This module requires modules \"%s\"."
+msgstr ""
+
+#: src/Generic/AbstractModule.php:80
+msgid "This module has resources that cannot be installed."
+msgstr ""
+
+#: src/Generic/AbstractModule.php:707
+#, php-format
+msgid ""
+"The module \"%s\" was automatically deactivated because the dependencies are "
+"unavailable."
+msgstr ""
+
+#: view/common/solr-core-delete-confirm-details.phtml:13
+#: view/common/solr-map-delete-confirm-details.phtml:17
+msgid "WARNING"
+msgstr ""
+
+#: view/common/solr-core-delete-confirm-details.phtml:15
+#, php-format
+msgid ""
+"This will delete all search indexes (%d), all search pages (%d), and all "
+"Solr maps (%d) that use this Solr core."
+msgstr ""
+
+#: view/common/solr-core-delete-confirm-details.phtml:19
+msgid ""
+"To keep search indexes and pages, create a new core and set it for the "
+"related indexes before deletion."
+msgstr ""
+
+#: view/common/solr-core-delete-confirm-details.phtml:24
+msgid ""
+"There is no search indexes, search pages, neither Solr maps associated with "
+"this Solr core."
+msgstr ""
+
+#: view/common/solr-map-delete-confirm-details.phtml:15
+#, php-format
+msgid "Map between property \"%s\" and Solr field \"%s\" for \"%s\""
+msgstr ""
+
+#: view/common/solr-map-delete-confirm-details.phtml:19
+#, php-format
+msgid ""
+"This will remove all references to this Solr map in search pages that use it "
+"(%d, of which %d are enabled for facets or sort fields)."
+msgstr ""
+
+#: view/common/solr-map-delete-confirm-details.phtml:24
+msgid "There is no search pages associated with this Solr map."
+msgstr ""
+
+#: view/search-solr/admin/core/add.phtml:40
+msgid "Add Solr core"
+msgstr ""
+
+#: view/search-solr/admin/core/add.phtml:49
+#: view/search-solr/admin/core/browse.phtml:53
+#: view/search-solr/admin/core/edit.phtml:49
+#: view/search-solr/admin/core/import.phtml:27
+#: view/search-solr/admin/map/add.phtml:44
+#: view/search-solr/admin/map/browse-resource.phtml:68
+#: view/search-solr/admin/map/browse.phtml:62
+#: view/search-solr/admin/map/edit.phtml:45
+msgid "Solr cores"
+msgstr ""
+
+#: view/search-solr/admin/core/add.phtml:51
+msgid "Add core"
+msgstr ""
+
+#: view/search-solr/admin/core/browse.phtml:43
+msgid "Solr configuration"
+msgstr ""
+
+#: view/search-solr/admin/core/browse.phtml:46
+msgid "Add new core"
+msgstr ""
+
+#: view/search-solr/admin/core/browse.phtml:55
+msgid "Cores"
+msgstr ""
+
+#: view/search-solr/admin/core/browse.phtml:75
+msgid "Solr admin interface, if reachable"
+msgstr ""
+
+#: view/search-solr/admin/core/browse.phtml:88
+#: view/search-solr/admin/core/browse.phtml:92
+msgid "Map Omeka metadata and Solr fields"
+msgstr ""
+
+#: view/search-solr/admin/core/edit.phtml:40
+msgid "Edit Solr core"
+msgstr ""
+
+#: view/search-solr/admin/core/edit.phtml:51
+msgid "Edit core"
+msgstr ""
+
+#: view/search-solr/admin/core/edit.phtml:58
+msgid ""
+"WARNING: Changing the required values will require a complete reindexation."
+msgstr ""
+
+#: view/search-solr/admin/core/import.phtml:14
+msgid "Import Solr core mapping"
+msgstr ""
+
+#: view/search-solr/admin/core/import.phtml:21
+#: view/search-solr/admin/map/browse.phtml:52
+msgid "Export maps for easier spreadsheet mapping."
+msgstr ""
+
+#: view/search-solr/admin/core/import.phtml:21
+#: view/search-solr/admin/map/browse.phtml:52
+msgid "Export mapping"
+msgstr ""
+
+#: view/search-solr/admin/core/import.phtml:29
+#, php-format
+msgid "Import mapping for core \"%s\""
+msgstr ""
+
+#: view/search-solr/admin/core/import.phtml:34
+msgid ""
+"Warning: To import a mapping will reset the current mapping for all "
+"resources of the core. It is recommended to export it first."
+msgstr ""
+
+#: view/search-solr/admin/core/import.phtml:38
+msgid ""
+"The form should be a spreadsheet with the same headers than the export ones."
+msgstr ""
+
+#: view/search-solr/admin/map/add.phtml:40
+msgid "Add Solr map"
+msgstr ""
+
+#: view/search-solr/admin/map/add.phtml:45
+#: view/search-solr/admin/map/browse-resource.phtml:69
+#: view/search-solr/admin/map/browse.phtml:64
+#: view/search-solr/admin/map/edit.phtml:46
+#, php-format
+msgid "Resources list for core \"%s\""
+msgstr ""
+
+#: view/search-solr/admin/map/add.phtml:46
+#: view/search-solr/admin/map/browse-resource.phtml:71
+#: view/search-solr/admin/map/edit.phtml:47
+#, php-format
+msgid "Maps for \"%s\""
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:43
+#, php-format
+msgid "Solr maps for \"%s\""
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:51
+msgid "Add new map"
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:57
+msgid "Add a text index to all missing and used properties."
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:57
+msgid "Map all used properties"
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:63
+msgid "Remove maps of properties that are not used."
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:63
+msgid "Remove unused properties"
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:79
+msgid "Solr field"
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:81
+msgid "Pool"
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:82
+msgid "Translated default label"
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:114
+msgid "Excluded data types"
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:125
+msgid "There is no maps defined yet."
+msgstr ""
+
+#: view/search-solr/admin/map/browse-resource.phtml:126
+msgid "Add a new map"
+msgstr ""
+
+#: view/search-solr/admin/map/browse.phtml:42
+#, php-format
+msgid "Solr core \"%s\""
+msgstr ""
+
+#: view/search-solr/admin/map/browse.phtml:57
+msgid ""
+"Import maps. Warning: it will reset the current mapping for all resources. "
+"It is recommended to export it first."
+msgstr ""
+
+#: view/search-solr/admin/map/browse.phtml:57
+msgid "Import mapping"
+msgstr ""
+
+#: view/search-solr/admin/map/browse.phtml:85
+msgid "Rules"
+msgstr ""
+
+#: view/search-solr/admin/map/edit.phtml:41
+msgid "Edit Solr map"
+msgstr ""
+
+#: view/search-solr/admin/map/form.phtml:26
+msgid "Metadata to extract"
+msgstr ""
+
+#: view/search-solr/admin/map/form.phtml:31
+msgid "Metadata to index"
+msgstr ""
+
+#: data/scripts/upgrade_from_solr.php:25
+#, php-format
+msgid "The version of the module Solr should be at least %s."
+msgstr ""
+
+#: data/scripts/upgrade_from_solr.php:179
+msgid "The module Solr was upgraded by module SearchSolr and uninstalled."
+msgstr ""
+
+#: data/scripts/upgrade.php:46
+msgid "You should reindex your Solr cores."
+msgstr ""
+
+#: data/scripts/upgrade.php:66
+msgid "Now, values can be indexed differently for each data type, if wanted."
+msgstr ""
+
+#: data/scripts/upgrade.php:67
+msgid "Use the new import/export tool to simplify config."
+msgstr ""
+
+#: data/scripts/upgrade.php:150
+#, php-format
+msgid "This module requires the module \"%s\", version %s or above."
+msgstr ""
+
+#: data/scripts/upgrade.php:159
+msgid "The auto-suggestion requires a specific url for now."
+msgstr ""
+
+#: Module.php:98 src/Api/Representation/SolrCoreRepresentation.php:205
+msgid "Solarium"
+msgstr ""
+
+#: src/Form/Admin/ConfigFieldset.php:45 src/Form/Admin/SolrCoreForm.php:100
+#: src/Controller/Admin/CoreController.php:171
+msgid "Solr core"
+msgstr ""
+
+#: src/Form/Admin/ConfigFieldset.php:57
+msgid "Solr index name for shared core"
+msgstr ""
+
+#: src/Form/Admin/ConfigFieldset.php:58
+msgid ""
+"May be empty, or may be or may not be the same index name than the third "
+"party, depending on its configuration."
+msgstr ""
+
+#: src/Form/Admin/ConfigFieldset.php:101
+msgid "label"
+msgstr ""
+
+#: src/Form/Admin/SourceFieldset.php:25
+msgid "Select a metadata from the resource…"
+msgstr ""
+
+#: src/Form/Admin/SourceFieldset.php:31 config/module.config.php:207
+msgid "Set sub-property"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:14
+msgid "comma"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:15
+msgid "semi-colon"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:16
+msgid "colon"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:17
+msgid "tabulation"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:26
+msgid "double quote"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:27
+msgid "single quote"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:28
+msgid "hash"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:29
+msgid "empty"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:42
+msgid "Spreadsheet (tsv or csv)"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:43
+msgid "LibreOffice and tsv are recommended for compliant formats."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:54
+msgid "Column delimiter"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:55
+msgid ""
+"A single character that will be used to separate columns in the csv file."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:67
+msgid "Column enclosure"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreMappingImportForm.php:68
+msgid ""
+"A single character that will be used to separate columns in the csv file. "
+"The enclosure can be omitted when the content does not contain the delimiter."
+msgstr ""
+
+#: src/Form/Admin/SolrMapForm.php:68
+msgid ""
+"To select a sub-property allows to store a linked metadata when the property "
+"is filled with a resource. Thereby, an item can be found from the specified "
+"value of a linked item. For example an issue of a journal can be linked with "
+"the journal, so the issue can be found from the title of the journal."
+msgstr ""
+
+#: src/Form/Admin/SolrMapForm.php:100
+msgid "Limit to data types"
+msgstr ""
+
+#: src/Form/Admin/SolrMapForm.php:113
+msgid "Exclude data types"
+msgstr ""
+
+#: src/Form/Admin/SolrMapForm.php:117
+msgid "Select data types to exclude…"
+msgstr ""
+
+#: src/Form/Admin/SolrMapForm.php:129
+msgid "Formatter"
+msgstr ""
+
+#: src/Form/Admin/SolrMapForm.php:142
+msgid "Default label"
+msgstr ""
+
+#: src/Form/Admin/SolrMapForm.php:143
+msgid "The label is automatically translated if it exists in Omeka."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:63
+msgid "Scheme"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:76
+msgid "IP or hostname"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:88
+msgid "Port"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:112
+msgid "Is secure"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:122
+msgid "Solr user"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:134
+msgid "Solr password"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:135
+msgid ""
+"Note: the password is saved clear in the database, so it is recommended to "
+"create a specific user."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:147
+msgid "Bypass certificate check"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:148
+msgid "Avoid issue when the certificate expires."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:162
+msgid "Is public field"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:163
+msgid ""
+"Name of Solr field that will be set when a resource is public.\n"
+"It must be a single-valued, boolean-based field (*_b in default solr config)."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:177
+msgid "Resource name field"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:178
+msgid ""
+"Name of Solr field that will contain the resource name (or resource type, e."
+"g. \"items\", \"item_sets\"…).\n"
+"It must be a single-valued, string-based field (*_s in default solr config)."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:192
+msgid "Site ids field"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:193
+msgid ""
+"Name of Solr field that will contain the sites ids.\n"
+"It must be a multi-valued, integer-based field (*_is in default solr config)."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:207
+msgid "Index field"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:208
+msgid ""
+"Name of Solr field that will contain the index name in order to support "
+"multiple indexes on the same core.\n"
+"This is an advanced feature that is not required in most of the cases.\n"
+"It must be a single-valued, string-based field."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:222
+msgid "Index specific fields"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:225
+msgid "Drupal"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:227
+msgid ""
+"Allow to store specific data needed to share a core with a third party. All "
+"field names should be manually adapted."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:239
+msgid "Server id for shared core"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:240
+#, php-format
+msgid ""
+"May be empty, or may be or may not be the same unique id than the third "
+"party, depending on its configuration. For information, the unique id of the "
+"install is \"%s\"."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:254
+msgid "Resource languages codes for shared core"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:255
+msgid ""
+"A third party may need to know the languages of a resource, even if it has "
+"no meaning in Omeka."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:268
+msgid "Clear all indexes, included external ones"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:269
+msgid ""
+"Warning: this button will clear all indexes on the core, included indexes "
+"externally managed if multi-index is set."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:272
+msgid "clear_full_index"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:291
+msgid "Minimum match (or/and)"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:292
+msgid ""
+"Integer \"1\" means \"OR\", \"100%\" means \"AND\". Complex expressions are "
+"possible.\n"
+"If empty, the config of the solr core (solrconfig.xml) will be used."
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:306
+msgid "Tie breaker"
+msgstr ""
+
+#: src/Form/Admin/SolrCoreForm.php:307
+msgid ""
+"Increase score according to the number of matched fields.\n"
+"If empty, the config of the solr core (solrconfig.xml) will be used."
+msgstr ""
+
+#: src/ValueFormatter/Uri.php:12
+msgid "Uri"
+msgstr ""
+
+#: src/ValueFormatter/StandardWithUri.php:15
+msgid "Standard with uri"
+msgstr ""
+
+#: src/ValueFormatter/Point.php:11
+msgid "Point"
+msgstr ""
+
+#: src/ValueFormatter/DateRange.php:37
+msgid "Date range"
+msgstr ""
+
+#: src/ValueFormatter/StandardWithoutUri.php:14
+msgid "Standard without uri"
+msgstr ""
+
+#: src/ValueFormatter/PlainText.php:12
+msgid "Plain text"
+msgstr ""
+
+#: src/Querier/SolariumQuerier.php:76
+msgid "An issue occurred."
+msgstr ""
+
+#: src/Querier/SolariumQuerier.php:137
+msgid "Suggestions are not implemented"
+msgstr ""
+
+#: src/Querier/SolariumQuerier.php:518
+#, php-format
+msgid "Search type \"%s\" is not managed."
+msgstr ""
+
+#: src/Schema/Schema.php:70
+#, php-format
+msgid ""
+"Solr core is not available. Check config or certificate to get Solr core "
+"schema \"%s\"."
+msgstr ""
+
+#: src/Schema/Schema.php:75
+#, php-format
+msgid ""
+"Solr core is not available. Check config to get Solr core schema \"%s\"."
+msgstr ""
+
+#: src/ValueExtractor/AbstractResourceEntityValueExtractor.php:77
+msgid "Internal identifier"
+msgstr ""
+
+#: src/ValueExtractor/AbstractResourceEntityValueExtractor.php:86
+msgid "Is public"
+msgstr ""
+
+#: src/ValueExtractor/AbstractResourceEntityValueExtractor.php:89
+#: src/Controller/Admin/MapController.php:383
+msgid "Resource class"
+msgstr ""
+
+#: src/ValueExtractor/AbstractResourceEntityValueExtractor.php:95
+msgid "Item: Item set"
+msgstr ""
+
+#: src/ValueExtractor/AbstractResourceEntityValueExtractor.php:98
+msgid "Item: Media"
+msgstr ""
+
+#: src/ValueExtractor/AbstractResourceEntityValueExtractor.php:101
+msgid "Media: Content (html or extracted text)"
+msgstr ""
+
+#: src/ValueExtractor/AbstractResourceEntityValueExtractor.php:105
+msgid "Item set: Is open"
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:93
+msgid ""
+"This core seems to have no default field. If there are no results to a "
+"default query, add the copy field \"_text_\" with source \"*\"."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:149
+#, php-format
+msgid "%d maps successfully created: \"%s\"."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:151
+msgid "Check all new maps and remove useless ones."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:152
+#: src/Controller/Admin/MapController.php:208
+msgid "Don’t forget to run the indexation of the core."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:154
+msgid "No new maps added."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:206
+#, php-format
+msgid "%d maps successfully deleted: \"%s\"."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:210
+msgid "No maps deleted."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:241
+#, php-format
+msgid "Solr map created: %s."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:253
+#: src/Controller/Admin/MapController.php:307
+#: src/Controller/Admin/CoreController.php:301
+msgid "There was an error during validation"
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:293
+#, php-format
+msgid "Solr map modified: %s."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:296
+msgid "Don’t forget to check search pages that use this map."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:335
+msgid "Solr map"
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:356
+msgid "Solr map successfully deleted"
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:357
+msgid "Don’t forget to check search pages that used this map."
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:359
+msgid "Solr map could not be deleted"
+msgstr ""
+
+#: src/Controller/Admin/MapController.php:380
+msgid "Is open"
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:92
+#, php-format
+msgid "Solr core \"%s\" created."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:128
+#, php-format
+msgid ""
+"The config to manage the Solr core \"%s\" was updated with an incorrect "
+"config."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:139
+#, php-format
+msgid ""
+"Some specific static or dynamic fields are missing or not available for \"%s"
+"\" in the core: \"%s\"."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:143
+#: src/Controller/Admin/CoreController.php:146
+#, php-format
+msgid "Solr core \"%s\" updated."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:150
+#, php-format
+msgid "All indexes of core \"%s\" are been deleted."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:152
+msgid ""
+"Don’t forget to reindex the resources and to check the mapping of the search "
+"pages that use this core."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:154
+msgid "Don’t forget to reindex this core with external indexers."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:190
+msgid "Solr core successfully deleted"
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:192
+msgid "Solr core could not be deleted"
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:220
+msgid "Missing file."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:227
+msgid "Wrong request for file."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:234
+msgid "An error occurred when uploading the file."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:237
+#, php-format
+msgid "Wrong media type (\"%s\") for file."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:241
+msgid "The file is empty."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:346
+#, php-format
+msgid ""
+"Some static or dynamic fields are missing or not available in the core: \"%s"
+"\"."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:370
+msgid "The file does not contain any row."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:378
+msgid ""
+"The headers of the file are not the default ones. You may check the "
+"delimiter too."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:396
+#, php-format
+msgid "The row #%d does not contain required data."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:402
+#, php-format
+msgid "The row #%d does not manage resource \"%s\"."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:424
+msgid "The file does not contain any valid data."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:436
+#, php-format
+msgid "The existing mapping of core \"%s\" (#%d) has been deleted."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:444
+#, php-format
+msgid ""
+"An error has occurred during import of the mapping for core \"%s\" (#%d)."
+msgstr ""
+
+#: src/Controller/Admin/CoreController.php:451
+#, php-format
+msgid "%d fields have been mapped for core \"%s\" (#%d)."
+msgstr ""
+
+#: src/Api/Representation/SolrCoreRepresentation.php:214
+#, php-format
+msgid "Solr core #%d: incorrect or incomplete configuration."
+msgstr ""
+
+#: src/Api/Representation/SolrCoreRepresentation.php:226
+msgid "Solr core not found. Check your url."
+msgstr ""
+
+#: src/Api/Representation/SolrCoreRepresentation.php:231
+msgid ""
+"Solr core not found or unauthorized. Check your url and your credentials."
+msgstr ""
+
+#: src/Api/Representation/SolrCoreRepresentation.php:235
+#: src/Api/Representation/SolrCoreRepresentation.php:239
+#: src/Api/Representation/SolrCoreRepresentation.php:253
+#, php-format
+msgid "Solr core #%d: %s"
+msgstr ""
+
+#: src/Api/Representation/SolrCoreRepresentation.php:249
+#, php-format
+msgid "Solr core #%d enpoint: %s"
+msgstr ""
+
+#: src/Api/Representation/SolrCoreRepresentation.php:260
+msgid "Solr: the config bypasses the check of the certificate."
+msgstr ""
+
+#: src/Api/Representation/SolrCoreRepresentation.php:261
+msgid "OK (warning: check of certificate disabled)"
+msgstr ""
+
+#: src/Api/Representation/SolrCoreRepresentation.php:264
+msgid "OK"
+msgstr ""
+
+#: src/Indexer/SolariumIndexer.php:209
+#, php-format
+msgid "Indexing in Solr core \"%1$s\": %2$s"
+msgstr ""
+
+#: src/Indexer/SolariumIndexer.php:441
+msgid "No document to commit in Solr."
+msgstr ""
+
+#: config/module.config.php:64
+msgid "Solr"
+msgstr ""
+
+#: config/module.config.php:205
+msgid "Field"
+msgstr ""
+
+#: config/module.config.php:208
+msgid "Choose a field…"
+msgstr ""
+
+#: config/module.config.php:209
+msgid "Dynamic field"
+msgstr ""

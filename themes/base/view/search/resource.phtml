@@ -1,7 +1,7 @@
 <?php
 /*
  * Copyright BibLibre, 2016
- * Copyright Daniel Berthereau, 2017-2018
+ * Copyright Daniel Berthereau, 2017-2021
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -28,30 +28,107 @@
  */
 
 /**
- * @var \Zend\View\Renderer\PhpRenderer $this
+ * @var \Laminas\View\Renderer\PhpRenderer $this
  * @var \Omeka\Api\Representation\AbstractResourceEntityRepresentation $resource
  * @var string $tag
  */
 
-$hyperlink = $this->plugin('hyperlink');
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
 ?>
 
-<?= sprintf('<%s class="grid-item">', $tag) ?>
-    <div class="resource-thumbnail">
-        <?php $media = $resource->primaryMedia(); ?>
-        <?php if ($media): ?>
-            <?= $hyperlink->raw(
-                $this->thumbnail($media, 'medium', ['title' => $media->displayTitle(), 'alt' => $media->mediaType() . ' thumbnail']),
-                $resource->url()
-            ) ?>
-        <?php endif; ?>
+<div class="columns">
+    <div class="column is-2">
+        <div class="resource-thumbnail">
+            <?php $media = $resource->primaryMedia(); ?>
+            <?php if($media):?>
+            <?= $this->thumbnail($media, 'square', ['title' => $media->displayTitle(), 'alt' => $media->mediaType() . ' thumbnail']);?>
+            <?php else:?>
+              <div class="placeholder"></div>  
+            <?php endif;?>    
+        </div>
     </div>
-    <div class="resource-metadata">
-        <h4><?= $resource->link($resource->displayTitle()) ?></h4>
-        <?php if ($description = $resource->displayDescription()): ?>
-            <div class="description">
-                <?= $description ?>
-            </div>
-        <?php endif; ?>
+    <div class="column">            
+        <div class="resource-metadata">
+            <h4 class="title is-6"><?= $resource->link($resource->displayTitle()) ?></h4>
+            <?php $template = $resource->resourceTemplate();?>
+            <?php if($template):?>
+                <?php $type = $template->label();?>
+                <h5 class="subtitle is-7" style="font-weight:300;text-transform:uppercase;color:#cc6634;font-size:0.75rem;"><?php echo $type;?></h5>
+            <?php endif;?>    
+            
+           
+                <?php if($resource->value('alamire:originGeneral')):?>  
+                    <div class="columns" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
+                            <strong>Origin</strong>
+                        </div>
+                        <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
+                            <?php echo $resource->value('alamire:originGeneral')->asHtml();?>
+                        </div>
+                    </div>       
+                <?php endif;?>
+                <?php if($resource->value('dcterms:created')):?>  
+                    <div class="columns" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
+                            <strong>Date / Date range</strong>
+                        </div>
+                        <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
+                            <?php echo $resource->value('dcterms:created')->asHtml();?>
+                        </div>
+                    </div>       
+                <?php endif;?>
+                <?php if($resource->value('alamire:holdingInstitution')):?>  
+                    <div class="columns" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
+                            <strong>Holding institution</strong>
+                        </div>
+                        <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
+                            <?php echo $resource->value('alamire:holdingInstitution')->asHtml();?>
+                        </div>
+                    </div>       
+                <?php endif;?>
+                <?php if($resource->value('dcterms:creator')):?>  
+                    <div class="columns" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
+                            <strong>Creator</strong>
+                        </div>
+                        <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
+                            <?php echo $resource->value('dcterms:creator')->asHtml();?>
+                        </div>
+                    </div>       
+                <?php endif;?>
+                <?php if($resource->value('alamire:voices')):?>  
+                    <div class="columns" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" style="padding-bottom:1rem;padding-top:0rem;">
+                            <strong>Voices</strong>
+                        </div>
+                        <div class="column is-7" style="padding-bottom:1rem;padding-top:0rem;">
+                            <?php echo $resource->value('alamire:voices')->asHtml();?>
+                        </div>
+                    </div>       
+                <?php endif;?>
+
+                <?php if($resource->value('alamire:category')):?>  
+                    <div class="columns" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" style="padding-bottom:1rem;padding-top:0rem;">
+                            <strong>Category</strong>
+                        </div>
+                        <div class="column is-7" style="padding-bottom:1rem;padding-top:0rem;">
+                            <?php echo $resource->value('alamire:category')->asHtml();?>
+                        </div>
+                    </div>       
+                <?php endif;?>
+
+                <?php if ($description = $resource->displayDescription()): ?>
+                <div class="columns" style="padding-bottom:0.5rem;padding-top:0.5rem;">                 
+                    <div class="column is-12" style="padding-bottom:1rem;padding-top:0rem;">
+                        <?= $description ?>
+                    </div>
+                </div>
+                
+            <?php endif; ?>
+        </div>
     </div>
-<?= sprintf('</%s>', $tag) ?>
+</div>

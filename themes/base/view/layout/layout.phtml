@@ -33,7 +33,7 @@ $userBar = $this->userBar();
     <?php echo $this->htmlElement('body'); ?>
     <?php echo $userBar; ?>
     <header>
-        <nav class="navbar is-white" role="navigation" aria-label="main navigation">
+        <!--<nav class="navbar is-white" role="navigation" aria-label="main navigation">
           <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="<?php echo $site->url(); ?>">
@@ -55,42 +55,48 @@ $userBar = $this->userBar();
           </div>
           <div class="navbar-menu">
             <div class="navbar-start">
-
-            </div>
-            <div class="navbar-end">
               <div class="navbar-item">
-                <?php
-                  echo $site->publicNav()->menu()->renderMenu(null, [
-                      'maxDepth' => $this->themeSetting('nav_depth') - 1
-                  ]);
-                ?>
-              </div>
-               <div class="navbar-item">
-                 <button class="button is-primary is-light" id="showSearch">
-                    <span class="icon is-small">
-                      <i class="fas fa-search"></i>
-                    </span>
-                  </button>
-                </div>
-             </div>
+                  
+              </div>                     
+            </div>
           </div>
         </div>
-      </nav>
-
-    </header>
-    <div class="container">
+      </nav>-->
+      <div class="container">
       <div class="columns">
-        <div class="column is-2 left-nav">
-        <?php
-          echo $site->publicNav()->menu()->renderMenu(null, [
-              'maxDepth' => $this->themeSetting('nav_depth') - 1
-          ]);
-        ?>
+        <div class="column is-3 left-nav">
+          <a class="navbar-item" href="<?php echo $site->url(); ?>" style="padding:1rem 0 0 0;">
+              <div class="logo-1">
+              <?php if ($this->themeSetting('logo')): ?>
+                  <img src="<?php echo $this->themeSettingAssetUrl('logo'); ?>" alt="<?php echo $escape($siteTitle); ?>" />
+                  <br>Alamire<br>Foundation
+                  <?php else: ?>
+                  <?php echo $escape($siteTitle); ?>
+              <?php endif; ?>
+              </div>              
+          </a>        
         </div>
-        <div class="column"><?php echo $this->content; ?></div>                
+        <div class="column">
+          <div id="site-title-text">
+            <a href="/">IDEM</a>
+            <div id="description">Integrated Database for Early music</div>
+          </div>  
+        </div>    
+    </header>
+    <section class="section">
+      <div class="container">
+        <div class="columns">
+          <div class="column is-3 left-nav filter-nav">
+          <?php
+            echo $site->publicNav()->menu()->renderMenu(null, [
+                'maxDepth' => $this->themeSetting('nav_depth') - 1
+            ]);
+          ?>
+          </div>
+          <div class="column"><?php echo $this->content; ?></div>                
+        </div>
       </div>
-    </div>
-    
+    </section>
     <footer class="footer">
       <div class="container">
         <div class="content">
@@ -124,6 +130,31 @@ $userBar = $this->userBar();
          </div>
          <button class="burger-menu-close modal-close is-large"></button>
       </div>
+
+    <?php if (strpos($_SERVER['REQUEST_URI'], '/page/terms-conditions') === false) :?>
+      <div class="modal terms-modal">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+          <!-- Any other Bulma elements you want -->
+          <div class="container">
+            <div class="content">
+              
+              <h5 class="title is-6">Continue to IDEM</h5>
+              <p><button class="button is-primary terms-close">I agree to the terms & conditions</button></p>
+              <p>
+                <div class="icon-text">
+                  <span class="icon">
+                    <i class="fas fa-info-circle"></i>
+                  </span>
+                 <span><a href="/alamire/s/start/page/terms-conditions">
+                About the terms & conditions</a></span>
+                </div>                
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    <?php endif;?>  
   </body>
   <script>
   $(document).ready(function() {
@@ -144,6 +175,18 @@ $userBar = $this->userBar();
     $(".burger-menu-close").click(function() {
        $(".burger-menu").removeClass("is-active");
     });
+    $(".terms-close").click(function() {
+       $(".terms-modal").toggleClass("is-active");
+    });
+
+    var isshow = localStorage.getItem('isshow');
+    
+    if (isshow == null) {
+      localStorage.setItem('isshow', 1);
+
+      // Show popup here
+      $('.terms-modal').toggleClass("is-active");
+    }
   });
   </script>
 </html>

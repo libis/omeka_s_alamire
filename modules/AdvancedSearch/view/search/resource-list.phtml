@@ -1,0 +1,71 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var \AdvancedSearch\Response $response
+ * @var string $resourceName
+ * @var string $title
+ */
+
+$resources = $response->getResources($resourceName);
+// A check is done: when page is not first, the resources may be empty even with results.
+if (!$resources) return;
+
+$plugins = $this->getHelperPluginManager();
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+$assetUrl = $plugins->get('assetUrl');
+$escape = $plugins->get('escapeHtml');
+$thumbnailHelper = $plugins->get('thumbnail');
+
+$setting = $plugins->get($site ? 'siteSetting' : 'setting');
+
+$filterLocale = (bool) $setting('filter_locale_values');
+$lang = $this->lang();
+
+$headingTerm = $setting('browse_heading_property_term');
+$bodyTerm = $setting('browse_body_property_term');
+if ($headingTerm) {
+    $headingOptions = [
+        'default' => $translate('[Untitled]'),
+        'lang' => ($filterLocale ? [$lang, ''] : null)
+    ];
+} else {
+    $headingOptions = $filterLocale ? [$lang, ''] : null;
+}
+if ($bodyTerm) {
+    $bodyOptions = ['lang' => ($filterLocale ? [$lang, ''] : null)];
+} else {
+    $bodyOptions = $filterLocale ? [$lang, ''] : null;
+}
+
+$defaultThumbnail = '<img src="' . $assetUrl('thumbnails/default.png', 'Omeka') . '" title="' . $translate('No media') . '"/>';
+?>
+
+<?php if ($title): ?>
+<h3><?= $escape($title) ?></h3>
+<?php endif; ?>
+<ul class="resource-list search-results-list">
+    <?php /** @var \Omeka\Api\Representation\AbstractResourceEntityRepresentation $resource */
+    foreach ($resources as $resource):
+        $resourceType = $resource->resourceName();
+        $media = $resource->primaryMedia();
+        $thumbnail = $media ? $thumbnailHelper($media, 'medium') : $defaultThumbnail;
+        $heading = $headingTerm ? $resource->value($headingTerm, $headingOptions) : $resource->displayTitle(null, $headingOptions);
+        $body = $bodyTerm ? $resource->value($bodyTerm, $bodyOptions) : $resource->displayDescription(null, $bodyOptions);
+    ?>
+
+    <li class="resource <?= $resourceType ?>">
+        <div class="resource-thumbnail">
+            <?= $hyperlink->raw($thumbnail, $resource->url(), ['class' => 'resource-link']) ?>
+        </div>
+        <div class="resource-metadata">
+            <h4><?= $resource->link($heading) ?></h4>
+            <div class="description">
+                <?= $escape($body) ?>
+            </div>
+        </div>
+    </li>
+
+    <?php endforeach; ?>
+</ul>

@@ -1,0 +1,137 @@
+<?php
+/*
+ * Copyright BibLibre, 2017
+ * Copyright Daniel Berthereau, 2017-2021
+ *
+ * This software is governed by the CeCILL license under French law and abiding
+ * by the rules of distribution of free software.  You can use, modify and/ or
+ * redistribute the software under the terms of the CeCILL license as circulated
+ * by CEA, CNRS and INRIA at the following URL "http://www.cecill.info".
+ *
+ * As a counterpart to the access to the source code and rights to copy, modify
+ * and redistribute granted by the license, users are provided only with a
+ * limited warranty and the software's author, the holder of the economic
+ * rights, and the successive licensors have only limited liability.
+ *
+ * In this respect, the user's attention is drawn to the risks associated with
+ * loading, using, modifying and/or developing or reproducing the software by
+ * the user in light of its specific status of free software, that may mean that
+ * it is complicated to manipulate, and that also therefore means that it is
+ * reserved for developers and experienced professionals having in-depth
+ * computer knowledge. Users are therefore encouraged to load and test the
+ * software's suitability as regards their requirements in conditions enabling
+ * the security of their systems and/or data to be ensured and, more generally,
+ * to use and operate it in the same conditions as regards security.
+ *
+ * The fact that you are presently reading this means that you have had
+ * knowledge of the CeCILL license and that you accept its terms.
+ */
+
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \SearchSolr\Api\Representation\SolrCoreRepresentation $solrCore
+ * @var \SearchSolr\Api\Representation\SolrMapRepresentation[] $maps
+ * @var string $resourceName
+ */
+
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+
+$this->htmlElement('body')->appendAttribute('class', 'solr-map browse');
+?>
+
+<?= $this->pageTitle(sprintf($translate('Solr maps for "%s"'), $resourceName)) ?>
+
+<div id="page-actions">
+    <?php $addUrl = $this->url('admin/search/solr/core-id-map-resource', [
+        'coreId' => $solrCore->id(),
+        'resourceName' => $resourceName,
+        'action' => 'add',
+    ]); ?>
+    <a class="button" href="<?= $addUrl ;?>"><?= $translate('Add new map') ?></a>
+    <?php $completeUrl = $this->url('admin/search/solr/core-id-map-resource', [
+        'coreId' => $solrCore->id(),
+        'resourceName' => $resourceName,
+        'action' => 'complete',
+    ]); ?>
+    <a class="button" href="<?= $completeUrl ?>" title="<?= $translate('Add a text index to all missing and used properties.') ?>"><?= $translate('Map all used properties') ?></a>
+    <?php $cleanUrl = $this->url('admin/search/solr/core-id-map-resource', [
+        'coreId' => $solrCore->id(),
+        'resourceName' => $resourceName,
+        'action' => 'clean',
+    ]); ?>
+    <a class="button" href="<?= $cleanUrl ?>" title="<?= $translate('Remove maps of properties that are not used.') ?>"><?= $translate('Remove unused properties') ?></a>
+</div>
+
+<nav class="breadcrumbs">
+    <?php
+    echo $this->hyperlink($translate('Search'), $this->url('admin/search'));
+    echo $this->hyperlink($translate('Solr cores'), $this->url('admin/search/solr'));
+    echo $this->hyperlink(sprintf($translate('Resources list for core "%s"'), $solrCore->name()), $this->url('admin/search/solr/core-id-map', [], true));
+    ?><span><?php
+    echo sprintf($translate('Maps for "%s"'), $resourceName);
+    ?></span>
+</nav>
+
+<?php if (count($maps)): ?>
+    <table class="tablesaw" data-tablesaw-mode="stack">
+        <thead>
+            <tr>
+                <th><?= $translate('Solr field') ?></th>
+                <th><?= $translate('Source') ?></th>
+                <th><?= $translate('Pool') ?></th>
+                <th><?= $translate('Translated default label') ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($maps as $map): ?>
+                <?php $mapSettings = $map->settings(); ?>
+                <tr>
+                    <td>
+                        <span><?= $map->fieldName() ?></span>
+                        <ul class="actions">
+                            <li>
+                                <?= $this->hyperlink('', $map->adminUrl('edit'), [
+                                    'class' => 'o-icon-edit',
+                                    'title' => $translate('Edit'),
+                                ]) ?>
+                            </li>
+                            <li>
+                                <a href="#"
+                                data-sidebar-content-url="<?= $escape($map->url('delete-confirm')) ?>"
+                                class="o-icon-delete sidebar-content"
+                                aria-label="<?= $escape($translate('Delete')) ?>"
+                                title="<?= $escape($translate('Delete')) ?>"></a>
+                            </li>
+                        </ul>
+                    </td>
+                    <td><?= $map->source() ?></td>
+                    <td><?php
+                        $dataTypes = $map->pool('data_types');
+                        $dataTypesExclude = $map->pool('data_types_exclude');
+                        if ($dataTypes || $dataTypesExclude): ?>
+                        <dl>
+                            <?php if ($dataTypes) echo '<dt>' . $translate('Data types') . '</dt><dd>' . implode('</dd><dd>', $dataTypes) . '</dd>'; ?>
+                            <?php if ($dataTypesExclude) echo '<dt>' . $translate('Excluded data types') . '</dt><dd>' . implode('</dd><dd>', $dataTypesExclude) . '</dd>'; ?>
+                        </dl>
+                        <?php endif; ?>
+                    </td>
+                    <td><?php if (!empty($mapSettings['label'])) echo $translate($mapSettings['label']); ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php else: ?>
+    <p>
+        <?= $translate('There is no maps defined yet.') ?>
+        <a href="<?= $escape($addUrl) ?>"><?= $translate('Add a new map') ?></a>
+    </p>
+<?php endif; ?>
+
+<div class="sidebar">
+    <a href="#"
+        class="sidebar-close o-icon-close"
+        aria-label="<?= $escape($translate('Close')) ?>"
+        title="<?= $escape($translate('Close')) ?>"></a>
+    <div class="sidebar-content"></div>
+</div>

@@ -1,16 +1,9 @@
-<?php if($block->dataValue('text')):?>
-<div class="section">
-<?php else:?>
-<div class="section" style="padding-bottom:20px;">
-<?php endif?>
-    <div class="container">
+<div class="container page-content">
       <?php if($block->dataValue('title')):?>
         <h2 class="title is-3"><?php echo $block->dataValue('title');?></h2>
       <?php endif;?>
-      <?php if($block->dataValue('text') && !$block->dataValue('text2')):?>
-        <div class="column is-two-thirds">
+      <?php if($block->dataValue('text') && !$block->dataValue('text2')):?>        
           <?php echo $block->dataValue('text');?>
-        </div>
       <?php endif;?>
       <?php if($block->dataValue('text') && $block->dataValue('text2')):?>
         <div class="columns">

@@ -1,0 +1,29 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SitePageBlockRepresentation $block
+ * @var string $heading
+ * @var string $params
+ */
+
+/*
+ Fill this partial as you want. The view is available, so any feature can be used.
+
+ Use params if any. Access to them:
+ - as a whole: $params
+ - as a decoded json: $this->blockMetadata('params_json', $block)
+ - as a list of keys-values: $this->blockMetadata('params_key_value', $block)
+ - a specific key of the list of keys-values: $this->blockMetadata('my_key', $block)
+
+ Warning: check security of any user input.
+ */
+
+$escape = $this->plugin('escapeHtml');
+?>
+
+<div class="block block-simple">
+    <?php if (!empty($heading)): ?>
+    <h2><?= $escape($heading) ?></h2>
+    <?php endif; ?>
+    <?= $escape($params) ?>
+</div>
