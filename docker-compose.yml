@@ -13,4 +13,4 @@ services:
       - ./config/:/var/www/html/alamire/config/
       - ./htaccess:/var/www/html/alamire/.htaccess
       - ./imagemagick-policy.xml:/var/www/html/alamire/imagemagick-policy.xml
-    restart: always
+    restart: "no"

@@ -136,7 +136,6 @@ $(document).ready(function() {
         
         // Sort fields don't look like a url.
         e.preventDefault();
-        alert("éééé");
         var sort = $(this).val();
         if (sort.substring(0, 6) === 'https:' || sort.substring(0, 5) === 'http:') {
             window.location = sort;

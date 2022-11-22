@@ -20,33 +20,17 @@ $itemMedia = $item->media();
     <h1 class="title is-2 is-family-secondary"><?php echo $item->displayTitle(); ?></h1>
   </div>
 </section>
-<section class="section color-section">
+
   <div class="container">
-    <?php if (!$embedMedia && $itemMedia): ?>
-      <?php if(sizeof($itemMedia) > 1):?>
-         <div class="slider-for">
-           <?php foreach($itemMedia as $media):?>
-             <div class="has-text-centered">
-               <?php $url = str_replace('http:', '', $media->thumbnailUrl('large'));?>
-               <img src="<?php echo $url;?>">
-             </div>
-           <?php endforeach;?>
+    <?php if (!$embedMedia && $itemMedia): ?>      
+         <div class="image-section">
+            <div class="has-text-centered">
+              <?php $url = str_replace('http:', '', $itemMedia[0]->thumbnailUrl('large'));?>
+              <img src="<?php echo $url;?>" style="max-width:450px;">
+          </div>
          </div>
-         <!--<div class="slider-nav" role="toolbar">
-           <?php foreach($itemMedia as $media):?>
-               <?php $url = str_replace('http:', '', $media->thumbnailUrl('square'));?>
-               <img src="<?php echo $url;?>">
-           <?php endforeach;?>
-         </div>-->
-       <?php else: ?>
-         <div class="beeld">
-           <?php $url = str_replace('http:', '', $itemMedia[0]->thumbnailUrl('large'));?>
-           <img src="<?php echo $url;?>">
-         </div>
-       <?php endif;?>
       <?php endif; ?>
   </div>
-</section>
 <section class="section">
   <div class="container">
     <!--<h3><?php echo $translate('Item'); ?></h3>-->
