@@ -570,7 +570,17 @@ class Harvest extends AbstractJob
 		elseif(strpos($args["endpoint"], 'Composition') !== false):
 			$meta['o:resource_template'] = ["o:id" => "3"];			
 		endif;
-        //$meta['o:item_set'] = ["o:id" => $setId];
+
+        $meta["o:site"][] = 1;
+
+        $meta['alamire:imported'][] = [
+            'property_id' => 259,
+            'type' => 'literal',
+            'is_public' => false,
+            '@value' => date("dmY"),
+            '@language' => ''
+        ];
+
         return $meta;
     }
 
