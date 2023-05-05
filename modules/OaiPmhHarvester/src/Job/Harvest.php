@@ -227,14 +227,14 @@ class Harvest extends AbstractJob
             gc_collect_cycles();
             $this->logger->info("mem: ".memory_get_usage());
 
-            $identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
+            /*$identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
             foreach ($identityMap as $entityClass => $entities) {
                 foreach ($entities as $idHash => $entity) {
                     if (!isset($originalIdentityMap[$entityClass][$idHash])) {
                         $entityManager->detach($entity);
                     }
                 }
-            }
+            }*/
 
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken <> ''
                 ? $response->ListRecords->resumptionToken
@@ -537,8 +537,7 @@ class Harvest extends AbstractJob
             if($localName == 'thumbnail'){
                 //$this->logger->info("media - 1");                
                 foreach ($dcMetadata->$localName as $imageUrl) {      
-                    $imageUrl = explode('"',$imageUrl."");
-                    $imageUrl = $imageUrl[1];
+                    
                     //$this->logger->info($imageUrl[1]);
                     $media[$imgc]= [
                       'o:ingester' => 'url',
@@ -590,6 +589,7 @@ class Harvest extends AbstractJob
         $localName = $this->dcProperties[$propertyId];
         foreach ($metadata->$localName as $value) {
             $texts = trim((string) $value);
+            $texts = str_replace("&amp;","&",$texts);
 			
             if($localName == "relatedComposition"):                
                 $texts= array($texts.'');

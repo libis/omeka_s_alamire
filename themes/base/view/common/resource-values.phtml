@@ -4,15 +4,25 @@ $escape = $this->plugin('escapeHtml');
 $labelInfo = $this->setting('property_label_information');
 ?>
 
-<?php foreach ($values as $term => $propertyData): ?>
-  <?php 
-  if($propertyData['property']->term() == "alamire:thumbnail"):
+<?php foreach ($templateProperties as $term => $property): ?>
+  <?php
+  if($property->isPrivate()):
+    continue;
+  endif;
+  $propertyData = '';
+  if(isset($values[$property->property()->term()])):
+    $propertyData = $values[$property->property()->term()];
+  else:
+    continue;
+  endif;
+   
+  if($propertyData['property']->term() == "alamire:thumbnail" || $propertyData['alternate_label'] == "Manuscript Label"):
     continue;
   endif;  
   ?>
-  <div class="columns ">
+  <div class="columns is-2">
     <div class="column is-one-fifth">
-      <h4 class="title is-6">
+      <h4 class="has-text-weight-semibold is-6">
       <?php if ($propertyData['alternate_label']): ?>
       <?php echo $escape($propertyData['alternate_label']); ?>
       <?php else: ?>
@@ -26,7 +36,11 @@ $labelInfo = $this->setting('property_label_information');
       </h4>
     </div>
     <div class="column is-three-fifths">
-      <div class="values">
+      <?php if(($propertyData['property']->term() == "alamire:relatedComposition" && $propertyData['alternate_label'] == "Hierarchy") || $propertyData['property']->term() == "alamire:description"):?>
+        <div class="values text">
+      <?php else:?>
+        <div class="values">
+      <?php endif;?>  
       <?php foreach ($propertyData['values'] as $value): ?>
           <?php
           $valueType = $value->type();
@@ -44,21 +58,62 @@ $labelInfo = $this->setting('property_label_information');
 
           <?php if($propertyData['property']->term() == 'alamire:relatedManuscript'):?>
             <?php 
-              $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$value->asHtml().'&item_set_id[]=&site_id=';
+              $rels = explode("$$",$value->asHtml());
+              $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$rels[0].'&item_set_id[]=&site_id=';
               parse_str($query,$query);
 
               $rel = $items = $this->api()->searchOne('items',$query);
               $rel = $rel->getContent();
               if($rel):
-                echo '<a href="'.$rel->url().'">'.$rel->displayTitle().'</a>';
+                echo '<div style="margin-bottom:0.5rem;">';
+                echo '<a href="'.$rel->url().'">'.$rels[0].'</a>';
+                if($rels[2] != " link:"):
+                  $link = str_replace(" link:","",$rels[2]);
+                  $link = str_replace("&amp;","&",$link);
+                  echo ' <span style="font-style:italic;border-bottom:1px solid #cc6733"><a target="_blank" href="'.$link.'">'.$rels[1].'</a></span>';
+                else:
+                  echo ' <span style="font-style:italic;">'.$rels[1].'</span>';
+                endif;  
+                echo '</div>';
               else:
-                echo $value->asHtml();
+                //echo $value->asHtml();
               endif; 
             ?>    
           <?php elseif($propertyData['property']->term() == 'alamire:bibliographicCitation'):
-            $rels = explode("$$",$value->asHtml());
-            echo '<div style="margin-bottom:0.5rem;">'.trim($rels[1])."</div>";
-            ?>   
+            if($values['alamire:bibliographicCitation']['values']):
+              $cites = $values['alamire:bibliographicCitation']['values'];
+              $sort_cites = array();
+              foreach($cites as $cite):
+                if(str_contains($cite->asHtml(),"$$")):
+                  //manu
+                  $cite = explode("$$",$cite->asHtml());
+                  if(!empty($cite[2])):
+                    $sort_cites[$cite[2]] = $cite;
+                  else:
+                    $sort_cites[] = $cite;
+                  endif;
+                  if(!empty($cite[2]) && !empty($cite[0])):
+                    echo '<div style="margin-bottom:0.5rem;"><strong>'.trim($cite[0])."</strong> ".trim($cite[2])."</div>";
+                  elseif(!empty($cite[2]) && empty($cite[0])):
+                    echo '<div style="margin-bottom:0.5rem;">'.trim($cite[2])."</div>";
+                  else:
+                    echo '<div style="margin-bottom:0.5rem;">'.trim($cite[0])."</div>";
+                  endif;  
+                else:
+                  //compos
+                  $cite = explode(" ",$cite->asHtml());
+                  array_shift($cite);
+                  echo '<div style="margin-bottom:0.5rem;">'.implode(" ",$cite)."</div>";
+                endif;  
+              endforeach;  
+              //ksort($sort_cites);
+              foreach($sort_cites as $cite):
+                //$rels = explode("$$",$cite->asHtml());
+               
+              endforeach;            
+            endif;
+            $values['alamire:bibliographicCitation']['values'] = "";
+          ?>   
           <?php elseif($propertyData['property']->term() == 'alamire:hasVersion'):
             echo '<a target="_blank" href="'.$value->asHtml().'">'.$value->asHtml().'</a>';
             ?>  
@@ -86,6 +141,8 @@ $labelInfo = $this->setting('property_label_information');
               $rels = $values['alamire:relatedComposition']['values'];
               // build tree
               $three = [];$lvl1=[];$lvl2=[];$lvl3=[];$lvl4=[];
+             
+              $i=0;
               foreach($rels as $rel):
                 $irel = explode("$$",$rel);
                 if($irel[0] && $irel[1] == "  "):
@@ -97,16 +154,34 @@ $labelInfo = $this->setting('property_label_information');
                   $first = $this->api()->searchOne('items',$query);
                   $first = $first->getContent();
                   if($first):
-                    echo '<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
-                    if(str_contains($irel[5],"http")):
-                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[5]).'">'.$irel[4].'</a><br>';
+                    if($i != 0):
+                      echo "</div></div><div class='content-holder'>";
                     else:
-                      echo $irel[4].'<br>';
+                      echo "<div class='content-holder'>";  
+                    endif;
+                    $composer = implode(", ", $first->value("alamire:creator",["all" => true]));
+                    if($composer):
+                      $composer = "<strong>".$composer."</strong>: ";
+                    endif;  
+
+                    echo  $composer.'<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
+                    
+                    if(str_contains($irel[5],"http")):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[5]).'">'.$irel[4].'</a>';
+                    else:
+                      echo $irel[4];
                     endif;  
                   else:
+                    echo "</div></div><div class='content-holder'>"; 
                     echo $irel[3]." ".$irel[4]."<br>";
-                  endif; 
-                  
+                  endif;   
+                    
+                  if($i == 0):
+                      echo '<a href="#" class="expand"><i class="fa fa-chevron-up"></i></a><div class="hidden-content">';
+                    else:
+                      echo '<a href="#" class="expand"><i class="fa fa-chevron-down"></i></a><div class="hidden-content" style="display:none;">';
+                    endif;
+                                
                   
                 else:
                   if(in_array($irel[1],$lvl1)):
@@ -135,8 +210,9 @@ $labelInfo = $this->setting('property_label_information');
                     $lvl4[] = $irel[0];   
                   endif;  
                 endif;
+                $i++;
               endforeach;  
-              
+              echo "</div></div>";
               $values['alamire:relatedComposition']['values'] = "";              
 
             //composition  
@@ -146,29 +222,35 @@ $labelInfo = $this->setting('property_label_information');
               
               $first = explode("$$",$first);
               $first = explode(" ",$first[0]);
-              $first = $first[0];
+              $firstcode = array_shift($first);
 
-              $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$first.'&item_set_id[]=&site_id=';
+              $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$firstcode.'&item_set_id[]=&site_id=';
               parse_str($query,$query);
 
-              $first = $this->api()->searchOne('items',$query);
-              $first = $first->getContent();
-              if($first):
-                echo '<a href="'.$first->url().'">'.$first->displayTitle().'</a><br>';
+              $first_r = $this->api()->searchOne('items',$query);
+              $first_r = $first_r->getContent();
+              if($first_r):
+                echo $first_r->displayTitle()."<br>";
               else:
-                echo $value->asHtml();
+                echo implode(" ",$first)."<br>";
               endif; 
 
               $rels = explode("||",$rels[0]);
-              
+             
               foreach($rels as $rel):
                 $rel = explode(" ",$rel);
-                $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$rel[0].'&item_set_id[]=&site_id=';
+                array_shift($rel);
+                $rel = implode(" ",$rel);
+                $rel = explode(" $$ ",$rel);
+                /*$query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$rel[0].'&item_set_id[]=&site_id=';
                 parse_str($query,$query);
 
                 $child = $this->api()->searchOne('items',$query);
-                $child = $child->getContent();
-                echo '&nbsp;&nbsp;&nbsp;<a href="'.$child->url().'">'.$rel[1]."</a><br>";
+                $child = $child->getContent();*/
+
+                if(!empty($rel[0])):
+                  echo '&nbsp;&nbsp;&nbsp;'.$rel[0]." (".$rel[1]."v)<br>";
+                endif;
               endforeach;  
             endif;
             ?>           

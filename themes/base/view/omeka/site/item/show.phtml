@@ -5,8 +5,8 @@ $this->htmlElement('body')->appendAttribute('class', 'item resource show');
 $embedMedia = $this->siteSetting('item_media_embed', false);
 $itemMedia = $item->media();
 ?>
-<section class="section breadcrumb-section">
-  <div class="container">
+
+  <div class="container breadcrumb-section">
     <nav class="breadcrumb" aria-label="breadcrumbs">
       <ul>
         <li><a href="/">Home</a></li>
@@ -14,30 +14,40 @@ $itemMedia = $item->media();
       </ul>
     </nav>
   </div>
-</section>
-<section class="section">
   <div class="container">
-    <h1 class="title is-2 is-family-secondary"><?php echo $item->displayTitle(); ?></h1>
-  </div>
-</section>
+    <h2 class="title is-2 is-family-secondary"><?php echo $item->displayTitle(); ?></h2>
 
-  <div class="container">
-    <?php if (!$embedMedia && $itemMedia): ?>      
-         <div class="image-section">
-            <div class="has-text-centered">
-              <?php $url = str_replace('http:', '', $itemMedia[0]->thumbnailUrl('large'));?>
-              <img src="<?php echo $url;?>" style="max-width:450px;">
-          </div>
-         </div>
-      <?php endif; ?>
+    
   </div>
-<section class="section">
-  <div class="container">
+
+
+
+    <?php if (!$embedMedia && $itemMedia): ?>      
+      <div class="container thumbnails is-hidden-mobile" style="padding:2rem 0">
+        <div class="has-text-centered">
+          <?php foreach($itemMedia as $med):?>
+            <?php $url = str_replace('http:', '', $med->thumbnailUrl('large'));?>
+            <img src="<?php echo $url;?>" style="max-width:450px;margin-bottom:1rem;"><br>
+          <?php endforeach;?>
+        </div>
+      </div>
+    <?php endif; ?>
+    <?php if($item->value('alamire:hasVersion')):?>
+      <div class="icon-text" style="padding-top:2rem">
+      <a target="_blank"style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $item->value('alamire:hasVersion');?>">
+      <img style="height:15px;margin-right:5px;" src="/alamire/themes/base/asset/img/iiif.png">
+      <span>VIEW MANUSCRIPT</span></a>
+      </div>
+    <?php endif;?>  
+ 
+
+  <div class="container metadata-container">
     <!--<h3><?php echo $translate('Item'); ?></h3>-->
     <?php $this->trigger('view.show.before'); ?>
     <?php if ($embedMedia && $itemMedia): ?>
         <div class="media-embeds">
-        <?php foreach ($itemMedia as $media):
+        <?php 
+        foreach ($itemMedia as $media):
             echo $media->render();
         endforeach;
         ?>
@@ -54,7 +64,7 @@ $itemMedia = $item->media();
         <?php endif; ?>
     </div>
   </div>
-</section>
+
 <?php
 $page = $this->params()->fromQuery('page', 1);
 $property = $this->params()->fromQuery('property');
@@ -70,18 +80,27 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
 <?php $this->trigger('view.show.after'); ?>
 <script>
   $(document).ready(function(){
-    $('.slider-for').slick({
-      slidesToShow: 1,
-      slidesToScroll: 1,
-      arrows: true,
-      fade: true,
-      centerMode: true
+    
+    $( ".expand" ).each(function( index, element ) {
+      if( jQuery(this).next(".hidden-content").is(':empty')){
+        jQuery(this).remove();
+      }
+      
     });
-    /*$('.slider-nav').slick({
-      slidesToShow: 10,
-      slidesToScroll: 1,
-      asNavFor: '.slider-for',
-      focusOnSelect: true
-    });*/
+    jQuery(".expand").click(function() {
+        jQuery(this).next(".hidden-content", this).toggle();
+        $(this).html(function(i, text){
+            return text === '<i class="fa fa-chevron-down" aria-hidden="true"></i>' ? "<i class='fa fa-chevron-up'></i>" : "<i class='fa fa-chevron-down'></i>";
+        })
+        return false;   
+    });
+
+    $('.text').each(function(){
+      if($(this).height() > 150){
+        $(this).readmore({ speed: 75, collapsedHeight: 150, moreLink: '<a class="more-link" href="#">Show more</a>', lessLink: '<a class="more-link" href="#">Show less</a>' });;
+      }      
+    });
+
+    $('.thumbnails').appendTo('.navigation');
   });
 </script>

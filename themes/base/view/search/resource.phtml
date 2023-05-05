@@ -37,24 +37,32 @@ $plugins = $this->getHelperPluginManager();
 $translate = $plugins->get('translate');
 $hyperlink = $plugins->get('hyperlink');
 ?>
+<?php $type = "";?>
+<?php $template = $resource->resourceTemplate();?>
+<?php if($template):?>
+<?php $type = $template->label();?>
+<?php endif;?>
 
 <div class="columns">
+    <?php if($type == "Manuscript"):?>
     <div class="column is-2">
         <div class="resource-thumbnail">
             <?php $media = $resource->primaryMedia(); ?>
             <?php if($media):?>
-            <?= $this->thumbnail($media, 'square', ['title' => $media->displayTitle(), 'alt' => $media->mediaType() . ' thumbnail']);?>
+                <a href="<?php echo $resource->url();?>">
+                    <?= $this->thumbnail($media, 'square', ['title' => $media->displayTitle(), 'alt' => $media->mediaType() . ' thumbnail']);?>
+                </a>
             <?php else:?>
               <div class="placeholder"></div>  
-            <?php endif;?>    
+            <?php endif;?>
         </div>
     </div>
+    <?php endif;?>    
     <div class="column">            
         <div class="resource-metadata">
             <h4 class="title is-6"><?= $resource->link($resource->displayTitle()) ?></h4>
-            <?php $template = $resource->resourceTemplate();?>
-            <?php if($template):?>
-                <?php $type = $template->label();?>
+            
+            <?php if($type):?>
                 <h5 class="subtitle is-7" style="font-weight:300;text-transform:uppercase;color:#cc6634;font-size:0.75rem;"><?php echo $type;?></h5>
             <?php endif;?>    
             
@@ -69,13 +77,13 @@ $hyperlink = $plugins->get('hyperlink');
                         </div>
                     </div>       
                 <?php endif;?>
-                <?php if($resource->value('dcterms:created')):?>  
+                <?php if($resource->value('alamire:dateCreated')):?>  
                     <div class="columns" style="padding-bottom:0.5rem">                 
                         <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
                             <strong>Date / Date range</strong>
                         </div>
                         <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
-                            <?php echo $resource->value('dcterms:created')->asHtml();?>
+                            <?php echo $resource->value('alamire:dateCreated')->asHtml();?>
                         </div>
                     </div>       
                 <?php endif;?>
@@ -89,13 +97,13 @@ $hyperlink = $plugins->get('hyperlink');
                         </div>
                     </div>       
                 <?php endif;?>
-                <?php if($resource->value('dcterms:creator')):?>  
+                <?php if($resource->value('alamire:creator')):?>  
                     <div class="columns" style="padding-bottom:0.5rem">                 
                         <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
-                            <strong>Creator</strong>
+                            <strong>Composer</strong>
                         </div>
                         <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
-                            <?php echo $resource->value('dcterms:creator')->asHtml();?>
+                            <?php echo $resource->value('alamire:creator')->asHtml();?>
                         </div>
                     </div>       
                 <?php endif;?>

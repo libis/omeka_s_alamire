@@ -188,7 +188,6 @@ h5.title{
 
 //breadcrumb
 .breadcrumb-section{
-  padding-top: 2rem;
   padding-bottom: 0rem;
 
   .breadcrumb{
@@ -388,6 +387,12 @@ h5.title{
   border: 1px dashed $primary;
 }
 
+.values{
+  .value{
+    margin-bottom: 0.5rem;
+  }
+}
+
 #form-search{
   margin-bottom: 2rem;
   display: flex;
@@ -481,6 +486,25 @@ h5.title{
   }
 }
 
+.search-facet-item a {
+  display: inline-block;
+  position: relative;
+  padding-left: 18px;
+}
+
+.search-facet-item a::before {
+  display: inline-block;
+  font-family: 'Font Awesome 5 Free';
+  width: 1.5em;
+  content: "\f0c8";
+  height: 10px;
+  text-align:right;
+    padding-right:10px;
+    width:10px;
+    position: absolute;
+    left: 0;
+}
+
 .search-footer{
   border-top: 1px solid $text;
   border-bottom: none;
@@ -546,6 +570,36 @@ h5.title{
   background: #efefef;
   margin: 1.5rem 0;
   width: 100%;
+}
+
+.expand{
+  margin-left:4px;
+
+  i{
+    vertical-align: text-bottom;
+  }
+}
+
+.metadata-container{
+  margin-top:3rem;
+
+  .column{
+    padding-top: 0rem;
+    padding-bottom: 0rem;
+  }
+
+  .columns{
+    padding-bottom:1.5rem;
+  }
+}
+
+.text{
+  overflow: hidden;
+}
+
+.more-link{
+  display: block;
+  padding: 0.4rem 0;
 }
 
 footer.footer{
