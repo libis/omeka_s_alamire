@@ -101,6 +101,17 @@ unset($options['facets']);
             <li class="search-facet">
                 <h4><?= $translate($facetLabel($name)) ?></h4>
                 <ul class="search-facet-items">
+                    <?php if(sizeof($facetValues) > 10):?>
+                    <input class="form-control txtSearch" type="text" placeholder="filter">
+                    <?php endif;?>
+                    <?php 
+                        $facetvaluesSorted = [];
+                        foreach ($facetValues as $facetValue):                           
+                            $facetvaluesSorted[str_replace("'s-","",$facetValue["value"])] = $facetValue;
+                        endforeach;    
+                        ksort($facetvaluesSorted);
+                        $facetValues = $facetvaluesSorted;
+                    ?>
                     <?php foreach ($facetValues as $facetValue): ?>
                     <li class="search-facet-item">
                         <?= $facetElement($name, $facetValue, $options) ?>
@@ -121,3 +132,20 @@ unset($options['facets']);
     </form>
 
 </div>
+
+<script>
+    $(".search-facet-items").on('keyup', ".txtSearch", function() {
+    var search = $(this).val().toLowerCase();
+    
+    //Go through each list item and hide if not match search
+    $(this).parent().find(".search-facet-item").each(function() {
+        if ($(this).html().toLowerCase().indexOf(search) != -1) {
+            $(this).show();
+        }
+        else {
+            $(this).hide();  
+        } 
+    });
+
+});
+</script>

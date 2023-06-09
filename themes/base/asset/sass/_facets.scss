@@ -1,0 +1,29 @@
+.search-facet-items {
+    overflow: auto;
+    max-height: 250px;
+    padding: 0.5rem 0;
+}
+
+.txtSearch{
+    margin-bottom: 0.5rem;
+    padding: 0.3rem;
+    border: 1px solid rgba($primary, 0.3);
+
+    &:focus-visible{
+        border: 1px solid rgba($primary, 0.8);
+        box-shadow: none;
+        outline:none;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 3px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background-color: rgba($primary, 0.5);
+    border-radius: 20px;
+    border: transparent;
+}

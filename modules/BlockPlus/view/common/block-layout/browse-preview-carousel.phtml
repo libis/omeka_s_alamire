@@ -25,6 +25,8 @@ $thumbnail = $plugins->get('thumbnail');
 // Append in header is not possible with browse preview, so css and js are set in body, even if it is not standard.
 $assetUrl = $plugins->get('assetUrl');
 
+$siteSlug = $plugins->get('Laminas\View\Helper\ViewModel')->getRoot()->getVariable('site')->slug();
+
 // $showThumbnail = in_array('thumbnail', $components);
 // $showHeading = in_array('resource-heading', $components);
 // $showBody = in_array('resource-body', $components);
@@ -32,7 +34,7 @@ $headingTerm = $this->siteSetting('browse_heading_property_term');
 // $bodyTerm = $this->siteSetting('browse_body_property_term');
 $untitled = $translate('[Untitled]');
 
-$idSuffix = substr(str_replace(['+', '/', '='], ['', '', ''], base64_encode(random_bytes(12))), 0, 6);
+$idSuffix = substr(str_replace(['+', '/', '='], ['', '', ''], base64_encode(random_bytes(128))), 0, 6);
 $configs = [
     'carousel' => [
         'showTitles' => false,
@@ -43,6 +45,11 @@ $configs = [
         'interval' => 5000,
     ],
 ];
+
+$filterLocale = (bool) $this->siteSetting('filter_locale_values');
+$lang = $filterLocale ? $this->lang() : null;
+$langValue = $filterLocale ? [$this->lang(), ''] : null;
+
 ?>
 
 <link rel="stylesheet" type="text/css" href="<?= $assetUrl('vendor/jcarousel/css/jcarousel.responsive.css', 'BlockPlus') ?>" />
@@ -75,8 +82,8 @@ jQuery(function() {
     <div class="jcarousel" id="jcarousel-<?php echo $idSuffix; ?>">
         <ul>
             <?php foreach ($resources as $resource):
-                $heading = $headingTerm ? $resource->value($headingTerm, ['default' => $untitled]) : $resource->displayTitle();
-                $resourceUrl = $resource->siteUrl();
+                $heading = $headingTerm ? $resource->value($headingTerm, ['default' => $untitled, 'lang' => $langValue]) : $resource->displayTitle(null, $lang);
+                $resourceUrl = $resource->siteUrl($siteSlug);
             ?>
             <li>
                 <?= $resource->linkRaw($thumbnail($resource, 'medium', ['title' => $heading]), $resourceUrl, ['class' => 'shortcode-carousel-image']) ?>

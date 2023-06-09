@@ -27,11 +27,11 @@ trait PageBlockMetadataTrait
 
         switch ($metadata) {
             case 'page':
-                return $page();
+                return $page;
             case 'title':
-                return $page()->title();
+                return $page->title();
             case 'slug':
-                return $page()->slug();
+                return $page->slug();
 
             case 'theme_dir':
                 return OMEKA_PATH . '/themes/' . $this->currentSite()->theme();
@@ -159,12 +159,19 @@ trait PageBlockMetadataTrait
                 return $block->dataValue('params', '');
             case 'params_json':
             case 'params_json_array':
-                return @json_decode($block->dataValue('params', ''), true);
+                return @json_decode($block->dataValue('params', ''), true) ?: [];
             case 'params_json_object':
-                return @json_decode($block->dataValue('params', ''));
+                return @json_decode($block->dataValue('params', '')) ?: (object) [];
+            case 'params_key_value_array':
+                $params = array_map('trim', explode("\n", trim($block->dataValue('params', ''))));
+                $list = [];
+                foreach ($params as $keyValue) {
+                    $list[] = array_map('trim', explode('=', $keyValue, 2));
+                }
+                return $list;
             case 'params_key_value':
             default:
-                $params = array_filter(array_map('trim', explode("\n", $block->dataValue('params', ''))));
+                $params = array_filter(array_map('trim', explode("\n", trim($block->dataValue('params', '')))));
                 $list = [];
                 foreach ($params as $keyValue) {
                     list($key, $value) = array_map('trim', explode('=', $keyValue, 2));
@@ -346,15 +353,11 @@ trait PageBlockMetadataTrait
 
     protected function currentSite(): ?SiteRepresentation
     {
-        static $site;
-        if (is_null($site)) {
-            $site = $this->view->site ?? $this->view
-                ->getHelperPluginManager()
-                ->get('Laminas\View\Helper\ViewModel')
-                ->getRoot()
-                ->getVariable('site');
-        }
-        return $site;
+        return $this->view->site ?? $this->view->site = $this->view
+            ->getHelperPluginManager()
+            ->get('Laminas\View\Helper\ViewModel')
+            ->getRoot()
+            ->getVariable('site');
     }
 
     protected function currentPage(): ?SitePageRepresentation

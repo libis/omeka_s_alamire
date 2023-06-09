@@ -1,0 +1,36 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SitePageBlockRepresentation $block
+ * @var string $heading
+ * @var string $params
+ */
+
+// To use this block: set a list of key-value separated by "=" in params.
+
+$plugins = $this->getHelperPluginManager();
+$partial = $plugins->get('partial');
+$blockMetadata = $plugins->get('blockMetadata');
+$glossary = $blockMetadata('params_key_value_array', $block);
+
+// Create the glossary alphabet, the list of current letters and current definitions and prepare first letters.
+foreach ($glossary as $key => $termDefinition) {
+    $term = str_replace("\t", '    ', (string) reset($termDefinition));
+    if ($term === '') {
+        unset($glossary[$key]);
+        continue;
+    }
+    $definition = $termDefinition[1] ?? '';
+    $definition = str_replace("\t", '    ', $definition);
+    $glossary[$key] = [
+        'term' => $term,
+        'definition' => $definition,
+    ];
+}
+$glossary = array_values($glossary);
+?>
+
+<?= $partial('common/glossary', [
+    'heading' => $heading,
+    'glossary' => $glossary,
+]) ?>

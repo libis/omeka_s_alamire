@@ -12,9 +12,13 @@ return [
         'invokables' => [
             'assetElement' => View\Helper\AssetElement::class,
             'blockMetadata' => View\Helper\BlockMetadata::class,
+            'ckEditor' => View\Helper\CkEditor::class,
             'pageMetadata' => View\Helper\PageMetadata::class,
             'pagesMetadata' => View\Helper\PagesMetadata::class,
             'thumbnailUrl' => View\Helper\ThumbnailUrl::class,
+        ],
+        'factories' => [
+            'assetUrl' => Service\ViewHelper\AssetUrlFactory::class,
         ],
     ],
     'block_layouts' => [
@@ -27,8 +31,10 @@ return [
             // Omeka core uses "itemShowCase" instead of "itemShowcase". Won't fix: https://github.com/omeka/omeka-s/pull/1431
             'itemShowCase' => Site\BlockLayout\ItemShowcase::class,
             'itemWithMetadata' => Site\BlockLayout\ItemWithMetadata::class,
+            'links' => Site\BlockLayout\Links::class,
             'listOfSites' => Site\BlockLayout\ListOfSites::class,
             'pageMetadata' => Site\BlockLayout\PageMetadata::class,
+            'pageDate' => Site\BlockLayout\PageDate::class,
             'pageTitle' => Site\BlockLayout\PageTitle::class,
             'redirectToUrl' => Site\BlockLayout\RedirectToUrl::class,
             'searchForm' => Site\BlockLayout\SearchForm::class,
@@ -39,11 +45,13 @@ return [
             'twitter' => Site\BlockLayout\Twitter::class,
         ],
         'factories' => [
-            'assets' => Service\BlockLayout\AssetsFactory::class,
+            'asset' => Service\BlockLayout\AssetFactory::class,
             'externalContent' => Service\BlockLayout\ExternalContentFactory::class,
             'html' => Service\BlockLayout\HtmlFactory::class,
+            'listOfPages' => Service\BlockLayout\ListOfPagesFactory::class,
             'mirrorPage' => Service\BlockLayout\MirrorPageFactory::class,
             'resourceText' => Service\BlockLayout\ResourceTextFactory::class,
+            'showcase' => Service\BlockLayout\ShowcaseFactory::class,
         ],
         'aliases' => [
             'itemShowcase' => 'itemShowCase',
@@ -51,7 +59,10 @@ return [
     ],
     'form_elements' => [
         'invokables' => [
-            Form\AssetsFieldset::class => Form\AssetsFieldset::class,
+            Form\Element\BlockShowTitleSelect::class => Form\Element\BlockShowTitleSelect::class,
+            Form\Element\OptionalRadio::class => Form\Element\OptionalRadio::class,
+            // Blocks.
+            Form\AssetFieldset::class => Form\AssetFieldset::class,
             Form\BlockFieldset::class => Form\BlockFieldset::class,
             Form\BrowsePreviewFieldset::class => Form\BrowsePreviewFieldset::class,
             Form\D3GraphFieldset::class => Form\D3GraphFieldset::class,
@@ -61,18 +72,22 @@ return [
             Form\ItemSetShowcaseFieldset::class => Form\ItemSetShowcaseFieldset::class,
             Form\ItemShowcaseFieldset::class => Form\ItemShowcaseFieldset::class,
             Form\ItemWithMetadataFieldset::class => Form\ItemWithMetadataFieldset::class,
+            Form\ListOfPagesFieldset::class => Form\ListOfPagesFieldset::class,
             Form\ListOfSitesFieldset::class => Form\ListOfSitesFieldset::class,
             Form\MirrorPageFieldset::class => Form\MirrorPageFieldset::class,
+            Form\PageDateFieldset::class => Form\PageDateFieldset::class,
             Form\PageTitleFieldset::class => Form\PageTitleFieldset::class,
             Form\RedirectToUrlFieldset::class => Form\RedirectToUrlFieldset::class,
             Form\ResourceTextFieldset::class => Form\ResourceTextFieldset::class,
             Form\SearchFormFieldset::class => Form\SearchFormFieldset::class,
             Form\SearchResultsFieldset::class => Form\SearchResultsFieldset::class,
             Form\SeparatorFieldset::class => Form\SeparatorFieldset::class,
+            Form\ShowcaseFieldset::class => Form\ShowcaseFieldset::class,
             Form\TableOfContentsFieldset::class => Form\TableOfContentsFieldset::class,
             Form\TreeStructureFieldset::class => Form\TreeStructureFieldset::class,
             Form\TwitterFieldset::class => Form\TwitterFieldset::class,
-            // Site config.
+            // Main and site config.
+            Form\SettingsFieldset::class => Form\SettingsFieldset::class,
             Form\SiteSettingsFieldset::class => Form\SiteSettingsFieldset::class,
         ],
         'factories' => [
@@ -92,7 +107,22 @@ return [
             ],
         ],
     ],
+    'assets' => [
+        // Override internals assets. Only for Omeka assets: modules can use another filename.
+        'internals' => [
+            'js/site-page-edit.js' => 'BlockPlus',
+        ],
+    ],
+    'js_translate_strings' => [
+        'Class', // @translate
+        'Url (deprecated)', // @translate
+        'Insert Footnotes', // @translate
+    ],
     'blockplus' => [
+        'settings' => [
+            'blockplus_html_mode' => '',
+            'blockplus_html_config' => '',
+        ],
         'site_settings' => [
             'blockplus_page_types' => [
                 'home' => 'Home', // @translate
@@ -102,17 +132,21 @@ return [
             ],
         ],
         'block_settings' => [
-            'assets' => [
+            // The new source upstream "asset" block stores assets as attachments.
+            'asset' => [
                 'heading' => '',
                 'assets' => [
                     [
-                        'asset' => null,
-                        'title' => '',
+                        'id' => null,
+                        'page' => null,
+                        'alt_link_title' => '',
                         'caption' => '',
                         'url' => '',
                         'class' => '',
                     ],
                 ],
+                'className' => '',
+                'alignment' => 'default',
                 'template' => '',
             ],
             'block' => [
@@ -163,7 +197,7 @@ return [
                 'template' => '',
             ],
             'division' => [
-                'type' => '',
+                'type' => 'start',
                 'tag' => 'div',
                 'class' => 'column',
             ],
@@ -203,6 +237,17 @@ return [
                 'heading' => '',
                 'template' => '',
             ],
+            'links' => [
+                'heading' => '',
+                'links' => [],
+                'template' => '',
+            ],
+            // Use block Menu of module Menu is cleaner.
+            'listOfPages' => [
+                'heading' => '',
+                'pagelist' => '',
+                'template' => '',
+            ],
             'listOfSites' => [
                 'heading' => '',
                 'sort' => 'alpha',
@@ -216,7 +261,11 @@ return [
                 ],
                 'pagination' => false,
                 'summaries' => true,
+                'thumbnails' => true,
                 'template' => '',
+            ],
+            'mirrorPage' => [
+                'page' => null,
             ],
             // Media embed is not available in BlockPlus.
             // 'media' => [],
@@ -229,6 +278,13 @@ return [
                 'cover' => null,
                 'params' => '',
                 'attachments' => [],
+            ],
+            'pageDate' => [
+                'heading' => '',
+                'dates' => 'created_and_modified',
+                'format_date' => 'medium',
+                'format_time' => 'none',
+                'template' => '',
             ],
             'pageTitle' => [
                 'template' => '',
@@ -264,8 +320,14 @@ return [
             'separator' => [
                 'class' => '',
             ],
-            'mirrorPage' => [
-                'page' => null,
+            'showcase' => [
+                'heading' => '',
+                'html' => '',
+                'entries' => [],
+                'thumbnail_type' => 'square',
+                'show_title_option' => 'item_title',
+                'divclass' => '',
+                'template' => '',
             ],
             'tableOfContents' => [
                 'depth' => null,

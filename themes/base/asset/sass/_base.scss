@@ -336,6 +336,72 @@ h5.title{
 }
 
 //search
+#search-filters .filter select:nth-of-type(1) {
+  min-width: 62px !important;
+}
+
+#form-search{
+  margin-bottom:1.5rem;
+}
+
+.form-search button.search-submit {
+  float:none !important;
+}
+
+#search-filters{
+  legend{
+    display: none;
+  }
+  margin: 0 !important;
+
+  .filter{
+    margin-left:0 !important;
+    padding-left: 0 !important;
+  }
+}
+
+#search-filters .filter select, #search-filters .filter input {
+  margin-top: 0;
+  margin-right: 3px !important;
+  margin-left: 3px !important;
+  min-width: 0;
+  padding:0.6rem;
+  max-width: 300px;
+}
+
+#search-filters .filter select:nth-of-type(1) {
+  margin-left: 0 !important;
+}
+
+.facets .filter select {
+  margin-bottom: 0 !important;
+}  
+
+#advanced-search-form input[type="text"], #advanced-search-form select{
+  border: 1px solid rgba(0,0,0,.15);
+}
+
+.form-search button.search-submit{
+  background-color: #f05133;
+  border-color: transparent;
+  color: #fff;
+  font-weight: bold;
+  border-width: 1px;
+  font-size:.75em;
+  border-radius:2px;
+  cursor: pointer;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  padding-bottom: calc(0.5em - 1px);
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-top: calc(0.5em - 1px);
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
 .facets{
   padding: 1rem;
   background: #f1f1f1;
@@ -357,6 +423,8 @@ h5.title{
     }
   }
 }
+
+
 
 .list {
     background-color: transparent;
@@ -395,8 +463,6 @@ h5.title{
 
 #form-search{
   margin-bottom: 2rem;
-  display: flex;
-  align-items: center;  
   margin: 1rem 0;
 
   #q{
@@ -404,7 +470,6 @@ h5.title{
     border: 1px solid rgba(#898989,0.6);
     box-shadow: none;
     width: 100%;
-    border-right: none;
   }
 
   #q:focus-visible{
@@ -590,6 +655,15 @@ h5.title{
 
   .columns{
     padding-bottom:1.5rem;
+  }
+
+  .extra{
+    display: none;
+    border-top: 1px solid rgba($primary,1);
+    border-bottom: 1px solid rgba($primary,1);
+    padding: 2.5rem 0rem 0.5rem 0;
+    margin-bottom: 2.5rem;
+    margin-top: -1.5rem;
   }
 }
 

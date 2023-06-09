@@ -123,7 +123,7 @@ altered, and that no provisions are either added or removed herefrom.
 Copyright
 ---------
 
-* Copyright Daniel Berthereau, 2018-2021 (see [Daniel-KM] on GitLab)
+* Copyright Daniel Berthereau, 2018-2022 (see [Daniel-KM] on GitLab)
 
 
 [Generic module]: https://gitlab.com/Daniel-KM/Omeka-S-module-Generic
@@ -134,5 +134,5 @@ Copyright
 [GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html
 [FSF]: https://www.fsf.org
 [OSI]: http://opensource.org
-[MIT]: http://http://opensource.org/licenses/MIT
+[MIT]: http://opensource.org/licenses/MIT
 [Daniel-KM]: https://gitlab.com/Daniel-KM "Daniel Berthereau"

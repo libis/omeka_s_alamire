@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace BlockPlus\Form;
 
 use BlockPlus\Form\Element\TemplateSelect;
@@ -17,7 +18,6 @@ class ItemSetShowcaseFieldset extends Fieldset
                 'type' => Element\Text::class,
                 'options' => [
                     'label' => 'Block title', // @translate
-                    'info' => 'Heading for the block, if any.', // @translate
                 ],
             ])
             ->add([
@@ -26,6 +26,7 @@ class ItemSetShowcaseFieldset extends Fieldset
                 'options' => [
                     'label' => 'Item sets', // @translate
                     // 'disable_group_by_owner' => true,
+                    'query' => null,
                 ],
                 'attributes' => [
                     'id' => 'item-set-showcase-item-sets',
