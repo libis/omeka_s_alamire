@@ -1,76 +1,54 @@
   <div class="container">
-  <!-- overview blocks -->
-    <?php $j = 3;?>
-    <?php if($block->dataValue('title')):?>
-      <h3 class="title is-3"><?php echo $block->dataValue('title');?></h3>
-    <?php endif;?>
+    
     <div class="columns">
-      <?php for($i = 1; $i <= $j; $i++){ ?>
-        <?php if($block->dataValue('title'.$i)):?>
+     
           <div class="column">
-            <div class="card equal-height">
-                <?php
-                  $url='';
-                  if(isset($attachments[$i-1])):
-                    $media = $attachments[$i-1]->media();
-                    if($media):
-                      if(sizeof($attachments) <= 2):
-                        $url = $media->thumbnailUrl('large');
-                        $url = str_replace('http:', '', $url);
-                      else:
-                        $url = $media->thumbnailUrl('medium');
-                        $url = str_replace('http:', '', $url);
-                      endif;
-                    endif;
-                  endif;
-                ?>
-                <!--<div class="card-image">
-                  <figure class="image">
-                    <img src="<?php echo  $url;?>" alt="Placeholder image">
-                  </figure>
-                </div>-->
-                <?php if($block->dataValue('link'.$i)):?>
-                  <a href="<?php echo $block->page()->site()->url().$block->dataValue('link'.$i);?>">
-                  <div class="card-bg-img-<?php echo sizeof($attachments);?>"
-                  style="background:url(<?php echo  $url;?>) no-repeat center 20%;background-color:#7fb5b2;background-size: cover;margin-bottom:1rem;"
-                  >
-                  </div>
-                   </a>
-                <?php else:?>
-                  <div class="card-bg-img-<?php echo sizeof($attachments);?>"
-                  style="background:url(<?php echo  $url;?>) no-repeat center 20%;background-color:#7fb5b2;background-size: cover;margin-bottom:1rem;"
-                  >
-                  </div>  
-                <?php endif;?>  
-                
+            <div class="card equal-height">         
                 <h5 class="title is-6">
-                  <?php if($block->dataValue('link'.$i)):?>
-
-                    <a href="<?php echo $block->page()->site()->url().$block->dataValue('link'.$i);?>"><?php echo $block->dataValue('title'.$i);?></a>
-                  <?php else:?>
-                    <?php echo $block->dataValue('title'.$i);?>
-                  <?php endif;?>  
+                  <?php echo $block->dataValue('title1');?>
                 </h5>
-                
-                <?php $class="";?>
-                <?php if($block->dataValue('title'.$i) == 'In the spotlight'):?>
-                    <?php $class = "spotlight";?>
-                <?php endif;?>  
-
-                <div class="card-content <?php echo $class;?>">
+                           
+                <div class="card-content ">
                   <div class="content">
-                    <?php echo $block->dataValue('text'.$i);?>
+                    <?php echo $block->dataValue('text1');?>
                   </div>
                 </div>
-                <?php if($block->dataValue('link'.$i) && $block->dataValue('linktext'.$i)):?>
+                <?php if($block->dataValue('link1') && $block->dataValue('linktext1')):?>
                 <footer class="card-footer">
-                  <a class="card-footer-item" href="<?php echo $block->dataValue('link'.$i);?>">
-                    <?php echo $block->dataValue('linktext'.$i);?></a>
+                  <a class="card-footer-item" href="<?php echo $block->dataValue('link1');?>">
+                    <?php echo $block->dataValue('linktext1');?></a>
                   </footer>
                 <?php endif;?>
             </div>
           </div>
-        <?php endif;?>
-      <?php } ?>
+
+          <div class="column spotlight">
+            <div class="card equal-height">         
+                <h5 class="title is-6">
+                  <?php echo $block->dataValue('title2');?>
+                </h5>
+                           
+                <div class="card-content ">
+                  <div class="content">
+                    <?php echo $block->dataValue('text2');?>
+                  </div>
+                </div>
+                <?php if($block->dataValue('link2') && $block->dataValue('linktext2')):?>
+                  <footer class="card-footer">
+                  <a class="card-footer-item" href="<?php echo $block->dataValue('link2');?>">
+                    <?php echo $block->dataValue('linktext2');?></a>
+                  </footer>
+                <?php endif;?>
+                <div style="display:flex;justify-content: center;" class="">
+                <?php foreach($attachments as $at):?>
+                  <?php
+                    $media = $at->media();
+                    $url = $media->thumbnailUrl('medium');                  
+                  ?>
+                  <img style="width:40%;padding:0 1rem;display:inline-block;" src="<?php echo $url;?>">
+                <?php endforeach;?>  
+                </div>
+            </div>           
+          </div>
     </div>
 </div>

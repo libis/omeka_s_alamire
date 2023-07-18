@@ -12,10 +12,11 @@ $showPagePagination = $this->siteSetting('show_page_pagination', true);
     $type = $this->pagesMetadata('type') ?: null;
     $next = $this->pagesMetadata('next',$page) ?: null;
     $previous = $this->pagesMetadata('previous',$page) ?: null;
-
+ 
+   
     if ($activePage):
       if ($activePage['depth'] !== 0): ?>
-      <section class="section breadcrumb-section">
+      <!--<section class="section breadcrumb-section">
         <div class="container">
           <nav class="breadcrumb" aria-label="breadcrumbs">
             <ul>
@@ -24,7 +25,7 @@ $showPagePagination = $this->siteSetting('show_page_pagination', true);
             </ul>
           </nav>
         </div>
-      </section>
+      </section>-->
       <?php endif; ?>
     <?php endif; ?>
 <!--

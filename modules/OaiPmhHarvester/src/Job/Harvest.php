@@ -534,7 +534,7 @@ class Harvest extends AbstractJob
                 $elementTexts["alamire:$localName"] = $this->extractValues($dcMetadata, $propertyId);
             }
             //add media if Beeld or Collectie
-            if($localName == 'thumbnail'){
+            if($localName == 'original'){
                 //$this->logger->info("media - 1");                
                 foreach ($dcMetadata->$localName as $imageUrl) {      
                     

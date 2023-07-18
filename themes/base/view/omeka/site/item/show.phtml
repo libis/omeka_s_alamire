@@ -5,7 +5,7 @@ $this->htmlElement('body')->appendAttribute('class', 'item resource show');
 $embedMedia = $this->siteSetting('item_media_embed', false);
 $itemMedia = $item->media();
 ?>
-
+<!--
   <div class="container breadcrumb-section">
     <nav class="breadcrumb" aria-label="breadcrumbs">
       <ul>
@@ -14,6 +14,7 @@ $itemMedia = $item->media();
       </ul>
     </nav>
   </div>
+-->
   <div class="container">
     <h2 class="title is-2 is-family-secondary"><?php echo $item->displayTitle(); ?></h2>    
   </div>
@@ -22,7 +23,7 @@ $itemMedia = $item->media();
         <div class="has-text-centered">
           <?php foreach($itemMedia as $med):?>
             <?php $url = str_replace('http:', '', $med->thumbnailUrl('large'));?>
-            <img src="<?php echo $url;?>" style="max-width:450px;margin-bottom:1rem;"><br>
+            <img src="<?php echo $url;?>" style="max-width:70%;margin-bottom:1rem;"><br>
           <?php endforeach;?>
         </div>
       </div>

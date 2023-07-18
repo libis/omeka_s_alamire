@@ -25,9 +25,9 @@ $firstextra = true;
   ?>
   <?php if($comment == "extra" && $firstextra):?>
    
-    <div class="columns is-2" style="padding-bottom:2rem;">
+    <div class="columns is-2" style="padding-top:1rem;padding-bottom:2rem;">
       <div class="column is-12">        
-        <div><a class="extra-button button is-primary is-small" href="#firstextra">
+        <div><a class="extra-button button is-primary is-small is-outlined" href="#firstextra">
           <span class="icon">
           <i class="fa fa-list"></i>
           </span>
@@ -41,12 +41,18 @@ $firstextra = true;
   <?php if($comment != "extra" && !$firstextra):?>
     
     </div>
+    
   <?php $firstextra = true;?>
   <?php endif; ?>
-
-  <div class="columns is-2">
+  <?php if($comment != "extra" && $comment != ""):?>
+    <div class="columns is-12"> 
+      <div class="column">
+        <h4 class="has-text-weight-semibold is-6 section-head"><?php echo $comment;?></h4>
+      </div>
+    </div>
+  <?php endif; ?>
  
-  
+  <div class="columns is-2">  
     <div class="column is-one-fifth">
       <h4 class="has-text-weight-semibold is-6">
       <?php if ($propertyData['alternate_label']): ?>
@@ -83,12 +89,8 @@ $firstextra = true;
           ?>
 
           <?php if($propertyData['property']->term() == 'alamire:holdingInstitution'):?>  
-            <?php $purl = $values['alamire:objectHoldingInstitution']['values'];?>
-            <?php if(!empty($values['alamire:objectHoldingInstitution']['values'][0])):?>
-              <?php echo $value->asHtml();?> (<a href="<?php echo $values['alamire:objectHoldingInstitution']['values'][0]->asHtml();?>">view object at holding institution</a>)
-            <?php else:?>
+           
               <?php echo $value->asHtml();?>
-            <?php endif;?>  
 
           <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscript'):?>
             <?php 
@@ -139,13 +141,17 @@ $firstextra = true;
                 if(!empty($cite[2]) && !empty($cite[0])):
                   $cite[0] = str_replace("[","",$cite[0]);
                   $cite[0] = str_replace("]","",$cite[0]);
-                  echo '<div style="margin-bottom:0.5rem;"><strong>'.trim($cite[0])."</strong> ".trim($cite[2])."</div>";
+                  echo '<div style="margin-bottom:0.5rem;"><strong>'.trim($cite[0])."</strong> ".trim($cite[2]);
+                  if(!empty($cite[3])):
+                    echo $cite[3];
+                  endif;  
+                  echo "</div>";
                 elseif(!empty($cite[2]) && empty($cite[0])):
                   echo '<div style="margin-bottom:0.5rem;">'.trim($cite[2]).$cite[3]."</div>";
                 else:
                   echo '<div style="margin-bottom:0.5rem;">'.trim($cite[0]).$cite[3]."</div>";
-                endif;             
-            endforeach;  
+                endif;
+              endforeach;  
                   
             endif;
             $values['alamire:bibliographicCitation']['values'] = "";
@@ -216,9 +222,7 @@ $firstextra = true;
                       echo '<a href="#" class="expand"><i class="fa fa-chevron-up"></i></a><div class="hidden-content">';
                     else:
                       echo '<a href="#" class="expand"><i class="fa fa-chevron-down"></i></a><div class="hidden-content" style="display:none;">';
-                    endif;
-                                
-                  
+                  endif;                  
                 else:
                   if(in_array($irel[1],$lvl1)):
                      echo '&nbsp;&nbsp;&nbsp;'.$irel[3].' ';
@@ -269,7 +273,7 @@ $firstextra = true;
                 echo $first_r->displayTitle();
                
               else:
-                echo implode("",$first);
+                echo trim(implode(" ",$first));
               endif; 
 
               $firstrel = explode(" ",$firstrel);
@@ -278,7 +282,7 @@ $firstextra = true;
               $firstrel = explode(" $$ ",$firstrel);
              
               if(!empty($firstrel[1])):
-                echo ", part ".$firstrel[1];
+                echo ", ".$firstrel[1];
               endif;
 
               if(!empty($firstrel[2])):
@@ -296,7 +300,7 @@ $firstextra = true;
                 $rel = explode(" $$ ",$rel);
                
                 if(!empty($rel[0])):
-                  echo '&nbsp;&nbsp;&nbsp;'.$rel[0].", part ".$rel[1]." (".$rel[2]."v)<br>";
+                  echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$rel[0].", part ".$rel[1]." (".$rel[2]."v)<br>";
                 endif;
               endforeach;  
             endif;

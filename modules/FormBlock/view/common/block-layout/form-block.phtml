@@ -1,0 +1,166 @@
+<?php
+use Laminas\Mail;
+use Laminas\Mime\Message as MimeMessage;
+use Laminas\Mime\Mime;
+use Laminas\Mime\Part as MimePart;
+use Laminas\ServiceManager\ServiceLocatorInterface;
+
+//$settings = $this->getServiceLocator()->get('Omeka\Settings');
+$siteKey = $this->setting('recaptcha_site_key');
+$secretKey = $this->setting('recaptcha_secret_key');
+
+$get  = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
+$post  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+      
+$type = isset($get["type"]) ? $get['type'] : '';
+$subject = isset($get["subject"]) ? $get['subject'] : '';
+$formmail = isset($get["mail"]) ? $get['mail'] : '';     
+$institutie = isset($get["instelling"]) ? $get['instelling'] : '';     
+$foundation = isset($get["foundation"]) ? $get['foundation'] : '';  
+?>
+
+  <div class="container">   
+
+    <div class="columns">
+      <div class="column is-8">
+      <?php                
+        if($_SERVER['REQUEST_METHOD'] == 'POST'):
+          if(!isCaptchaValid($secretKey)):
+            $error = "reCaptcha is not valid";
+          else:  
+            $post  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            $error = '';
+            
+            $message = "<p>Name: ".$post["naam"]."<br>Institution: ".$post["institutie"]."<br>Add to foundation: ".$post["foundation"]."</p><p>".$post["vraag"]."</p><p>"."Visit <a href='https://idemdatabase.org'>idemdatabase.org</a></p>";
+            $html = new MimePart($message);
+            $html->type = Mime::TYPE_HTML;
+            $html->charset = 'utf-8';
+            $html->encoding = Mime::ENCODING_QUOTEDPRINTABLE;
+            $body = new MimeMessage();
+            $body->setParts([$html]);
+
+
+            $name = $post["naam"];
+            if (!preg_match("/^[a-zA-Z-' ]*$/",$name)) {
+              $error = "Not a valid name";
+            }
+
+            $email = $post["mail"];
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+              $error = "Not a valid email address";
+            }
+          endif;  
+         
+          
+          if(!$error):
+            
+            $mail = new Mail\Message();
+            $mail->setBody($body);
+            $mail->setFrom($post["mail"], $post["naam"]);
+            if($formmail && filter_var($formmail, FILTER_VALIDATE_EMAIL)):             
+              $mail->addTo($formmail, $collectie);
+              $mail->addCc("info@alamirefoundation.be");
+            else:  
+              $mail->addTo("info@alamirefoundation.be", 'Alamire Foundation');
+            endif;
+            $mail->setSubject("IDEM: ".$post["onderwerp"]);
+
+            $transport = new Mail\Transport\Sendmail();
+            $transport->send($mail);
+            
+            ?>
+            <article class="message is-success">
+              <div class="message-body">
+                <strong>Thank you!</strong> We will respond to your message as soon as possible.
+              </div>
+            </article>   
+          <?php else:?>
+            <article class="message is-danger">
+              <div class="message-body">
+                <?php echo $error;?>
+              </div>
+            </article>
+          <?php endif;?> 
+        <?php endif;?>  
+        <p>Please send us your comments and suggestions.</p>
+        <form id="feedback-form" method="post">
+          <div class="field">
+            <label class="label" for="naam">Name</label>
+            <div class="control">
+              <input class="input" type="text" id="naam" name="naam" required placeholder="">
+            </div>
+          </div>
+          <div class="label" class="field">  
+            <label for="mail">Email</label>
+            <div class="control">
+              <input class="input" type="mail" id="mail" name="mail"required placeholder="">
+            </div>
+          </div>
+        
+          <div class="label" class="field">  
+                  
+            <label for="collectie">Institution</label>
+              <div class="control">                
+                <input class="input" type="text" id="institutie" name="institutie" value="<?php echo $institutie;?>">
+              </div>
+          </div>
+          <div class="label" class="field">  
+            <label for="vraag">Message</label>
+            <div class="control">
+              <textarea required class="textarea" id="vraag" name="vraag" placeholder=""></textarea>
+            </div>
+          </div>
+          <div class="field"> 
+            <label class="checkbox"  class="field">
+              <input type="checkbox" name="foundation">
+              I would like to be added to the Alamire Foundation contact list</a>
+            </label>
+          </div>
+          <div class="field">  
+            <button data-sitekey="<?php echo $siteKey;?>" data-callback='onSubmit' data-action='submit' class="g-recaptcha button is-primary is-small">Send message</button>
+          </div>
+        </form> 
+      </div>  
+    </div>  
+  </div>
+<script>
+   function onSubmit(token) {
+     document.getElementById("feedback-form").submit();
+   }
+</script>
+<script src="https://www.google.com/recaptcha/api.js"></script>
+<?php 
+function isCaptchaValid($secretKey){
+    $captcha = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : false;
+
+    if (!$captcha) {
+        return false;
+    }
+
+    $postdata = http_build_query(
+        array(
+            "secret" => $secretKey,
+            "response" => $captcha,
+            "remoteip" => $_SERVER["REMOTE_ADDR"]
+        )
+    );
+    $opts = array(
+        'http' =>
+        array(
+            "method"  => "POST",
+            "header"  => "Content-Type: application/x-www-form-urlencoded",
+            "content" => $postdata
+        )
+    );
+    $context  = stream_context_create($opts);
+    $googleApiResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify", false, $context);
+
+    if ($googleApiResponse === false) {
+        return false;
+    }
+
+    $googleApiResponseObject = json_decode($googleApiResponse);
+
+    return $googleApiResponseObject->success;
+}
+?>

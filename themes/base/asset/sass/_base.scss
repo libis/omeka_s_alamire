@@ -48,6 +48,12 @@ h5.title{
   }
 }
 
+.section-head{
+  color: $primary;
+  margin-top: 1rem;
+
+}
+
 #site-title-text {
   display: inline-block;
   font-family: 'Dosis', sans-serif;
@@ -61,7 +67,7 @@ h5.title{
   
   a {
     text-decoration: none;
-    color: #444;
+    color: #cc6633;
   }
 
   #description {
@@ -181,6 +187,10 @@ h5.title{
 .spotlight{
   color: $primary !important;
 
+  .card{
+    color: $primary;
+  }
+
   strong{
     color: $primary;
   }
@@ -200,7 +210,7 @@ h5.title{
 //catches blocks without templates like html & pageTitle
 .page{
   h2{
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-family: $family-primary;
     font-weight: 400;
     color: $primary;
@@ -680,4 +690,23 @@ footer.footer{
   background-color: white !important;
   font-size: 10px;  
   padding-top:0;
+}
+
+#feedback-form{
+  margin-top:1rem;
+  
+  label{
+    font-size:0.8rem;
+  }
+
+  .input, textarea{
+    box-shadow: none;
+    border-top:none;
+    border-color: #898989;
+    padding: 3px;
+  }
+
+  .input{
+    height: 1.8rem;
+  }
 }

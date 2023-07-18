@@ -166,4 +166,10 @@ $itemSetsCount = $response->getResourceTotalResults('item_sets');
         $('#form-facets').appendTo('.filter-nav');
     });
 
+    $('#form-search').find('.inputs').each(function (index) {
+        if (index === 1) {
+          var button2 = "<a href='/s/start/search' style='padding: 0.74rem;line-height: 1.5;font-size:0.75em;height: 3.8em;border-radius:0;' class='button is-outlined is-primary is-small'>Reset</a>";
+          $(this).append(button2);
+        }        
+    });
 </script>    

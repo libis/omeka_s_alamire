@@ -131,12 +131,12 @@ $userBar = $this->userBar();
          </div>
          <button class="burger-menu-close modal-close is-large"></button>
       </div>
-
+    <!--         
     <?php if (strpos($_SERVER['REQUEST_URI'], '/page/terms-conditions') === false) :?>
       <div class="modal terms-modal">
         <div class="modal-background"></div>
         <div class="modal-content">
-          <!-- Any other Bulma elements you want -->
+         
           <div class="container">
             <div class="content">
               
@@ -156,6 +156,7 @@ $userBar = $this->userBar();
         </div>
       </div>
     <?php endif;?>  
+    -->
   </body>
   <script>
   $(document).ready(function() {
@@ -180,6 +181,7 @@ $userBar = $this->userBar();
        $(".terms-modal").toggleClass("is-active");
     });
 
+    /*
     var isshow = localStorage.getItem('isshow');
     
     if (isshow == null) {
@@ -187,7 +189,7 @@ $userBar = $this->userBar();
 
       // Show popup here
       $('.terms-modal').toggleClass("is-active");
-    }
+    }*/
   });
   </script>
 </html>

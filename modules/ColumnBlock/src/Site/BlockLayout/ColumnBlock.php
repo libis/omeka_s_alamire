@@ -26,7 +26,7 @@ class ColumnBlock extends AbstractBlockLayout
      */
     public function getLabel()
     {
-        return 'Libis - Columns (2 or 3)'; // @translate
+        return 'Libis - Alamire homepage block'; // @translate
     }
 
     /**
