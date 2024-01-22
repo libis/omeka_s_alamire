@@ -1,0 +1,41 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var \Omeka\Form\LoginForm $form
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$trigger = $plugins->get('trigger');
+$setting = $plugins->get('setting');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+$pageTitle = $plugins->get('pageTitle');
+$siteSetting = $plugins->get('siteSetting');
+$htmlElement = $plugins->get('htmlElement');
+
+$htmlElement('body')->appendAttribute('class', 'guest login');
+?>
+
+<?= $pageTitle($siteSetting('guest_login_text') ?: ($setting('guest_login_text') ?: $translate('Login'))) ?>
+
+<div class="guest-anonymous guest-login">
+
+   <?= $this->messages() ?>
+
+    <?php if (empty($form)): ?>
+    <p>
+        <?= $translate('Your account seems to have an error. Contact your administrator to login.') ?>
+    </p>
+    <?php else: ?>
+    <?= $this->form($form) ?>
+    <?php endif; ?>
+
+    <p class="forgot-password">
+        <?= $hyperlink($translate('Forgot password?'), $url('site/guest/anonymous', ['action' => 'forgot-password'], true)) ?>
+    </p>
+
+    <?php $trigger('view.login.after'); ?>
+
+</div>

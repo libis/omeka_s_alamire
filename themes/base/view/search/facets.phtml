@@ -68,9 +68,7 @@ $options = $searchPage->setting('facet', []);
 unset($options['facets']);
 ?>
 
-<div class="">
-
-    
+<div class="">    
 
     <?php if ($displayActive && count($activeFacets)): ?>
     <ul class="search-facets-active">
@@ -80,8 +78,8 @@ unset($options['facets']);
     </ul>
     <?php endif; ?>
 
-    <form id="form-facets">
-        <h3><?= $translate('Filters') ?></h3>
+    <form id="form-facets" class="page">
+        <h3 style="font-weight:bold;margin-bottom:0;"><?= $translate('Browse') ?></h3>
 
         <?php if ($displayFacetButton): ?>
         <?= $this->hiddenInputsFromFilteredQuery(null, ['facet', 'page', 'limit', 'offset', 'per_page']) ?>
@@ -99,17 +97,27 @@ unset($options['facets']);
         <ul class="search-facets-list">
             <?php foreach ($facets as $name => $facetValues): ?>
             <li class="search-facet">
+                <?php if($facetLabel($name) != "Type"):?>
                 <h4><?= $translate($facetLabel($name)) ?></h4>
+                <?php endif;?>
                 <ul class="search-facet-items">
                     <?php if(sizeof($facetValues) > 10):?>
                     <input class="form-control txtSearch" type="text" placeholder="filter">
                     <?php endif;?>
                     <?php 
                         $facetvaluesSorted = [];
-                        foreach ($facetValues as $facetValue):                           
-                            $facetvaluesSorted[str_replace("'s-","",$facetValue["value"])] = $facetValue;
+                        foreach ($facetValues as $facetValue):        
+                            $key = strtolower(str_replace("'s-","",$facetValue["value"]));    
+                            if(str_contains($key,"?")):
+                            $key = str_replace("?","",$key)."?"; 
+                            endif;
+                            $key = str_replace("[","",$key);  
+                            $facetvaluesSorted[$key] = $facetValue;
                         endforeach;    
                         ksort($facetvaluesSorted);
+                        if($facetLabel($name) == "Type"):
+                            $facetvaluesSorted = array_reverse($facetvaluesSorted);
+                        endif;    
                         $facetValues = $facetvaluesSorted;
                     ?>
                     <?php foreach ($facetValues as $facetValue): ?>

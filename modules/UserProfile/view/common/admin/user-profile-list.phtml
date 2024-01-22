@@ -1,0 +1,40 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Entity\User $user
+ * @var \Omeka\Settings\UserSettings $userSettings
+ * @var array $fields
+ */
+
+// Like show.
+
+$plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+?>
+
+<style>
+.value.user-profile .value + .value.user-profile .value:before {
+    content: '; ';
+}
+</style>
+
+<dl>
+    <div class="property user-profile">
+        <dt><?= $translate('User profile') ?></dt>
+        <dd class="value user-profile">
+            <ul class="user-profile">
+                <?php foreach ($fields as $field => $label): ?>
+                <li>
+                    <span class="profile-field"><?= $translate($label) ?>:</span>
+                    <?php $values = $userSettings->get($field); ?>
+                    <?php if (!is_array($values)) $values = [$values]; ?>
+                    <?php foreach ($values as $value): ?>
+                    <span class="value"><?= $escape($value) ?></span>
+                    <?php endforeach; ?>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        </dd>
+    </div>
+</dl>

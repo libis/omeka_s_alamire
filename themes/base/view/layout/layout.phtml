@@ -1,4 +1,5 @@
 <?php
+
 $escape = $this->plugin('escapeHtml');
 $siteTitle = $site->title();
 $this->htmlElement('html')->setAttribute('lang', $this->lang());
@@ -79,7 +80,7 @@ $userBar = $this->userBar();
         </div>
         <div class="column">
           <div id="site-title-text">
-            <a href="/">IDEM</a>
+            <a href="<?php echo $site->url();?>">IDEM</a>
             <div id="description">Integrated Database for Early music</div>
           </div>  
         </div>    
@@ -181,15 +182,14 @@ $userBar = $this->userBar();
        $(".terms-modal").toggleClass("is-active");
     });
 
-    /*
-    var isshow = localStorage.getItem('isshow');
-    
-    if (isshow == null) {
-      localStorage.setItem('isshow', 1);
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+     })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-      // Show popup here
-      $('.terms-modal').toggleClass("is-active");
-    }*/
+     ga('create', 'UA-103097674-1', 'auto');
+     ga('send', 'pageview');
+
   });
   </script>
 </html>

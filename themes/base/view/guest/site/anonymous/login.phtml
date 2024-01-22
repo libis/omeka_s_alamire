@@ -1,0 +1,49 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var \Omeka\Form\LoginForm $form
+ */
+
+$plugins = $this->getHelperPluginManager();
+$url = $plugins->get('url');
+$trigger = $plugins->get('trigger');
+$setting = $plugins->get('setting');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+$pageTitle = $plugins->get('pageTitle');
+$siteSetting = $plugins->get('siteSetting');
+$htmlElement = $plugins->get('htmlElement');
+
+$htmlElement('body')->appendAttribute('class', 'guest login');
+?>
+
+
+
+<div class="guest-anonymous guest-login page">
+    <div class="container">
+        <div class="columns">
+            <div class="column is-8">
+                <h2><?php echo ($siteSetting('guest_login_text') ?: ($setting('guest_login_text') ?: $translate('Login'))) ?></h2>
+
+                <?= $this->messages() ?>
+
+                <?php if (empty($form)): ?>
+                <p>
+                    <?= $translate('Your account seems to have an error. Contact your administrator to login.') ?>
+                </p>
+                <?php else: ?>
+                <?= $this->form($form) ?>
+                <?php endif; ?>
+
+                <p class="forgot-password">Don't have an account? <a href="<?= $site->url().'/guest/register';?>">Register here</a></p>
+
+                <p class="forgot-password">
+                    <?= $hyperlink($translate('Forgot password?'), $url('site/guest/anonymous', ['action' => 'forgot-password'], true)) ?>
+                </p>
+
+                <?php $trigger('view.login.after'); ?>
+            </div>
+        </div>
+    </div>
+</div>

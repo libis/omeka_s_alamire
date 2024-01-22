@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Log\Api\Adapter;
 
 use Doctrine\ORM\Query\Expr\Comparison;
@@ -17,6 +18,18 @@ class LogAdapter extends AbstractEntityAdapter
         'job' => 'job',
         'reference' => 'reference',
         'severity' => 'severity',
+        'message' => 'message',
+        'created' => 'created',
+    ];
+
+    protected $scalarFields = [
+        'id' => 'id',
+        'owner' => 'owner',
+        'job' => 'job',
+        'reference' => 'reference',
+        'severity' => 'severity',
+        'message' => 'message',
+        'context' => 'context',
         'created' => 'created',
     ];
 
@@ -243,10 +256,9 @@ class LogAdapter extends AbstractEntityAdapter
     /**
      * Add a comparison condition to query from a date.
      *
-     * @param QueryBuilder $qb
-     * @param array $query
-     * @param string $value
-     * @param string $column
+     * @see \Annotate\Api\Adapter\QueryDateTimeTrait::searchDateTime()
+     * @see \Contribute\Api\Adapter\ContributionAdapter::buildQueryDateComparison()
+     * @see \Log\Api\Adapter\LogAdapter::buildQueryDateComparison()
      */
     protected function buildQueryDateComparison(QueryBuilder $qb, array $query, $value, $column): void
     {

@@ -62,105 +62,117 @@ $itemsCount = $response->getResourceTotalResults('items');
 $itemSetsCount = $response->getResourceTotalResults('item_sets');
 ?>
 
-<?php if (empty($isPartial)): ?>
-<div id="search-page">
-<?php endif; ?>
+<?php
+$auth = true;
+/*if(!$this->identity()):  
+  echo "<script>location.href='".$site->url()."/guest/login';</script>";
+  echo "Please log in to access this page";
+  $auth = false;
+endif;   
+*/
+?>
 
-<?php if ($itemSet): ?>
+<?php if($auth):?>
+    <?php if (empty($isPartial)): ?>
+    <div id="search-page" class="page">
+    <?php endif; ?>
 
-    <?php
-    $vars->offsetSet('itemSet', $itemSet);
-    $vars->offsetSet('resourceType', 'item_sets'); // TODO Check if really needed.
-    $this->htmlElement('body')->appendAttribute('class', 'search-page item-set resource browse');
-    ?>
-    <?= $this->pageTitle($itemSet->displayTitle(), 2) ?>
-    <h3><?= $translate('Item set') ?></h3>
-    <div class="metadata">
-        <?= $itemSet->displayValues() ?>
-    </div>
-    <div class="item-set-items">
-        <h3><?= $translate('Items') ?></h3>
-    </div>
+    <?php if ($itemSet): ?>
 
-<?php else: ?>
+        <?php
+        $vars->offsetSet('itemSet', $itemSet);
+        $vars->offsetSet('resourceType', 'item_sets'); // TODO Check if really needed.
+        $this->htmlElement('body')->appendAttribute('class', 'search-page item-set resource browse');
+        ?>
+        <?= $this->pageTitle($itemSet->displayTitle(), 2) ?>
+        <h3><?= $translate('Item set') ?></h3>
+        <div class="metadata">
+            <?= $itemSet->displayValues() ?>
+        </div>
+        <div class="item-set-items">
+            <h3><?= $translate('Items') ?></h3>
+        </div>
 
-    <?php $this->htmlElement('body')->appendAttribute('class', 'search-page resource browse'); ?>
-    <h2 class="title"><?= $translate('Search').' ('.$itemsCount.')'; ?></h2>
+    <?php else: ?>
 
-<?php endif; ?>
+        <?php $this->htmlElement('body')->appendAttribute('class', 'search-page resource browse'); ?>
 
-<?= $this->searchForm($searchPage, null, $skipFormAction) ?>
+            <h2 style="margin-bottom:0.5rem;"><?= $translate('Browse & search').' ('.$itemsCount.')'; ?></h2>
+            <h3 style="font-weight:bold;"><?= $translate('Search') ?></h3>
 
-<?php if (isset($response)): ?>
-<div class="search-page">
+    <?php endif; ?>
 
+    <?= $this->searchForm($searchPage, null, $skipFormAction) ?>
 
-        <?php if ($response->getTotalResults()): ?>
-            <?= $partial('search/facets', [
-                'searchPage' => $searchPage,
-                'query' => $query,
-                'response' => $response,
-                'itemSet' => $itemSet,
-            ]) ?>
-            <?= $partial('search/results-header', [
-                'searchPage' => $searchPage,
-                'query' => $query,
-                'response' => $response,
-            ]) ?>
+    <?php if (isset($response)): ?>
+    <div class="search-page">
 
-            <?= $partial('search/resource-list', [
-                'site' => $site,
-                'title' => sprintf($translatePlural('%s item set', '%s item sets', $itemSetsCount), $itemSetsCount),
-                'response' => $response,
-                'resourceName' => 'item_sets',
-            ]) ?>
+            <?php if ($response->getTotalResults()): ?>
+                <?= $partial('search/facets', [
+                    'searchPage' => $searchPage,
+                    'query' => $query,
+                    'response' => $response,
+                    'itemSet' => $itemSet,
+                ]) ?>
+                <?= $partial('search/results-header', [
+                    'searchPage' => $searchPage,
+                    'query' => $query,
+                    'response' => $response,
+                ]) ?>
 
-            
-            <?= $partial('search/resource-list', [
-                'site' => $site,
-                'title' => sprintf($translatePlural('%s item', '%s items', $itemsCount), $itemsCount),
-                'response' => $response,
-                'resourceName' => 'items',
-            ]) ?>
+                <?= $partial('search/resource-list', [
+                    'site' => $site,
+                    'title' => sprintf($translatePlural('%s item set', '%s item sets', $itemSetsCount), $itemSetsCount),
+                    'response' => $response,
+                    'resourceName' => 'item_sets',
+                ]) ?>
+                
+                <?= $partial('search/resource-list', [
+                    'site' => $site,
+                    'title' => sprintf($translatePlural('%s item', '%s items', $itemsCount), $itemsCount),
+                    'response' => $response,
+                    'resourceName' => 'items',
+                ]) ?>
 
-            <?= $partial('search/results-footer', [
-                'searchPage' => $searchPage,
-                'query' => $query,
-                'response' => $response,
-            ]) ?>
+                <?= $partial('search/results-footer', [
+                    'searchPage' => $searchPage,
+                    'query' => $query,
+                    'response' => $response,
+                ]) ?>
 
-        <?php else: ?>
+            <?php else: ?>
 
-            <div class="noresults">
-                <?php if (empty($query) && !$itemSet): ?>
-                <?= $translate('Fill a query and get results.') ?>
-                <?php elseif (empty($query) && $itemSet): ?>
-                <?= $translate('This item set has no items.') ?>
-                <?php else: ?>
-                <?= $translate('Your query returned no results') ?>
-                <?php endif; ?>
-            </div>
+                <div class="noresults">
+                    <?php if (empty($query) && !$itemSet): ?>
+                    <?= $translate('Fill a query and get results.') ?>
+                    <?php elseif (empty($query) && $itemSet): ?>
+                    <?= $translate('This item set has no items.') ?>
+                    <?php else: ?>
+                    <?= $translate('Your query returned no results') ?>
+                    <?php endif; ?>
+                </div>
 
-        <?php endif; ?>
+            <?php endif; ?>
+
+        
 
     
-
-   
-</div>
-
-<?php else: ?>
-
-<div class="search-results-wrapper">
-    <div class="search-results">
-        <div class="noresults"><?= $translate('An error occured and your query returned no results.') ?></div>
     </div>
-</div>
 
-<?php endif; ?>
+    <?php else: ?>
 
-<?php if (empty($isPartial)): ?>
-</div>
-<?php endif; ?>
+    <div class="search-results-wrapper">
+        <div class="search-results">
+            <div class="noresults"><?= $translate('An error occured and your query returned no results.') ?></div>
+        </div>
+    </div>
+
+    <?php endif; ?>
+
+    <?php if (empty($isPartial)): ?>
+    </div>
+    <?php endif; ?>
+<?php endif;?>    
 <script>
     $( document ).ready(function() {
         $('#form-facets').appendTo('.filter-nav');
@@ -168,7 +180,7 @@ $itemSetsCount = $response->getResourceTotalResults('item_sets');
 
     $('#form-search').find('.inputs').each(function (index) {
         if (index === 1) {
-          var button2 = "<a href='/s/start/search' style='padding: 0.74rem;line-height: 1.5;font-size:0.75em;height: 3.8em;border-radius:0;' class='button is-outlined is-primary is-small'>Reset</a>";
+          var button2 = "<a href='<?php echo $site->url();?>/s/start/search' style='padding: 0.74rem;line-height: 1.5;font-size:0.75em;height: 3.8em;border-radius:0;' class='button is-outlined is-primary is-small'>Reset</a>";
           $(this).append(button2);
         }        
     });

@@ -1,43 +1,78 @@
 <?php
+use Omeka\Entity\User;
 $translate = $this->plugin('translate');
 $escape = $this->plugin('escapeHtml');
 $this->htmlElement('body')->appendAttribute('class', 'item resource show');
 $embedMedia = $this->siteSetting('item_media_embed', false);
 $itemMedia = $item->media();
+$template = $item->resourceTemplate();
+if($template):
+    $type = $template->label();
+else:
+    $type = "";
+endif;
 ?>
-<!--
-  <div class="container breadcrumb-section">
-    <nav class="breadcrumb" aria-label="breadcrumbs">
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><?php echo $item->displayTitle(); ?></li>
-      </ul>
-    </nav>
-  </div>
--->
   <div class="container">
     <h2 class="title is-2 is-family-secondary"><?php echo $item->displayTitle(); ?></h2>    
+    <?php
+      $auth = false;
+      if($this->identity()):          
+        $auth = true;  
+      endif;        
+    ?>
   </div>
     <?php if (!$embedMedia && $itemMedia): ?>      
       <div class="container thumbnails is-hidden-mobile" style="padding:2rem 0">
         <div class="has-text-centered">
           <?php foreach($itemMedia as $med):?>
             <?php $url = str_replace('http:', '', $med->thumbnailUrl('large'));?>
+            <?php if($med->value("dcterms:description") && $auth):?>
+              <?php if(str_contains($med->value('alamire:description').'',"representation")):?>
+                <?php $repr = str_replace("lib.is/","data.idemdatabase.org/",$med->value('dcterms:description'));?>
+                <a target="_blank" href="<?php echo $repr;?>">
+              <?php else:?>
+                <a target="_blank" href="<?php echo $med->value('dcterms:description');?>"> 
+              <?php endif;?>
+            <?php endif;?>  
             <img src="<?php echo $url;?>" style="max-width:70%;margin-bottom:1rem;"><br>
+            <?php if($med->value("dcterms:description") && $auth):?>
+              </a>
+            <?php endif;?>  
           <?php endforeach;?>
         </div>
       </div>
     <?php endif; ?>
-    <?php if($item->value('alamire:hasVersion')):?>
+    <?php if($item->value('alamire:hasVersion') && $auth):?>
       <div class="icon-text" style="padding-top:2rem">
-      <a target="_blank"style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $item->value('alamire:hasVersion');?>">
-      <img style="height:15px;margin-right:5px;" src="/alamire/themes/base/asset/img/iiif.png">
-      <span>VIEW MANUSCRIPT</span></a>
+      <?php if(str_contains($item->value('alamire:hasVersion').'',"representation")):?>
+        <?php $resolv = str_replace("http://resolver.libis.be/","https://data.idemdatabase.org/",$item->value('alamire:hasVersion'));?>
+        <a target="_blank" href="<?php echo str_replace("representation","manifest",$resolv);?>?manifest=<?php echo str_replace("representation","manifest",$resolv);?>">
+        <!--<img style="height:15px;margin-right:5px;" src="/themes/base/asset/img/iiif.png">-->
+        <svg style="height:15px;margin-right:5px;" class="MuiSvgIcon-root mirador79" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg width="100%" height="100%" viewBox="0 0 350 312" xmlns="http://www.w3.org/2000/svg"><path d="M349.914,153.001c-7.226,2.462 -14.526,4.735 -21.608,7.558c-1.292,0.515 -2.384,3.264 -2.397,4.99c-0.158,19.829 -0.086,39.659 -0.085,59.489c0.001,19.33 -0.045,38.66 0.023,57.99c0.01,2.729 -0.365,4.639 -3.374,5.734c-20.773,7.564 -41.488,15.288 -62.229,22.942c-0.274,0.102 -0.64,-0.043 -1.375,-0.111c-0.149,-1.154 -0.45,-2.396 -0.45,-3.639c0.016,-72.654 0.053,-145.308 0.098,-217.962c0.025,-40.429 27.685,-76.061 66.956,-85.815c8,-1.987 16.288,-2.814 24.442,-4.177c0,20.333 0,40.667 0,61c-2.107,-0.355 -4.21,-0.746 -6.323,-1.062c-8.942,-1.335 -16.88,3.769 -17.504,12.61c-0.766,10.846 -0.183,21.787 -0.183,33.631c8.451,-2.879 16.23,-5.529 24.01,-8.18c-0.001,18.335 -0.001,36.669 -0.001,55.002Z" style="fill: rgb(233, 36, 40);"></path><path d="M158.345,106.616c0.095,2.047 0.222,3.505 0.222,4.962c0.006,56.487 -0.047,112.975 0.094,169.461c0.01,4.037 -1.195,5.712 -5.008,7.072c-18.773,6.697 -37.406,13.788 -56.104,20.701c-1.672,0.618 -3.446,0.961 -5.603,1.549c0,-15.906 0.068,-31.381 -0.013,-46.854c-0.22,-42.298 -0.448,-84.595 -0.846,-126.891c-0.039,-4.124 1.115,-5.928 5.188,-7.368c19.113,-6.76 38.054,-14.008 57.064,-21.062c1.501,-0.557 3.057,-0.963 5.006,-1.57Z" style="fill: rgb(233, 36, 40);"></path><path d="M72.704,310.583c-21.884,-8.075 -43.084,-15.836 -64.189,-23.845c-1.203,-0.457 -2.324,-2.935 -2.331,-4.478c-0.133,-30.819 -0.096,-61.641 -0.095,-92.461c0.002,-27.481 0,-54.964 0,-83.259c7.621,2.723 14.854,5.241 22.039,7.889c13.548,4.992 27.043,10.129 40.621,15.037c2.829,1.022 4.258,2.165 4.251,5.547c-0.119,57.476 -0.092,114.952 -0.104,172.429c0,0.81 -0.096,1.621 -0.192,3.141Z" style="fill: rgb(15, 124, 168);"></path><path d="M242.875,310.627c-10.717,-3.889 -20.829,-7.533 -30.923,-11.227c-10.59,-3.875 -21.133,-7.88 -31.761,-11.644c-2.84,-1.006 -4.221,-2.192 -4.214,-5.565c0.114,-57.781 0.078,-115.563 0.084,-173.345c0,-0.487 0.111,-0.975 0.261,-2.192c8.077,2.919 15.972,5.699 23.812,8.624c12.915,4.817 25.729,9.919 38.735,14.473c3.397,1.189 4.157,2.731 4.15,6.016c-0.118,54.617 -0.118,109.234 -0.145,163.853c0,3.312 0.001,6.625 0.001,11.007Z" style="fill: rgb(15, 124, 168);"></path><path d="M111.35,104.374c-15.571,-0.313 -25.599,-10.227 -25.676,-25.962c-0.062,-12.442 4.396,-23.427 11.943,-33.128c9.449,-12.147 21.068,-20.831 36.801,-23.46c17.646,-2.948 31.024,10.385 30.038,28.301c-1.324,24.035 -23.423,48.431 -44.776,52.94c-2.746,0.58 -5.552,0.879 -8.33,1.309Z" style="fill: rgb(233, 36, 40);"></path><path d="M170.345,48.635c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.113,-29.833 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path><path d="M0.019,48.81c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.112,-29.832 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path></svg></svg>
+        </a>
+      <?php else:?>  
+        <svg style="height:15px;margin-right:5px;" class="MuiSvgIcon-root mirador79" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg width="100%" height="100%" viewBox="0 0 350 312" xmlns="http://www.w3.org/2000/svg"><path d="M349.914,153.001c-7.226,2.462 -14.526,4.735 -21.608,7.558c-1.292,0.515 -2.384,3.264 -2.397,4.99c-0.158,19.829 -0.086,39.659 -0.085,59.489c0.001,19.33 -0.045,38.66 0.023,57.99c0.01,2.729 -0.365,4.639 -3.374,5.734c-20.773,7.564 -41.488,15.288 -62.229,22.942c-0.274,0.102 -0.64,-0.043 -1.375,-0.111c-0.149,-1.154 -0.45,-2.396 -0.45,-3.639c0.016,-72.654 0.053,-145.308 0.098,-217.962c0.025,-40.429 27.685,-76.061 66.956,-85.815c8,-1.987 16.288,-2.814 24.442,-4.177c0,20.333 0,40.667 0,61c-2.107,-0.355 -4.21,-0.746 -6.323,-1.062c-8.942,-1.335 -16.88,3.769 -17.504,12.61c-0.766,10.846 -0.183,21.787 -0.183,33.631c8.451,-2.879 16.23,-5.529 24.01,-8.18c-0.001,18.335 -0.001,36.669 -0.001,55.002Z" style="fill: rgb(233, 36, 40);"></path><path d="M158.345,106.616c0.095,2.047 0.222,3.505 0.222,4.962c0.006,56.487 -0.047,112.975 0.094,169.461c0.01,4.037 -1.195,5.712 -5.008,7.072c-18.773,6.697 -37.406,13.788 -56.104,20.701c-1.672,0.618 -3.446,0.961 -5.603,1.549c0,-15.906 0.068,-31.381 -0.013,-46.854c-0.22,-42.298 -0.448,-84.595 -0.846,-126.891c-0.039,-4.124 1.115,-5.928 5.188,-7.368c19.113,-6.76 38.054,-14.008 57.064,-21.062c1.501,-0.557 3.057,-0.963 5.006,-1.57Z" style="fill: rgb(233, 36, 40);"></path><path d="M72.704,310.583c-21.884,-8.075 -43.084,-15.836 -64.189,-23.845c-1.203,-0.457 -2.324,-2.935 -2.331,-4.478c-0.133,-30.819 -0.096,-61.641 -0.095,-92.461c0.002,-27.481 0,-54.964 0,-83.259c7.621,2.723 14.854,5.241 22.039,7.889c13.548,4.992 27.043,10.129 40.621,15.037c2.829,1.022 4.258,2.165 4.251,5.547c-0.119,57.476 -0.092,114.952 -0.104,172.429c0,0.81 -0.096,1.621 -0.192,3.141Z" style="fill: rgb(15, 124, 168);"></path><path d="M242.875,310.627c-10.717,-3.889 -20.829,-7.533 -30.923,-11.227c-10.59,-3.875 -21.133,-7.88 -31.761,-11.644c-2.84,-1.006 -4.221,-2.192 -4.214,-5.565c0.114,-57.781 0.078,-115.563 0.084,-173.345c0,-0.487 0.111,-0.975 0.261,-2.192c8.077,2.919 15.972,5.699 23.812,8.624c12.915,4.817 25.729,9.919 38.735,14.473c3.397,1.189 4.157,2.731 4.15,6.016c-0.118,54.617 -0.118,109.234 -0.145,163.853c0,3.312 0.001,6.625 0.001,11.007Z" style="fill: rgb(15, 124, 168);"></path><path d="M111.35,104.374c-15.571,-0.313 -25.599,-10.227 -25.676,-25.962c-0.062,-12.442 4.396,-23.427 11.943,-33.128c9.449,-12.147 21.068,-20.831 36.801,-23.46c17.646,-2.948 31.024,10.385 30.038,28.301c-1.324,24.035 -23.423,48.431 -44.776,52.94c-2.746,0.58 -5.552,0.879 -8.33,1.309Z" style="fill: rgb(233, 36, 40);"></path><path d="M170.345,48.635c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.113,-29.833 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path><path d="M0.019,48.81c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.112,-29.832 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path></svg></svg>
+        
+      <?php endif;?>  
+        <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo str_replace("http://resolver.libis.be/","https://data.idemdatabase.org/",$item->value('alamire:hasVersion'));?>">
+          <span>VIEW MANUSCRIPT</span></a>
       </div>
+
     <?php endif;?>  
+    
  
 
   <div class="container metadata-container">
+  <?php if(!$auth && $item->value('alamire:hasVersion')):?>
+      <p style="margin-bottom:2rem;">
+          <a class="button is-primary is-small" href="<?php echo $site->url().'/guest/login?redirect='.$item->url();?>">            
+            <span class="icon is-small">
+            <i class="fas fa-user"></i>
+            </span>
+            <span>Log in to access the images</span>
+          </a>
+      </p>
+    <?php endif;?>  
     <!--<h3><?php echo $translate('Item'); ?></h3>-->
     <?php $this->trigger('view.show.before'); ?>
     <?php if ($embedMedia && $itemMedia): ?>
@@ -58,6 +93,222 @@ $itemMedia = $item->media();
         <div class="value"><a href="<?php echo $escape($itemSet->url()); ?>"><?php echo $itemSet->displayTitle(); ?></a></div>
         <?php endforeach; ?>
         <?php endif; ?>
+    </div>
+    
+    <?php if($item->value('alamire:originalText')):?>
+      <div class="container page" style="padding-top:1rem;">
+      <div class="columns">        
+        <div class="column is-12">
+          <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Text with translation(s)</h4>
+    </div>
+    </div>
+      <?php 
+        $originals = $item->value('alamire:originalText',array("all" => true));
+        $translations = $item->value('alamire:translation',array("all" => true));
+      ?>
+      <?php foreach($originals as $index=>$original):?>
+      <div class="columns is-2">        
+        <div class="column is-4">
+          <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">Transcription
+            <?php if($item->value('alamire:relatedManuscript')):
+              $rel = $item->value('alamire:relatedManuscript')->asHtml();
+              $rel = explode("$$",$rel);
+              echo " from: ".$rel[0];
+            endif;?>  
+          </h3>
+          <?php echo $original;?>
+        </div>
+        <div class="column is-6">
+          <div class="tabs is-small">
+            <ul>  
+              <?php foreach($translations as $key=>$trans):?>
+                  <?php $trans = explode("$$",$trans);?>
+                  <li class="tab <?php echo $trans[0];?>"><a href="#<?php echo trim($trans[0])."-".$key;?>"><?php echo $trans[0];?></a></li>
+              <?php endforeach;?>         
+            </ul>
+          </div>
+          <?php foreach($translations as $key=>$trans):?>
+            <?php $trans = explode("$$",$trans);?>
+            <div id="<?php echo trim($trans[0])."-".$key;?>" class="tab-pane translation <?php echo $trans[0];?>">
+            <?php echo $trans[2];?><br><br>
+            <?php echo "Translator: ".$trans[1];?><br>
+            <?php echo "Provided by: ".$trans[3];?>
+            </div>
+          <?php endforeach;?>         
+        </div>
+      </div> 
+      <?php endforeach;?>
+      <!--<?php if($item->value('alamire:textAuthor')):?>   
+        <div class="columns is-2">  
+          <div class="column is-one-fifth">            
+            <h4 class="has-text-weight-semibold is-6">Original author</h4>
+          </div>
+          <div class="column is-four-fifths">
+            <div class="values">                      
+              <div class="value" lang="">
+                <?php echo $item->value('alamire:textAuthor');?>
+              </div>
+            </div>
+          </div>
+        </div>
+      <?php endif;?>     -->
+
+      <!--
+      <?php if($item->value('alamire:textAuthor')):?>   
+        <div class="columns is-2">  
+          <div class="column is-one-fifth">            
+            <h4 class="has-text-weight-semibold is-6">Alternate language versions</h4>
+          </div>
+          <div class="column is-four-fifths">
+            <div class="values">                      
+              <div class="value" lang="">
+                <?php echo $item->value('alamire:textAuthor');?>
+              </div>
+            </div>
+          </div>
+        </div>
+      <?php endif;?> 
+      
+
+      <?php if($item->value('alamire:textNotes')):?>   
+        <h3 class="title is-6">Notes</h3>       
+        <div class="content" lang="">
+           <?php echo $item->value('alamire:textNotes');?>
+        </div>
+      <?php endif;?> 
+
+      
+      <?php //if($item->value('alamire:textComments')):?>   
+        <h3 class="title is-6">Comments</h3>       
+        <div class="content" lang="">
+           <?php echo $item->value('alamire:textComments');?>
+        </div>
+      <?php //endif;?> 
+      
+
+      <?php if($item->value('alamire:textVariants')):?>   
+        <h3 class="title is-6">Text variations</h3>       
+        <div class="content" lang="">
+           <?php echo $item->value('alamire:textVariants');?>
+        </div>
+      <?php endif;?> 
+
+      <?php if($item->value('alamire:textVariantsRemarks')):?>   
+        <h3 class="title is-6">Text variant remarks</h3>       
+        <div class="content" lang="">
+           <?php echo $item->value('alamire:textVariantsRemarks');?>
+        </div>
+      <?php endif;?> 
+      -->
+
+
+    <?php endif;?>  
+    <?php if($type == "Composition"):?>
+          <div class="columns is-12"> 
+            <div class="column">
+              <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Copyright</h4>
+            </div>
+          </div>          
+        <?php endif;?>
+    <div class="columns is-2">  
+      <div class="column is-one-fifth">        
+        <h4 class="has-text-weight-semibold is-6">Metadata</h4>
+      </div>
+      <div class="column is-four-fifths">
+        <div class="values">                      
+          <div class="value" lang="">
+            Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 License
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="columns is-12"> 
+      <div class="column">
+        <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Permalinks</h4>
+      </div>
+    </div>
+
+    <div class="columns is-2">  
+      <div class="column is-one-fifth">
+        <h4 class="has-text-weight-semibold is-6">Metadata</h4>
+      </div>
+      <div class="column is-three-fifths">
+        <div class="values">                      
+          <div class="value" lang="">
+              <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid");?>" class="button is-small is-outlined is-primary">
+                <span>https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid");?></span>                
+              </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
+              <span style="display:none">https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid");?></span>
+              <span style="margin:0;" class="icon is-small">
+                <i class="fas fa-clipboard"></i>
+                <span class="tooltiptext">Copied</span>
+              </span>
+            </button>
+          </div>
+   
+        </div>
+      </div>
+    </div>    
+
+    <?php if($auth):?>
+      <?php if($item->value('alamire:hasVersion')):?>
+        <?php if(str_contains($item->value('alamire:hasVersion').'',"representation")):?>
+          <?php $resolv = str_replace("http://resolver.libis.be/","https://data.idemdatabase.org/",$item->value('alamire:hasVersion'));?>
+          
+          <div class="columns is-2">  
+            <div class="column is-one-fifth">
+              <h4 class="has-text-weight-semibold is-6">Images</h4>
+            </div>
+            <div class="column is-three-fifths">
+              <div class="values">                      
+                <div class="value" lang="">
+                <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="<?php echo $resolv;?>" class="button is-small is-outlined is-primary">
+                <span><?php echo $resolv;?></span>                
+                </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
+                    <span style="display:none"><?php echo $resolv;?></span>
+                    <span style="margin:0;" class="icon is-small">
+                      <i class="fas fa-clipboard"></i>
+                      <span class="tooltiptext">Copied</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="columns is-2">  
+            <div class="column is-one-fifth">
+              <h4 class="has-text-weight-semibold is-6">IIIF Manifest</h4>
+            </div>
+            <div class="column is-three-fifths">
+              <div class="values">                      
+                <div class="value" lang="">
+                <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="<?php echo str_replace("representation","manifest",$resolv);?>" class="button is-small is-outlined is-primary">
+                <span><?php echo str_replace("representation","manifest",$resolv);?></span>                
+                </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
+                    <span style="display:none"><?php echo str_replace("representation","manifest",$resolv);?></span>
+                    <span style="margin:0;" class="icon is-small">
+                      <i class="fas fa-clipboard"></i>
+                      <span class="tooltiptext">Copied</span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <?php endif;?>
+      <?php endif;?>
+    <?php else:?>      
+      <p>
+          <a class="button is-primary is-small" href="<?php echo $site->url().'/guest/login?redirect='.$item->url();?>">            
+            <span class="icon is-small">
+            <i class="fas fa-user"></i>
+            </span>
+            <span>Log in to access the images</span>
+          </a>
+      </p>
+    <?php endif;?>  
+    </div>
     </div>
   </div>
 
@@ -102,6 +353,40 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
       }      
     });
 
+    $(".copy").click(function(e){
+      var text = $('span:first', this).text();
+      navigator.clipboard.writeText(text);
+      $('span:last', this).fadeIn("slow");;   
+      $('span:last', this).fadeOut("slow");   
+    });
+
     $('.thumbnails').appendTo('.navigation');
+
+    $('.collapsible').click(function() {
+     var index = $(this).data('index');     
+      $('.player').each(function(i, obj) {
+          if($(this).data('index') == index){
+            $(this).toggle();
+          }else{
+            $(this).hide();
+          }
+      });
+    }); 
+
+    $('li.tab:first').addClass('is-active');
+    $('.tab-pane:first').addClass('is-active');
+
+   
+
+    $('li.tab').click(function(e) {
+      e.preventDefault();
+      var hash = $(this).children('a').eq(0).attr('href');
+      $('.tab-pane').removeClass('is-active');
+      $(hash).addClass('is-active');
+      $('li.tab').removeClass('is-active');
+      $(this).addClass('is-active');
+      return true;
+    });
+    
   });
 </script>

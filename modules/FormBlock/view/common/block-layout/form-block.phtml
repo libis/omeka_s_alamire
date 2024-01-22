@@ -14,9 +14,7 @@ $post  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
       
 $type = isset($get["type"]) ? $get['type'] : '';
 $subject = isset($get["subject"]) ? $get['subject'] : '';
-$formmail = isset($get["mail"]) ? $get['mail'] : '';     
-$institutie = isset($get["instelling"]) ? $get['instelling'] : '';     
-$foundation = isset($get["foundation"]) ? $get['foundation'] : '';  
+$formmail = isset($get["mail"]) ? $get['mail'] : '';  
 ?>
 
   <div class="container">   
@@ -31,7 +29,7 @@ $foundation = isset($get["foundation"]) ? $get['foundation'] : '';
             $post  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
             $error = '';
             
-            $message = "<p>Name: ".$post["naam"]."<br>Institution: ".$post["institutie"]."<br>Add to foundation: ".$post["foundation"]."</p><p>".$post["vraag"]."</p><p>"."Visit <a href='https://idemdatabase.org'>idemdatabase.org</a></p>";
+            $message = "<p>Name: ".$post["naam"]."</p><p>".$post["vraag"]."</p><p>"."Visit <a href='https://idemdatabase.org'>idemdatabase.org</a></p>";
             $html = new MimePart($message);
             $html->type = Mime::TYPE_HTML;
             $html->charset = 'utf-8';
@@ -82,7 +80,8 @@ $foundation = isset($get["foundation"]) ? $get['foundation'] : '';
             </article>
           <?php endif;?> 
         <?php endif;?>  
-        <p>Please send us your comments and suggestions.</p>
+        <p>Please send us your comments and suggestions about the database. To refer to a specific page, please include the metadata permalink, which can be found and copied under the heading Permalinks.
+        <br>Example: <a href="https://idemdatabase.org/item/b-br-ms-215-16">https://idemdatabase.org/item/b-br-ms-215-16</a>.</p>
         <form id="feedback-form" method="post">
           <div class="field">
             <label class="label" for="naam">Name</label>
@@ -98,24 +97,12 @@ $foundation = isset($get["foundation"]) ? $get['foundation'] : '';
           </div>
         
           <div class="label" class="field">  
-                  
-            <label for="collectie">Institution</label>
-              <div class="control">                
-                <input class="input" type="text" id="institutie" name="institutie" value="<?php echo $institutie;?>">
-              </div>
-          </div>
-          <div class="label" class="field">  
             <label for="vraag">Message</label>
             <div class="control">
               <textarea required class="textarea" id="vraag" name="vraag" placeholder=""></textarea>
             </div>
           </div>
-          <div class="field"> 
-            <label class="checkbox"  class="field">
-              <input type="checkbox" name="foundation">
-              I would like to be added to the Alamire Foundation contact list</a>
-            </label>
-          </div>
+          
           <div class="field">  
             <button data-sitekey="<?php echo $siteKey;?>" data-callback='onSubmit' data-action='submit' class="g-recaptcha button is-primary is-small">Send message</button>
           </div>

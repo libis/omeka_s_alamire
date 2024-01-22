@@ -1,0 +1,18 @@
+<div class="container page-content">
+      <?php if($block->dataValue('title')):?>
+        <h2 class="title is-3"><?php echo $block->dataValue('title');?></h2>
+      <?php endif;?>
+      <?php if($block->dataValue('text') && !$block->dataValue('text2')):?>        
+          <?php echo $block->dataValue('text');?>
+      <?php endif;?>
+      <?php if($block->dataValue('text') && $block->dataValue('text2')):?>
+        <div class="columns">
+          <div class="column">
+            <?php echo $block->dataValue('text');?>
+          </div>
+          <div class="column">
+            <?php echo $block->dataValue('text2');?>
+          </div>
+        </div>
+      <?php endif;?>
+    </div>

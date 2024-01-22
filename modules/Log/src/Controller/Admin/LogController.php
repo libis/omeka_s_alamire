@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Log\Controller\Admin;
 
 use Laminas\Mvc\Controller\AbstractActionController;
@@ -21,19 +22,20 @@ class LogController extends AbstractActionController
 
     public function browseAction()
     {
+        $this->setBrowseDefaults('created');
+
+        $params = $this->params()->fromQuery();
+
         $formSearch = $this->getForm(QuickSearchForm::class);
         $formSearch
             ->setAttribute('action', $this->url()->fromRoute(null, ['action' => 'browse'], true))
             ->setAttribute('id', 'log-search');
-        $data = $this->params()->fromQuery();
-        if ($data) {
-            $formSearch->setData($data);
+        if ($params) {
+            $formSearch->setData($params);
             // TODO Don't check validity?
         }
 
-        $this->setBrowseDefaults('created');
         // TODO Manage multiple messages in/nin.
-        $params = $this->params()->fromQuery();
         $params += ['message' => []];
         if (!is_array($params['message'])) {
             $params['message'] = [['text' => $params['message'], 'type' => 'in']];
@@ -66,14 +68,13 @@ class LogController extends AbstractActionController
             $this->messenger()->addWarning('The logger is currently disabled for database. Check config/local.config.php.'); // @translate
         }
 
-        $view = new ViewModel;
-        $view
-            ->setVariable('logs', $logs)
-            ->setVariable('resources', $logs)
-            ->setVariable('formSearch', $formSearch)
-            ->setVariable('formDeleteSelected', $formDeleteSelected)
-            ->setVariable('formDeleteAll', $formDeleteAll);
-        return $view;
+        return new ViewModel([
+            'logs' => $logs,
+            'resources' => $logs,
+            'formSearch' => $formSearch,
+            'formDeleteSelected' => $formDeleteSelected,
+            'formDeleteAll' => $formDeleteAll,
+        ]);
     }
 
     public function showDetailsAction()

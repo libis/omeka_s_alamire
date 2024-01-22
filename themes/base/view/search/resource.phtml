@@ -97,13 +97,40 @@ $hyperlink = $plugins->get('hyperlink');
                         </div>
                     </div>       
                 <?php endif;?>
-                <?php if($resource->value('alamire:creator')):?>  
+                <?php if($resource->value('alamire:creator_display')):?>  
                     <div class="columns" style="padding-bottom:0.5rem">                 
                         <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
                             <strong>Composer</strong>
                         </div>
                         <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
-                            <?php echo $resource->value('alamire:creator')->asHtml();?>
+                        <?php                        
+                            $cites = $resource->value('alamire:creator_display',array('all' => true));
+                            $sort_cites = array();
+                            foreach($cites as $cite):
+                                if(str_contains($cite->asHtml(),"$$")):
+                                    $cite = explode(" $$ ",$cite->asHtml());    
+                                    $comps = trim($cite[0]);
+                                    $comps = explode(" (",$comps);
+                                    if(!empty($comps[1])):
+                                        $type = $comps[1];
+                                        if($type == "credited)"):
+                                            $comp = $comps[0];
+                                        elseif($type == "stylistic)"):
+                                            $comp = "[".$comps[0]."]";
+                                        elseif($type == "contested)"):
+                                            $comp = "?".$comps[0];
+                                        endif;
+                                    else:      
+                                        $comp = $comps[0];
+                                    endif;   
+                                    $sort_cites[trim($cite[1])] = $comp;
+                                else:
+                                    echo $cite->asHtml();      
+                                endif;  
+                            endforeach;
+                            ksort($sort_cites);    
+                            echo reset($sort_cites);
+                        ?>
                         </div>
                     </div>       
                 <?php endif;?>

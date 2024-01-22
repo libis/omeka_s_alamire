@@ -1,0 +1,27 @@
+<?php
+/**
+ * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var \Omeka\Entity\User $user
+ * @var \Guest\Form\EmailForm $form
+ */
+
+$translate = $this->plugin('translate');
+
+$this->htmlElement('body')->appendAttribute('class', 'guest account');
+$form->prepare();
+?>
+
+<?= $this->messages() ?>
+
+<?= $this->pageTitle($translate('My email')) ?>
+
+<?= $this->form()->openTag($form) ?>
+<?= $this->formCollection($form, false) ?>
+<?php $this->trigger('view.add.form.after'); ?>
+<div id="page-actions">
+    <button type="submit"><?= $translate('Update') ?></button>
+</div>
+<?= $this->form()->closeTag() ?>
+
+<?php $this->trigger('view.add.after'); ?>

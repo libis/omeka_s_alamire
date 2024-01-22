@@ -537,6 +537,10 @@ class Harvest extends AbstractJob
             if($localName == 'original'){
                 //$this->logger->info("media - 1");                
                 foreach ($dcMetadata->$localName as $imageUrl) {      
+
+                    $imageUrl = explode(" $$ ",$imageUrl.'');
+                    $viewer = $imageUrl[1];
+                    $imageUrl = $imageUrl[0]; 
                     
                     //$this->logger->info($imageUrl[1]);
                     $media[$imgc]= [
@@ -551,6 +555,14 @@ class Harvest extends AbstractJob
                               'property_id' => 1,
                           ],
                       ],
+                      'dcterms:description' => [
+                        [
+                            'type' => 'literal',
+                            '@language' => '',
+                            '@value' => $viewer.'',
+                            'property_id' => 4,
+                        ],
+                    ],
                   ];
                   $imgc++;
                 }
@@ -591,6 +603,9 @@ class Harvest extends AbstractJob
             $texts = trim((string) $value);
             $texts = str_replace("&amp;","&",$texts);
 			
+            if($localName == "pid"):
+                $texts = str_replace("#","",$texts);   
+            endif;    
             if($localName == "relatedComposition"):                
                 $texts= array($texts.'');
             else:

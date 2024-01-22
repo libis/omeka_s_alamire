@@ -50,8 +50,6 @@ h5.title{
 
 .section-head{
   color: $primary;
-  margin-top: 1rem;
-
 }
 
 #site-title-text {
@@ -640,6 +638,31 @@ h5.title{
   }
 }
 
+/* Tooltip container */
+.copy {
+  position: relative;
+}
+
+/* Tooltip text */
+.copy .tooltiptext {
+  display:none;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  top: -2rem;
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.copy:hover .tooltiptext {
+  //visibility: visible;
+}
+
 .image-section{
   padding:1rem !important;
   background: #efefef;
@@ -647,8 +670,12 @@ h5.title{
   width: 100%;
 }
 
+.no-title{
+  display:none;
+}
+
 .expand{
-  margin-left:4px;
+  //margin-left:4px;
 
   i{
     vertical-align: text-bottom;
@@ -710,3 +737,63 @@ footer.footer{
     height: 1.8rem;
   }
 }
+
+.guest-anonymous form{
+  margin-top:1rem;
+  
+  label{
+    font-size:0.8rem;
+    color: #363636;
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+  }
+
+  input[type="text"],input[type="email"],input[type="password"], textarea{
+    box-shadow: none;
+    border: 1px solid #898989;
+    border-top:none;
+    padding: 3px;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  input{
+    height: 1.8rem;
+  }
+
+  button,input[type="submit"] {
+    border-radius: 0;
+    padding: 0.5rem 0.74rem;
+    background: #c63;
+    color: white;
+    border: none;
+    cursor: pointer;
+    height: auto;
+  }  
+}
+
+.forgot-password{
+  margin-top: 1rem;
+}
+
+.collapsible {
+  cursor:pointer
+  }
+  
+  .tab-pane.is-active {
+    display: block;
+    -webkit-transition: all 400ms ease-out;
+    transition: all 400ms ease-out;
+  }
+  .tab-pane {
+    display: none;
+    -webkit-transition: all 400ms ease-out;
+    transition: all 400ms ease-out;
+  } 
+  
+  .player {
+    padding: 1rem 0;
+    display: none;
+    overflow: hidden;
+  }

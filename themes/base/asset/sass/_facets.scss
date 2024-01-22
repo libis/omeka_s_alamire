@@ -1,7 +1,9 @@
-.search-facet-items {
-    overflow: auto;
+.search-facet-items {   
     max-height: 250px;
     padding: 0.5rem 0;
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: $primary $primary;
 }
 
 .txtSearch{
@@ -14,6 +16,14 @@
         box-shadow: none;
         outline:none;
     }
+}
+
+.search-facet h4{
+    color: $primary;
+}
+
+.search-facet-item a{
+    color: #333;
 }
 
 ::-webkit-scrollbar {
