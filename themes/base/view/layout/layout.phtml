@@ -1,15 +1,24 @@
 <?php
-
+$url = $this->serverUrl(true);
+//echo $url;
+echo $this->resource();
+if (strpos($url, 'page/home') !== false || $url == "https://idemdatabase.org/") {
+    $home = true;
+}else{
+  $home = false;
+}
 $escape = $this->plugin('escapeHtml');
 $siteTitle = $site->title();
 $this->htmlElement('html')->setAttribute('lang', $this->lang());
 $this->headMeta()->setCharset('utf-8');
 $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1');
-$this->headTitle($siteTitle)->setSeparator(' · ');
-$this->headTitle()->append($this->setting('installation_title', 'Omeka S'));
+$this->headTitle()->setSeparator(' | ');
+if($home):
+  $this->headTitle("Integrated Database for Early Music - Alamire Foundation");
+else:
+  $this->headTitle()->append($this->setting('installation_title', 'Omeka S'));
+endif;  
 $this->headLink()->prependStylesheet($this->assetUrl('css/style.min.css'));
-//$this->headLink()->prependStylesheet($this->assetUrl('css/iconfonts.css', 'Omeka'));
-//$this->headLink()->prependStylesheet('//fonts.googleapis.com/css?family=Open+Sans:400,400italic,600,600italic,700italic,700');
 $this->headScript()->prependFile($this->assetUrl('js/default.js'));
 $this->headScript()->prependFile($this->assetUrl('js/slick.js'));
 $this->headScript()->prependFile($this->assetUrl('js/readmore.js'));
@@ -24,6 +33,10 @@ $userBar = $this->userBar();
     <head>
         <?php echo $this->headMeta(); ?>
         <?php echo $this->headTitle(); ?>
+        <?php //var_dump($this->basePath());?>
+        <meta name="description" content="The Integrated for Early Music of the Alamire Foundation provides high resolution images and detailed descriptions of early music sources, especially (with composers) from the Low Countries">
+        <meta name="author" content="Alamire Foundation">
+        <meta name="keywords" content="Early Music, Manuscript, Plainchant, Polyphony, Carillon, Low Countries">
         <?php echo $this->headLink(); ?>
         <?php echo $this->headStyle(); ?>
         <?php echo $this->headScript(); ?>
@@ -31,43 +44,13 @@ $userBar = $this->userBar();
         <script src="https://kit.fontawesome.com/582fb8c29f.js" crossorigin="anonymous"></script><link href='//fonts.googleapis.com/css?family=Dosis:400,500,600,700' rel='stylesheet' type='text/css'>
         <script src="https://unpkg.com/colcade@0/colcade.js"></script>
     </head>
-
     <?php echo $this->htmlElement('body'); ?>
     <?php echo $userBar; ?>
     <header>
-        <!--<nav class="navbar is-white" role="navigation" aria-label="main navigation">
-          <div class="container">
-          <div class="navbar-brand">
-            <a class="navbar-item" href="<?php echo $site->url(); ?>">
-              <div class="logo-1">
-              <?php if ($this->themeSetting('logo')): ?>
-                  <img src="<?php echo $this->themeSettingAssetUrl('logo'); ?>" alt="<?php echo $escape($siteTitle); ?>" />
-                  <br>Alamire<br>Foundation
-                  <?php else: ?>
-                  <?php echo $escape($siteTitle); ?>
-              <?php endif; ?>
-              </div>              
-            </a>
-
-            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a>
-          </div>
-          <div class="navbar-menu">
-            <div class="navbar-start">
-              <div class="navbar-item">
-                  
-              </div>                     
-            </div>
-          </div>
-        </div>
-      </nav>-->
       <div class="container">
-      <div class="columns">
-        <div class="column is-3 left-nav">
-          <a class="navbar-item" href="<?php echo $site->url(); ?>" style="padding:1rem 0 0 0;">
+        <div class="columns">
+          <div class="column is-3 left-nav">
+            <a class="navbar-item" href="<?php echo $site->url(); ?>" style="padding:1rem 0 0 0;">
               <div class="logo-1">
               <?php if ($this->themeSetting('logo')): ?>
                   <img src="<?php echo $this->themeSettingAssetUrl('logo'); ?>" alt="<?php echo $escape($siteTitle); ?>" />
@@ -76,14 +59,16 @@ $userBar = $this->userBar();
                   <?php echo $escape($siteTitle); ?>
               <?php endif; ?>
               </div>              
-          </a>        
+            </a>        
+          </div>
+          <div class="column">
+            <div id="site-title-text">
+              <a href="<?php echo $site->url();?>">IDEM</a>
+             <div id="description">Integrated Database for Early music</div>
+            </div>  
+          </div>
         </div>
-        <div class="column">
-          <div id="site-title-text">
-            <a href="<?php echo $site->url();?>">IDEM</a>
-            <div id="description">Integrated Database for Early music</div>
-          </div>  
-        </div>    
+      </div>      
     </header>
     <section class="section">
       <div class="container">
@@ -131,33 +116,7 @@ $userBar = $this->userBar();
            ?>
          </div>
          <button class="burger-menu-close modal-close is-large"></button>
-      </div>
-    <!--         
-    <?php if (strpos($_SERVER['REQUEST_URI'], '/page/terms-conditions') === false) :?>
-      <div class="modal terms-modal">
-        <div class="modal-background"></div>
-        <div class="modal-content">
-         
-          <div class="container">
-            <div class="content">
-              
-              <h5 class="title is-6">Continue to IDEM</h5>
-              <p><button class="button is-primary terms-close">I agree to the terms & conditions</button></p>
-              <p>
-                <div class="icon-text">
-                  <span class="icon">
-                    <i class="fas fa-info-circle"></i>
-                  </span>
-                 <span><a href="/alamire/s/start/page/terms-conditions">
-                About the terms & conditions</a></span>
-                </div>                
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    <?php endif;?>  
-    -->
+      </div>   
   </body>
   <script>
   $(document).ready(function() {
