@@ -1,23 +1,78 @@
 <?php
 $url = $this->serverUrl(true);
+$item = "";$type = "";
 //echo $url;
-echo $this->resource();
+$meta_description = "The Integrated for Early Music of the Alamire Foundation provides high resolution images and detailed descriptions of early music sources, especially (with composers) from the Low Countries";
+$meta_keywords = "Early Music, Manuscript, Plainchant, Polyphony, Carillon, Low Countries";
 if (strpos($url, 'page/home') !== false || $url == "https://idemdatabase.org/") {
     $home = true;
 }else{
   $home = false;
+  if (strpos($url, 'page/userguide')):
+    $meta_description = "Learn how to use the Integrated Database for Early Music in this quick user guide";
+  elseif("page/bibliography"):
+    $meta_description = "Browse the exhaustive list of bibliographical references used in Integrated Database for Early Music";
+  elseif("page/terms"):
+      $meta_description = "Read about our Terms & Conditions on the use and citation of the images and metadata of the Integrated Database for Early Music.";
+  endif;  
+  
+  if (strpos($url, "item/")):
+    $parts = explode("/",$url);
+    $id = end($parts);
+    $query = 'property[0][joiner]=and&property[0][property]=339&property[0][type]=eq&property[0][text]='.$id;
+    //$query = 'property[0][joiner]=and&property[0][property]=233&property[0][type]=eq&property[0][text]='.$id;
+    parse_str($query,$query);    
+    $item = $this->api()->searchOne('items',$query);
+    $item = $item->getContent();   
+   
+    if($item):
+      $template = $item->resourceTemplate();
+      if($template):
+          $type = $template->label();
+      endif;
+      if($type == "Manuscript"):
+          $meta_description = "Browse digitally through manuscript ".$item->displayTitle()." in the Integrated Database for Early Music and discover more about the material, origin and content of the manuscript.";
+          $values = $item->value("alamire:formatGeneralDisplay",array("all" => true));
+          $values2 = $item->value("alamire:catergory",array("all" => true));
+          $values = array_merge ($values, $values2);
+          $values[] = $item->value("alamire:originGeneral");
+          $values[] = $item->value("alamire:dateCentury");
+          $values = array_filter($values);
+          $values = implode(",",$values);
+          $meta_keywords = "Early music,Manuscript,".$values;
+      elseif($type == "Composition"): 
+          $meta_description = "View the composition ".$item->value("alamire:creator")." - ".$item->displayTitle()." in our digital sources and discover more about its authorship, structure and context.";
+          $values = $item->value("alamire:creator",array("all" => true));
+          $values[] = $item->value("alamire:category");
+          $values[] = $item->value("alamire:genre");
+          $values2 = $item->value("alamire:alamire:alternativeTitle",array("all" => true));
+          $values = array_merge ($values, $values2);
+          $values = array_filter($values);
+          $values = implode(",",$values);
+          $meta_keywords = "Early music,Manuscript,".$values;
+      endif;     
+    endif;  
+  endif;  
 }
 $escape = $this->plugin('escapeHtml');
 $siteTitle = $site->title();
 $this->htmlElement('html')->setAttribute('lang', $this->lang());
 $this->headMeta()->setCharset('utf-8');
 $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1');
-$this->headTitle()->setSeparator(' | ');
-if($home):
-  $this->headTitle("Integrated Database for Early Music - Alamire Foundation");
-else:
-  $this->headTitle()->append($this->setting('installation_title', 'Omeka S'));
-endif;  
+if($item):
+  $template = $item->resourceTemplate();
+  if($template):
+    if($template->label() == "Compostion"):     
+      $this->headTitle($template->label().": ".$item->value("alamire:creator")." - ".$item->displayTitle()." | Integrated Database for Early Music - Alamire Foundation")->setSeparator(' | ');
+    else:  
+      $this->headTitle($template->label().": ".$item->displayTitle()." | Integrated Database for Early Music - Alamire Foundation")->setSeparator(' | ');
+    endif;  
+  else:
+    $this->headTitle($item->displayTitle()." | Integrated Database for Early Music - Alamire Foundation")->setSeparator(' | ');
+  endif;
+else:  
+  $this->headTitle("Integrated Database for Early Music - Alamire Foundation")->setSeparator(' | ');
+endif;
 $this->headLink()->prependStylesheet($this->assetUrl('css/style.min.css'));
 $this->headScript()->prependFile($this->assetUrl('js/default.js'));
 $this->headScript()->prependFile($this->assetUrl('js/slick.js'));
@@ -31,12 +86,11 @@ $userBar = $this->userBar();
 <?php echo $this->doctype(); ?>
 <?php echo $this->htmlElement('html'); ?>
     <head>
-        <?php echo $this->headMeta(); ?>
-        <?php echo $this->headTitle(); ?>
-        <?php //var_dump($this->basePath());?>
-        <meta name="description" content="The Integrated for Early Music of the Alamire Foundation provides high resolution images and detailed descriptions of early music sources, especially (with composers) from the Low Countries">
+        <?php echo $this->headMeta();?>
+        <?php echo $this->headTitle();?>
+        <meta name="description" content="<?php echo $meta_description;?>">
         <meta name="author" content="Alamire Foundation">
-        <meta name="keywords" content="Early Music, Manuscript, Plainchant, Polyphony, Carillon, Low Countries">
+        <meta name="keywords" content="<?php echo $meta_keywords;?>">
         <?php echo $this->headLink(); ?>
         <?php echo $this->headStyle(); ?>
         <?php echo $this->headScript(); ?>

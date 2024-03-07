@@ -393,7 +393,13 @@ endif;
                     endif;  
                   else:
                     echo "</div></div><div class='content-holder'>"; 
-                    echo $irel[3]." ".$irel[4]."<br>";
+                    //echo $irel[3]." ".$irel[4]."<br>";
+                    echo $irel[3];
+                    if(str_contains($irel[5],"http") && $auth):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[5]).'">'.$irel[4].'</a>';
+                    else:
+                      echo $irel[4];
+                    endif; 
                   endif;   
                     
                   if($i == 0):

@@ -3,6 +3,10 @@ return [
     'logger' => [
         'log' => false,
         'priority' => \Zend\Log\Logger::NOTICE,
+        'writers' => [
+            'stream' => false,
+            'job' => false,
+        ],
     ],
     'http_client' => [
         'sslcapath' => null,
