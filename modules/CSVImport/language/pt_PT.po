@@ -4,10 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Latino Imparato <latino.imparato@gmail.com>, 2018
-# Tommaso Vitale, 2019
-# Pietro <pietro_valocchi@yahoo.it>, 2019
-# Giorgio Comai <g@giorgiocomai.eu>, 2022
+# Joana Paulino <jpaulino@fcsh.unl.pt>, 2020
 # 
 #, fuzzy
 msgid ""
@@ -16,93 +13,89 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-02-17 13:26-0500\n"
 "PO-Revision-Date: 2017-09-14 20:14+0000\n"
-"Last-Translator: Giorgio Comai <g@giorgiocomai.eu>, 2022\n"
-"Language-Team: Italian (https://www.transifex.com/omeka/teams/14184/it/)\n"
+"Last-Translator: Joana Paulino <jpaulino@fcsh.unl.pt>, 2020\n"
+"Language-Team: Portuguese (Portugal) (https://www.transifex.com/omeka/teams/14184/pt_PT/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: it\n"
+"Language: pt_PT\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: view/common/mapping-sidebar.phtml:4
 msgid "Add mapping: "
-msgstr "Aggiungi mappatura"
+msgstr "Adicionar mapeamento:"
 
 #: view/common/options-sidebar.phtml:4
 msgid "Batch edit column options:"
-msgstr "Modifica in blocco le opzioni di più colonne:"
+msgstr "Opções da coluna de edição múltipla:"
 
 #: view/common/options-sidebar.phtml:5
 msgid "Column options:"
-msgstr "Opzioni per colonna:"
+msgstr "Opções de coluna:"
 
 #: view/common/options-sidebar.phtml:7
 msgid ""
 "Highlighted options will apply to selected column headers. Reset an option "
 "to cancel changes."
 msgstr ""
-"Le opzioni evidenziate si applicheranno alle intestazioni di colonna "
-"selezionate. Ripristina un'opzione per annullare le modifiche. "
 
 #: view/common/options-sidebar.phtml:11
 msgid "Use multivalue separator"
-msgstr "Utilizza un separatore per valori multipli"
+msgstr "Usar separador de multivalor"
 
 #: view/common/options-sidebar.phtml:21
 msgid "This will override language settings in basic import settings."
 msgstr ""
-"Questo andrà a sovrascrivere le impostazioni della lingua nelle impostazioni"
-" di importazione di base."
 
 #: view/common/options-sidebar.phtml:29
 msgid "Data type"
-msgstr "Tipo di dati"
+msgstr ""
 
 #: view/common/options-sidebar.phtml:40
 msgid "Import values as private"
-msgstr "Importa valori come privati"
+msgstr "Importar valores como privados"
 
 #: view/csv-import/index/index.phtml:8
 msgid "Import Settings"
-msgstr "Impostazioni di importazione"
+msgstr "Importar configurações"
 
 #: view/csv-import/index/index.phtml:8 view/csv-import/index/map.phtml:20
 #: view/csv-import/index/past-imports.phtml:7
 msgid "CSV Import"
-msgstr "Importa CSV"
+msgstr "Importação CSV"
 
 #: view/csv-import/index/map.phtml:13
 msgid "mixed resources"
-msgstr "risorse miste"
+msgstr "recursos mistos"
 
 #: view/csv-import/index/map.phtml:14
 msgid "users"
-msgstr "utenti"
+msgstr "utilizadores"
 
 #: view/csv-import/index/map.phtml:17
 #, php-format
 msgid "Import settings for %s"
-msgstr "Impostazioni di importazione per %s"
+msgstr "Importar configurações para %s "
 
 #: view/csv-import/index/map.phtml:18
 msgid "Import settings"
-msgstr "Impostazioni di importazione"
+msgstr "Importar configurações"
 
 #: view/csv-import/index/map.phtml:28
 msgid "Map to Omeka S data"
-msgstr "Mappa a dati di Omeka S"
+msgstr "Mapear para os dados do Omeka S"
 
 #: view/csv-import/index/map.phtml:30
 msgid "Basic Settings"
-msgstr "Impostazioni di base"
+msgstr "Configurações básicas"
 
 #: view/csv-import/index/map.phtml:31
 msgid "Advanced Settings"
-msgstr "Impostazioni avanzate"
+msgstr "Configurações avançadas"
 
 #: view/csv-import/index/map.phtml:46
 msgid "Resource type column"
-msgstr "Tipo di risorsa"
+msgstr "Coluna de tipo de recurso"
 
 #: view/csv-import/index/map.phtml:50
 #: view/csv-import/mapping-sidebar/item.phtml:11
@@ -111,92 +104,92 @@ msgstr "Tipo di risorsa"
 #: view/csv-import/mapping-sidebar/resource.phtml:8
 #: view/csv-import/mapping-sidebar/user.phtml:7
 msgid "Select below"
-msgstr "Seleziona sotto"
+msgstr "Selecionar abaixo"
 
 #: view/csv-import/index/map.phtml:60
 msgid "Batch edit options"
-msgstr "Opzioni per la modifica in blocco"
+msgstr "Opções de edição múltipla"
 
 #: view/csv-import/index/map.phtml:70
 msgid "Column"
-msgstr "Colonna"
+msgstr "Coluna"
 
 #: view/csv-import/index/map.phtml:72
 msgid "Mappings"
-msgstr "Mappature"
+msgstr "Mapeamentos"
 
 #: view/csv-import/index/map.phtml:81
 msgid "Select column"
-msgstr "Seleziona colonna"
+msgstr "Selecionar coluna"
 
 #: view/csv-import/index/map.phtml:85
 msgid "Add mapping"
-msgstr "Aggiungi mappatura"
+msgstr "Adicionar mapeamento"
 
 #: view/csv-import/index/map.phtml:98
 msgid "Remove mapping"
-msgstr "Elimina mappatura"
+msgstr "Remover o mapeamento"
 
 #: view/csv-import/index/map.phtml:110
 msgid "Multivalue"
-msgstr "Multivalore"
+msgstr "Multivalor"
 
 #: view/csv-import/index/map.phtml:114
 msgid "Language:"
-msgstr "Lingua:"
+msgstr "Idioma:"
 
 #: view/csv-import/index/map.phtml:118
 msgid "Private values"
-msgstr "Valori privati"
+msgstr "Valores privados"
 
 #: view/csv-import/index/past-imports.phtml:7
 msgid "Past Imports"
-msgstr "Importazioni precedenti"
+msgstr "Importações anteriores"
 
 #: view/csv-import/index/past-imports.phtml:20
 msgid "Undo"
-msgstr "Annulla"
+msgstr "Desfazer"
 
 #: view/csv-import/index/past-imports.phtml:24
 msgid "Action"
-msgstr "Azione"
+msgstr "Ação"
 
 #: view/csv-import/index/past-imports.phtml:26
 msgid "Result"
-msgstr "Risultato"
+msgstr "Resultado"
 
 #: view/csv-import/index/past-imports.phtml:51
 #: view/csv-import/index/past-imports.phtml:86
 msgid "Job details"
-msgstr "Dettagli del lavoro"
+msgstr "Detalhes do trabalho"
 
 #: view/csv-import/index/past-imports.phtml:63
 msgid ""
 "Problems were detected with the import. Check the job's log for details."
 msgstr ""
-"I problemi sono stati rilevati con l'importazione. Controlla il registro del"
-" lavoro per i dettagli."
+"Foram detetados problemas de importação. Verifique o estado do trabalho para"
+" detalhes."
 
 #: view/csv-import/index/past-imports.phtml:78
 #, php-format
 msgid "Undone %s"
-msgstr "Annullato %s"
+msgstr "Desfeito %s"
 
 #: view/csv-import/index/past-imports.phtml:82
 msgid "Undo in progress"
-msgstr "Annullamento in corso"
+msgstr "Desfazer em progresso"
 
 #: view/csv-import/mapping-sidebar/item-set.phtml:3
 msgid "Item set-specific data"
-msgstr "Dati specifici alla collezione"
+msgstr ""
 
 #: view/csv-import/mapping-sidebar/item.phtml:3
 msgid "Item-specific data"
-msgstr "Dati specifici al contenuto"
+msgstr ""
 
 #: view/csv-import/mapping-sidebar/item.phtml:7
 msgid "Item set (by selected property)"
-msgstr "Collezione (dalla proprietà selezionata)"
+msgstr ""
 
 #: view/csv-import/mapping-sidebar/item.phtml:14
 #: view/csv-import/mapping-sidebar/media.phtml:14
@@ -206,97 +199,94 @@ msgstr "ID interno"
 #: view/csv-import/mapping-sidebar/media-source.phtml:3
 #: view/csv-import/mapping-sidebar/media-source.phtml:6
 msgid "Media source"
-msgstr "Fonte media"
+msgstr "Fonte da media"
 
 #: view/csv-import/mapping-sidebar/media.phtml:3
 msgid "Media-specific data"
-msgstr "Dati specifici al media"
+msgstr ""
 
 #: view/csv-import/mapping-sidebar/media.phtml:7
 msgid "Item (by selected property)"
-msgstr "Contenuto (dalla proprietà selezionata)"
+msgstr "Item (por propriedade selecionada)"
 
 #: view/csv-import/mapping-sidebar/media.phtml:8
 msgid ""
 "There must be an item identifier to create a media. This is generally "
 "\"dcterms:identifier\", but it may be an internal id."
 msgstr ""
-"Ci deve essere un contenuto identificatore per creare una media. "
-"Generalmente questo è\"dcterms:identificatore\",ma può essere anche un id "
-"interno."
 
 #: view/csv-import/mapping-sidebar/resource.phtml:3
 #: view/csv-import/mapping-sidebar/resource.phtml:7
 msgid "Generic data"
-msgstr "Dati generali"
+msgstr "Dados genéricos"
 
 #: view/csv-import/mapping-sidebar/resource.phtml:9
 msgid "Resource template (by label)"
-msgstr "Modello della risorsa (per etichetta)"
+msgstr "Modelo do recurso (por etiqueta)"
 
 #: view/csv-import/mapping-sidebar/resource.phtml:10
 msgid "Resource class (by term)"
-msgstr "Classe della risorsa (per termine)"
+msgstr "Classe do recurso (por termo)"
 
 #: view/csv-import/mapping-sidebar/resource.phtml:12
 msgid "Owner (by email address)"
-msgstr "Proprietario  (indirizzo email)"
+msgstr "Proprietário (por email)"
 
 #: view/csv-import/mapping-sidebar/resource.phtml:14
 msgid "Visibility public/private"
-msgstr "Visibilità pubblica/privata"
+msgstr "Visibilidade público/privado"
 
 #: view/csv-import/mapping-sidebar/user.phtml:3
 #: view/csv-import/mapping-sidebar/user.phtml:6
 msgid "Users info"
-msgstr "Info utenti"
+msgstr "Informação do utilizador"
 
 #: src/Mapping/ItemSetMapping.php:8
 msgid "Item set data"
-msgstr "Dati della collezione"
+msgstr "Dados do conjunto de itens"
 
 #: src/Mapping/UserMapping.php:8
 msgid "User info"
-msgstr "Utente info"
+msgstr "Informação do utilizador"
 
 #: src/Mapping/ItemMapping.php:8
 msgid "Item data"
-msgstr "I dati del contenuto"
+msgstr "Dados do item"
 
 #: src/Mapping/ResourceMapping.php:9
 msgid "Resource data"
-msgstr "I dati della risorsa"
+msgstr "Dados do recurso"
 
 #: src/Mapping/ResourceMapping.php:64
 #, php-format
 msgid "\"%s\" is not a valid resource type."
-msgstr "\"%s\" non è valido il tipo di risorsa."
+msgstr ""
 
 #: src/Mapping/AbstractResourceMapping.php:235
 #, php-format
 msgid "\"%s\" (%s) is not a valid item set."
-msgstr "\"%s\" (%s) non è valido il set di contenuto."
+msgstr ""
 
 #: src/Mapping/AbstractResourceMapping.php:257
 #, php-format
 msgid "An item identifier is required to process action \"%s\"."
-msgstr "Un identificatore di contenuto è richiesto per azione di processo \"%s\"."
+msgstr "É necessário um identificador do item para processar a ação \"%s\"."
 
 #: src/Mapping/AbstractResourceMapping.php:270
 #, php-format
 msgid "\"%s\" (%s) is not a valid item identifier."
-msgstr "\"%s\" (%s) non è un identificatore di contenuto valido."
+msgstr ""
 
 #: src/Mapping/AbstractResourceMapping.php:284
 #, php-format
 msgid "\"%s\" (%s) is not a valid resource identifier."
-msgstr "\"%s\" (%s) non è un identificatore di risorsa valido."
+msgstr ""
 
 #: src/Mapping/AbstractResourceMapping.php:298
 #: src/Mapping/AbstractResourceMapping.php:305
 #, php-format
 msgid "\"%s\" is not a valid Resource Template name."
-msgstr "\"%s\" non è un nome di modello di risorsa valido."
+msgstr ""
 
 #: src/Mapping/AbstractResourceMapping.php:318
 #: src/Mapping/AbstractResourceMapping.php:327
@@ -305,22 +295,20 @@ msgid ""
 "\"%s\" is not a valid resource class. Resource Classes must be a Class found"
 " on the Vocabularies page."
 msgstr ""
-"\"%s\" non è una classe di risorsa valida. Le classi di risorsa devono "
-"essere una classe trovata nella pagina dei vocabolari."
 
 #: src/Mapping/AbstractResourceMapping.php:341
 #: src/Mapping/AbstractResourceMapping.php:348
 #, php-format
 msgid "\"%s\" is not a valid user email address."
-msgstr "\"%s\" non è un indirizzo email di utente valido"
+msgstr ""
 
 #: src/Mapping/MediaMapping.php:8
 msgid "Media data"
-msgstr "I dati di media"
+msgstr "Dado media"
 
 #: src/Source/CsvFile.php:84
 msgid "File is not UTF-8 encoded."
-msgstr "Il file non è codificato UTF-8."
+msgstr "O ficheiro não tem codificação UTF-8."
 
 #: src/Source/AbstractSpreadsheet.php:34
 #, php-format
@@ -328,70 +316,68 @@ msgid ""
 "To process import of a %s file, the php extensions \"zip\" and \"xml\" are "
 "required."
 msgstr ""
-"Per esaminare importazione di un file %s, sono richiesti gli ampliamenti "
-"\"zip\" e \"xml\"."
 
 #: src/Source/AbstractSource.php:74
 msgid "The source is undefined."
-msgstr "La fonte è indeterminata."
+msgstr "A fonte é indefinida."
 
 #: src/Source/AbstractSource.php:79
 msgid "The source is empty."
-msgstr "La fonte è vuota."
+msgstr "A fonte está vazia."
 
 #: src/Source/AbstractSource.php:85
 msgid "No file to process."
-msgstr "Non ci sono i file da esaminare."
+msgstr "Sem ficheiro para processar."
 
 #: src/Source/AbstractSource.php:92
 msgid "The rows are not all the same number of columns."
-msgstr "Le righe non sono  gli stessi numeri delle colonne."
+msgstr ""
 
 #: src/Job/Import.php:15
 msgid "create"
-msgstr "crea"
+msgstr "criar"
 
 #: src/Job/Import.php:16
 msgid "append"
-msgstr "aggiungi"
+msgstr "anexar"
 
 #: src/Job/Import.php:17
 msgid "revise"
-msgstr "modifica"
+msgstr "rever"
 
 #: src/Job/Import.php:18
 msgid "update"
-msgstr "aggiorna"
+msgstr "atualizar"
 
 #: src/Job/Import.php:19
 msgid "replace"
-msgstr "sostituisci"
+msgstr "substituir"
 
 #: src/Job/Import.php:20
 msgid "delete"
-msgstr "elimina"
+msgstr "eliminar"
 
 #: src/Job/Import.php:21
 msgid "skip"
-msgstr "salta"
+msgstr "saltar"
 
 #: src/Job/Import.php:144
 msgid "The file seems empty."
-msgstr "Il file sembra vuoto."
+msgstr "O ficheiro parece vazio."
 
 #: src/Job/Import.php:153 src/Controller/IndexController.php:114
 msgid "The file is not valid."
-msgstr "Il file non è valido."
+msgstr "O ficheiro é inválido."
 
 #: src/Job/Import.php:188
 #, php-format
 msgid "The job \"Import\" was stopped: %d rows processed."
-msgstr "Il lavoro \"Importazione\" è stato arrestato: %drighe esaminati."
+msgstr ""
 
 #: src/Job/Import.php:199
 #, php-format
 msgid "%d empty lines were skipped."
-msgstr "%d linee vuote sono state saltate."
+msgstr "Saltaram-se %d linhas vazias."
 
 #: src/Job/Import.php:281 src/Job/Import.php:310
 #, php-format
@@ -399,179 +385,163 @@ msgid ""
 "The following identifiers are not associated with a resource and were "
 "skipped: \"%s\"."
 msgstr ""
-"Gli identificatori successivi non sono collegati alla risorsa e sono stati "
-"saltati: \"%s\"."
 
 #: src/Job/Import.php:408
 #, php-format
 msgid "The update mode \"%s\" is unsupported for %s currently."
-msgstr "La modalità aggiornata \"%s\" non è supportato alla %s attualmente."
+msgstr ""
 
 #: src/Job/Import.php:442
 #, php-format
 msgid "%d %s were updated (%s): %s."
-msgstr "%d %s  sono stati aggiornati (%s): %s."
+msgstr ""
 
 #: src/Job/Import.php:445
 #, php-format
 msgid "None of the %d %s were updated (%s)."
-msgstr "Nessuno di %d %s è stato aggionato (%s)."
+msgstr ""
 
 #: src/Job/Import.php:478
 #, php-format
 msgid "%d %s were removed: %s."
-msgstr "%d %s sono stati eliminati: %s."
+msgstr ""
 
 #: src/Job/Import.php:496
 #, php-format
 msgid "A media to create is not attached to an item (%s)."
-msgstr "Il materiale per creare non è stato allegato al contenuto (%s)"
+msgstr ""
 
 #: src/Job/Import.php:498
 msgid "unknown ingester"
-msgstr "ingester sconosciuto"
+msgstr ""
 
 #: src/Job/Import.php:623
 msgid "A resource type is required to import a resource."
-msgstr "Un tipo di risorsa è richiesto per importare la risorsa."
+msgstr ""
 
 #: src/Job/Import.php:1070
 msgid "Resource type is empty."
-msgstr "Il tipo di risorsa è vuoto."
+msgstr "O tipo de recurso está vazio."
 
 #: src/Job/Import.php:1075
 #, php-format
 msgid "Resource type \"%s\" is not managed."
-msgstr "La risorsa tipo \"%s\" non è gestita."
+msgstr ""
 
 #: src/Job/Import.php:1095
 msgid "action"
-msgstr "azione"
+msgstr "ação"
 
 #: src/Job/Import.php:1102
 #, php-format
 msgid "The action \"%s\" requires a resource identifier property."
-msgstr "L'azione \"%s\" richiede un identificatore di risorsa."
+msgstr ""
 
 #: src/Job/Import.php:1107
 #, php-format
 msgid "The action \"%s\" is not available for resource type \"%s\" currently."
 msgstr ""
-"L'azione \"%s\" non è disponibile per il momento per il tipo di risorsa "
-"\"%s\" ."
 
 #: src/Job/Import.php:1115
 #, php-format
 msgid "The action \"%s\" for unidentified resources is not managed."
-msgstr "L'azione \"%s\" per le risorse sconosciute non è riuscita."
+msgstr ""
 
 #: src/Job/Undo.php:22
 #, php-format
 msgid "The job \"Undo\" was stopped: %d/%d resources processed."
-msgstr "Il lavoro \"Annulla\" è stato arrestato: %d/%drisorse processate."
+msgstr ""
 
 #: src/Form/MappingForm.php:87
 msgid ""
 "Assign a resource template to all imported resources. Specific mappings can "
 "override this setting."
 msgstr ""
-"Assegna un modello della risorsa a tutte le risorse importate. Le specifiche"
-" mappature possono ignorare questa impostazione."
 
 #: src/Form/MappingForm.php:110
 msgid ""
 "Assign a resource class to all imported resources. Specific mappings can "
 "override this setting."
 msgstr ""
-"Assegna una classe della risorsa a tutte le risorse importate. Le specifiche"
-" mapature possono ignorare questa impostazione."
 
 #: src/Form/MappingForm.php:131
 msgid ""
 "If not set, the default owner for new resources will be the current user."
 msgstr ""
-"Se non impostato, il titolare predefinito della nuova risorsa sarà l'utente "
-"attuale."
 
 #: src/Form/MappingForm.php:139 src/Form/MappingForm.php:145
 msgid "Select a user"
-msgstr "Seleziona utente"
+msgstr "Selecionar um utilizador"
 
 #: src/Form/MappingForm.php:156
 msgid ""
 "Set visibility for all imported resources. Specific mappings can override "
 "this setting."
 msgstr ""
-"Imposta la visibilità a tutte le risorse importate. Le specifiche mappature "
-"possono ignorare questa impostazione."
 
 #: src/Form/MappingForm.php:173
 msgid "Open/closed to additions"
-msgstr "Aperto/chiuso ad aggiunte"
+msgstr "Aberto/fechado para adições"
 
 #: src/Form/MappingForm.php:174 src/Form/MappingForm.php:224
 msgid ""
 "Set whether imported item sets are open to additions. Specific mappings can "
 "override this setting."
 msgstr ""
-"Imposta se le collezioni importate sono aperte ad aggiunte. Mappature "
-"specifiche possono prevalere su questa impostazione."
 
 #: src/Form/MappingForm.php:177 src/Form/MappingForm.php:227
 msgid "Closed"
-msgstr "Chiuso"
+msgstr "Fechado"
 
 #: src/Form/MappingForm.php:223
 msgid "Item sets open/closed to additions"
-msgstr "Collezioni aperte/chiuse ad aggiunte"
+msgstr "Conjuntos de dados abertos/fechados para adições"
 
 #: src/Form/MappingForm.php:242
 msgid "Item sets for items"
-msgstr "Collezioni per i contenuti"
+msgstr "Conjuntos de itens para itens"
 
 #: src/Form/MappingForm.php:261
 msgid "Sites for items"
-msgstr "Siti per i contenuti"
+msgstr ""
 
 #: src/Form/MappingForm.php:271
 msgid "Multivalue separator"
-msgstr "Separatore multivalore"
+msgstr "Separador multivalor"
 
 #: src/Form/MappingForm.php:272
 msgid "The separator to use for columns with multiple values"
-msgstr "Il separatore per colonne con più valori"
+msgstr "O separador a utilizar em colunas com valor múltiplos"
 
 #: src/Form/MappingForm.php:288
 msgid ""
 "Language setting to apply to all imported literal data. Individual property "
 "mappings can override the setting here."
 msgstr ""
-"Impostazioni della lingua da applicare a tutti i dati testuali importati. "
-"Mappature individuali possono prevalere su questa impostazione."
 
 #: src/Form/MappingForm.php:311 src/Form/MappingForm.php:382
 msgid "Create a new resource"
-msgstr "Crea una nuova risorsa"
+msgstr "Criar um novo recurso"
 
 #: src/Form/MappingForm.php:312
 msgid "Append data to the resource"
-msgstr "Aggiungi i dati della risorsa "
+msgstr "Anexar dados ao recurso"
 
 #: src/Form/MappingForm.php:313
 msgid "Revise data of the resource"
-msgstr "Modifica i dati della risorsa"
+msgstr "Rever os dados do recurso"
 
 #: src/Form/MappingForm.php:314
 msgid "Update data of the resource"
-msgstr "Aggiorna i dati della risorsa"
+msgstr "Atualizar os dados do recurso"
 
 #: src/Form/MappingForm.php:315
 msgid "Replace all data of the resource"
-msgstr "Sostituisci tutti i dati della risorsa"
+msgstr "Substituir todos os dados do recurso"
 
 #: src/Form/MappingForm.php:316
 msgid "Delete the resource"
-msgstr "Elimina la risorsa"
+msgstr "Apagar o recurso"
 
 #: src/Form/MappingForm.php:324
 msgid ""
@@ -579,18 +549,14 @@ msgid ""
 "choose an alternate action for the import. For more information on each "
 "action, see the documentation."
 msgstr ""
-"Per impostazione predefinita, un'importazione crea nuove risorse. Seleziona "
-"da questo menu a discesa per scegliere un'azione alternativa per "
-"l'importazione. Per ulteriori informazioni su ciascuna azione, consulta la "
-"documentazione."
 
 #: src/Form/MappingForm.php:338
 msgid "Resource identifier column"
-msgstr "Colonna che identifica la risorsa"
+msgstr "Coluna de identificação do recurso"
 
 #: src/Form/MappingForm.php:357
 msgid "Resource identifier property"
-msgstr "Proprietà dell'identificatore della risorsa"
+msgstr "Propriedade identificadora do recurso"
 
 #: src/Form/MappingForm.php:358
 msgid ""
@@ -599,15 +565,10 @@ msgid ""
 " file must map the selected property. In all cases, it is strongly "
 "recommended to add one ore more unique identifiers to all your resources."
 msgstr ""
-"Usa questa proprietà, tipicamente \"dcterms:identifier\", per identificare "
-"risorse esistenti, in modo da rendere possibile il loro aggiornamento. Una "
-"colonna del file deve corrispondere alla proprietà selezionata. In tutti i "
-"casi si raccomanda fortemente di aggiungere uno o più identificatori unici "
-"per tutte le vostre risorse."
 
 #: src/Form/MappingForm.php:378
 msgid "Action on unidentified resources"
-msgstr "Azione sulle risorse sconosciute"
+msgstr "Ação em recursos não identificados"
 
 #: src/Form/MappingForm.php:379
 msgid ""
@@ -616,92 +577,83 @@ msgid ""
 "\"Replace\"). This option is not used when the main action is \"Create\", "
 "\"Delete\" or \"Skip\"."
 msgstr ""
-"Questa opzione determina cosa fare quando una risorsa non esiste ma l'azione"
-" si applica a una risorsa esistente (\"Aggiungi\", \"Aggiorna\" o "
-"\"Sostituisci\"). Questa opzione non viene utilizzata quando l'azione "
-"principale è \"Crea\", \"Elimina\" o \"Salta\"."
 
 #: src/Form/MappingForm.php:381
 msgid "Skip the row"
-msgstr "Salta la riga"
+msgstr "Saltar a linha"
 
 #: src/Form/MappingForm.php:396
 msgid "Number of rows to process by batch"
-msgstr "Numero di righe da esaminare in serie"
+msgstr ""
 
 #: src/Form/MappingForm.php:397
 msgid ""
 "By default, rows are processed by 20. In some cases, to set a value of 1 may"
 " avoid issues."
 msgstr ""
-"Per impostazione predefinita, le righe vengono elaborate 20 alla volta. In "
-"alcuni casi, impostare un valore di 1 potrebbe evitare problemi."
 
 #: src/Form/ImportForm.php:15
 msgid "comma"
-msgstr "virgola"
+msgstr "vírgula"
 
 #: src/Form/ImportForm.php:16
 msgid "semi-colon"
-msgstr "punto e virgola"
+msgstr "ponto e vírgula"
 
 #: src/Form/ImportForm.php:17
 msgid "colon"
-msgstr "due punti"
+msgstr "dois pontos"
 
 #: src/Form/ImportForm.php:18
 msgid "tabulation"
-msgstr "tabulazione"
+msgstr "tabulação"
 
 #: src/Form/ImportForm.php:19
 msgid "carriage return"
-msgstr "ritorno carrello"
+msgstr ""
 
 #: src/Form/ImportForm.php:20
 msgid "space"
-msgstr "spazio"
+msgstr "espaço"
 
 #: src/Form/ImportForm.php:21
 msgid "pipe"
-msgstr "pipe"
+msgstr ""
 
 #: src/Form/ImportForm.php:32
 msgid "double quote"
-msgstr "virgolette doppie"
+msgstr "aspas duplas"
 
 #: src/Form/ImportForm.php:33
 msgid "single quote"
-msgstr "virgolette singole"
+msgstr "aspas simples"
 
 #: src/Form/ImportForm.php:34
 msgid "hash"
-msgstr "cancelletto"
+msgstr "cardinal"
 
 #: src/Form/ImportForm.php:58
 msgid "Spreadsheet (csv, tsv or ods)"
-msgstr "Foglio di lavoro (csv, tsv o ods)"
+msgstr ""
 
 #: src/Form/ImportForm.php:59
 msgid ""
 "The CSV, TSV or ODS file to upload. LibreOffice is recommended for compliant"
 " formats."
 msgstr ""
-"Il file CSV, TSV o ODS per caricare. LibreOffice è raccomandato per i "
-"conformi formati."
 
 #: src/Form/ImportForm.php:78
 msgid "CSV column delimiter"
-msgstr "Delimitazione CSV di colonna"
+msgstr "Delimitador de coluna em CSV"
 
 #: src/Form/ImportForm.php:79
 msgid ""
 "A single character that will be used to separate columns in the csv file."
 msgstr ""
-"Un singolo carattere che sarà usato per separare le colonne nel file csv."
 
 #: src/Form/ImportForm.php:93
 msgid "CSV column enclosure"
-msgstr "Chiusura della colonna CSV"
+msgstr ""
 
 #: src/Form/ImportForm.php:94
 msgid ""
@@ -709,61 +661,55 @@ msgid ""
 "The enclosure can be omitted when the content does not contain the "
 "delimiter."
 msgstr ""
-"Un singolo carattere che sarà usato per separare le colonne nel file csv. Il"
-" carattere di chiusura può essere omesso se il contenuto non contiene il "
-"carattere di delimitazione."
 
 #: src/Form/ImportForm.php:106
 msgid "Import type"
-msgstr "Tipo di importazione"
+msgstr "Importar tipo"
 
 #: src/Form/ImportForm.php:107
 msgid "The type of data being imported"
-msgstr "Il tipo di dati che viene importato"
+msgstr "O tipo de data em importação"
 
 #: src/Form/ImportForm.php:112
 msgid "Mixed resources"
-msgstr "Risorse miste"
+msgstr "Recursos mistos"
 
 #: src/Form/ImportForm.php:125
 msgid "Automap with simple labels"
-msgstr "Mappa automatica con semplici etichette"
+msgstr "Mapear automaticamente com etiquetas simples"
 
 #: src/Form/ImportForm.php:126
 msgid ""
 "If checked, column headings that match property labels will be mapped "
 "automatically (for example, \"Title\" to dcterms:title)."
 msgstr ""
-"Se attivato, i titoli della colonna che mettono insieme le etichette della "
-"proprietà saranno mappati automaticamente ( per esempio, \"Titolo\" "
-"dcterms:titolo)."
 
 #: src/Form/ImportForm.php:141
 msgid "A note about the purpose or source of this import"
-msgstr "Una nota sullo scopo e sulla fonte di questa importazione"
+msgstr ""
 
 #: src/Controller/IndexController.php:97
 msgid "The format of the source cannot be detected."
-msgstr "Il formato di risorsa non può essere rilevato."
+msgstr "O formato da fonte não pode ser identificado."
 
 #: src/Controller/IndexController.php:121
 msgid "The file has no headers."
-msgstr "Il file non ha intestazioni di colonna."
+msgstr "O ficheiro não tem cabeçalhos."
 
 #: src/Controller/IndexController.php:164
 #, php-format
 msgid "Importing in background (%sjob #%d%s)"
-msgstr "Importazione sullo sfondo (%slavoro#%d%s)"
+msgstr ""
 
 #: src/Controller/IndexController.php:177
 msgid "Invalid settings."
-msgstr "Impostazioni non valide."
+msgstr "Configurações inválidas."
 
 #: src/Controller/IndexController.php:195
 #, php-format
 msgid "Undo in progress in the following jobs: %s"
-msgstr "Annullamento in esecuzione nei seguenti lavori: %s "
+msgstr "Desfazer em progresso nos seguintes trabalhos: %s "
 
 #: config/module.config.php:184
 msgid "Omeka resource (by ID)"
-msgstr "Risorsa Omeka (per ID)"
+msgstr "Recurso Omeka (por ID)"

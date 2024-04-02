@@ -3,15 +3,10 @@ version: '2'
 services:
 
   omeka-s:
-    image: omeka_s_v3:latest
+    build: ./
     ports:
       - "9003:80"
     volumes:
-      - ./modules/:/var/www/html/alamire/modules/
-      - ./themes/:/var/www/html/alamire/themes/
-      - ./files/:/var/www/html/alamire/files/
-      - ./config/:/var/www/html/alamire/config/
-      - ./htaccess:/var/www/html/alamire/.htaccess
-      - ./imagemagick-policy.xml:/var/www/html/alamire/imagemagick-policy.xml
-      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+      - ./files/:/var/www/html/files/
+      - ./config/:/var/www/html/config/
     restart: "no"

@@ -125,6 +125,7 @@ abstract class AbstractResourceMapping extends AbstractMapping
     protected function processGlobalArgsItem()
     {
         $data = &$this->data;
+        $action = $this->args['action'];
 
         // Set columns.
         if (isset($this->args['column-item_set'])) {
@@ -138,6 +139,17 @@ abstract class AbstractResourceMapping extends AbstractMapping
             foreach ($this->args['o:item_set'] as $id) {
                 $data['o:item_set'][] = ['o:id' => (int) $id];
             }
+        }
+
+        // Set site assignments
+        if (!empty($this->args['o:site'])) {
+            $data['o:site'] = [];
+            foreach ($this->args['o:site'] as $id) {
+                $data['o:site'][] = ['o:id' => (int) $id];
+            }
+        } elseif ($action === \CSVImport\Job\Import::ACTION_CREATE) {
+            // Allow assignment of no sites when creating
+            $data['o:site'] = [];
         }
     }
 
