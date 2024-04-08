@@ -1,0 +1,14 @@
+name: Build and Deploy
+
+on: 
+  push: 
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build Docker Image and Deploy
+    uses: libis/reusable-workflows/.github/workflows/build-deploy.yml@main
+    secrets:
+      username: ${{ secrets.LIBIS_DOCKER_REGISTRY_USER }}
+      password: ${{ secrets.LIBIS_DOCKER_REGISTRY_PASSWORD }}
+      msteams_webhook: ${{ secrets.MSTEAMS_WEBHOOK }}
