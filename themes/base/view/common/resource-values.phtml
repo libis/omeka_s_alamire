@@ -392,7 +392,11 @@ endif;
                       echo $irel[4];
                     endif;  
                   else:
-                    echo "</div></div><div class='content-holder'>"; 
+                    if($i != 0):
+                      echo "</div></div><div class='content-holder'>";
+                    else:
+                      echo "<div class='content-holder'>";  
+                    endif; 
                     //echo $irel[3]." ".$irel[4]."<br>";
                     echo $irel[3];
                     if(str_contains($irel[5],"http") && $auth):
