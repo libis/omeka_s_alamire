@@ -333,12 +333,25 @@ endif;
             //manuscript
             if(str_contains($value->asHtml(),"link:") && $values['alamire:relatedComposition']['values']):
               $rels = $values['alamire:relatedComposition']['values'];
+
+              $sorted_rels = array();
+              foreach($rels as $rel):
+                $irel = explode("$$",$rel);
+                if(!empty($irel[6])):
+                  $sorted_rels[trim($irel[6])] = $irel;
+                else:
+                  $sorted_rels[] = $irel;
+                endif;  
+              endforeach;  
+
+              ksort($sorted_rels);
+              $rels = $sorted_rels;
+
               // build tree
               $three = [];$lvl1=[];$lvl2=[];$lvl3=[];$lvl4=[];
              
               $i=0;
-              foreach($rels as $rel):
-                $irel = explode("$$",$rel);
+              foreach($rels as $irel):
                 if($irel[0] && $irel[1] == "  "):
                   $lvl1[] = "$irel[0]";
 
