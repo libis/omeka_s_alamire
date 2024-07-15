@@ -107,7 +107,7 @@ endif;
         <?php foreach($chants as $key=>$chant):?>
           <tr>
             <td><strong><?php echo $chant->value("alamire:position");?></strong></td>
-            <td><a href="<?php echo $chant->url();?>"><?php echo $chant->displayTitle();?></a></td>
+            <td><a target="_blank" href="<?php echo $chant->url();?>"><?php echo $chant->displayTitle();?></a></td>
             <td><?php echo str_replace("ci-","",$chant->value("alamire:cantusID"));?></td>
           </tr>
         <?php endforeach;?> 

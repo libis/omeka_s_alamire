@@ -255,7 +255,7 @@ endif;
           ?>   
           <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscriptID'):
             $id = strtolower($value->asHtml());
-            echo '<a target="_blank" href="https://idemdatabase.org/item/'.$id.'">'.$value->asHtml().'</a>';
+            echo '<a target="_blank" href="/item/'.$id.'">'.$value->asHtml().'</a>';
             ?>  
           <?php elseif($propertyData['property']->term() == 'alamire:hasVersion'):
             echo '<a target="_blank" href="'.$value->asHtml().'">'.$value->asHtml().'</a>';
