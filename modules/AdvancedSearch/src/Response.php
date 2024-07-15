@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016
- * Copyright Daniel Berthereau, 2018-2021
+ * Copyright Daniel Berthereau, 2018-2022
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -30,7 +30,7 @@
 
 namespace AdvancedSearch;
 
-use \Omeka\Api\Manager as ApiManager;
+use Omeka\Api\Manager as ApiManager;
 
 /**
  * @todo Manage resources as a whole with a global order.
@@ -68,6 +68,17 @@ class Response implements \JsonSerializable
     protected $results = [];
 
     /**
+     * List of result ids for all pages, if stored by the querier.
+     * @todo Inverse process: manage output as a whole and if needed, order it by type.
+     *
+     * @var array
+     */
+    protected $allResouceIdsByResourceType = [];
+
+    /**
+     * Active facets are a list of selected facet values by facet.
+     * For range facets, the list is a two keys array with "from" and "to".
+     *
      * @var array
      */
     protected $activeFacets = [];
@@ -194,6 +205,59 @@ class Response implements \JsonSerializable
     }
 
     /**
+     * Store all results ids for all resources, by type.
+     *
+     * @internal Currently experimental.
+     */
+    public function setAllResourceIdsByResourceType(array $idsByResourceType): self
+    {
+        foreach ($idsByResourceType as &$values) {
+            $values = array_values($values);
+        }
+        $this->allResouceIdsByResourceType = $idsByResourceType;
+        return $this;
+    }
+
+    /**
+     * Store all results ids for a resource type.
+     *
+     * @param string|null $resourceType The resource type ("items", "item_sets"…).
+     * @param int[] $ids
+     * @internal Currently experimental.
+     */
+    public function setAllResourceIdsForResourceType(string $resourceType, array $ids): self
+    {
+        $this->allResouceIdsByResourceType[$resourceType] = array_values($ids);
+        return $this;
+    }
+
+    /**
+     * Get resources ids for a resource type or all resource types.
+     *
+     * @param string|null $resourceType The resource type ("items", "item_sets"…).
+     * @param bool $byResourceType Merge ids or not.
+     * @return int[]
+     * @internal Currently experimental.
+     * @todo Return ids directly with array_column() in the response or include it by default.
+     */
+    public function getResourceIds(string $resourceType = null, bool $byResourceType = false): array
+    {
+        if (!count($this->allResouceIdsByResourceType)) {
+            foreach (array_keys($this->results) as $resourceType) {
+                $this->allResouceIdsByResourceType[$resourceType] = array_column($this->getResults($resourceType), 'id');
+            }
+        }
+
+        if ($byResourceType && !$resourceType) {
+            return $this->allResouceIdsByResourceType;
+        }
+
+        return $resourceType
+            ? $this->allResouceIdsByResourceType[$resourceType] ?? []
+            : array_merge(...array_values($this->allResouceIdsByResourceType));
+    }
+
+    /**
      * Get resources for a resource type or all resource types.
      *
      *When the indexation is not up to date, some resources may be removed or
@@ -245,7 +309,14 @@ class Response implements \JsonSerializable
      */
     public function setActiveFacets(array $activeFacetsByName): self
     {
+        // Clean keys to simplify merge and other methods.
         $this->activeFacets = array_map(function ($v) {
+            if (array_key_exists('from', $v) || array_key_exists('to', $v)) {
+                return [
+                    'from' => $v['from'] ?? null,
+                    'to' => $v['to'] ?? null,
+                ];
+            }
             return array_values(array_unique($v));
         }, $activeFacetsByName);
         return $this;
@@ -256,10 +327,17 @@ class Response implements \JsonSerializable
      */
     public function addActiveFacets(string $name, array $activeFacets): self
     {
-        $this->activeFacets[$name] = isset($this->activeFacets[$name])
-            ? array_merge($this->activeFacets[$name], array_values($activeFacets))
-            : array_values($activeFacets);
-        $this->activeFacets[$name] = array_values(array_unique($this->activeFacets[$name]));
+        if (array_key_exists('from', $activeFacets) || array_key_exists('to', $activeFacets)) {
+            $this->activeFacets[$name] = [
+                'from' => $activeFacets['from'] ?? null,
+                'to' => $activeFacets['to'] ?? null,
+            ];
+        } else {
+            $this->activeFacets[$name] = isset($this->activeFacets[$name])
+                ? array_merge($this->activeFacets[$name], array_values($activeFacets))
+                : array_values($activeFacets);
+            $this->activeFacets[$name] = array_values(array_unique($this->activeFacets[$name]));
+        }
         return $this;
     }
 
@@ -270,6 +348,20 @@ class Response implements \JsonSerializable
     {
         $this->activeFacets[$name][] = $activeFacet;
         $this->activeFacets[$name] = array_values(array_unique($this->activeFacets[$name]));
+        return $this;
+    }
+
+    /**
+     * Add an active facet for a name.
+     */
+    public function addActiveFacetRange(string $name, ?string $from, ?string $to): self
+    {
+        if (!is_null($from) && !is_null($to)) {
+            $this->activeFacets[$name] = [
+                'from' => $from,
+                'to' => $to,
+            ];
+        }
         return $this;
     }
 
@@ -287,6 +379,7 @@ class Response implements \JsonSerializable
      * Store a list of counts for all facets of all resources.
      *
      * @param array $facetCountsByField Counts by facet, with keys "value" and "count".
+     * May contain "from" and "to" for facet range.
      */
     public function setFacetCounts(array $facetCountsByField): self
     {

@@ -704,6 +704,60 @@ h5.title{
   }
 }
 
+.inventory-wrapper{  
+  .tabs{
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+  }  
+
+  #polyphony{
+    margin-bottom:0.5rem;
+  }
+
+  #chants{
+    margin-bottom: 1rem;;
+  }
+
+  table{
+    max-height: 500px;
+    overflow: auto;
+    margin-bottom: 2rem;
+  }
+
+  .Inventory{
+    .is-one-fifth{
+      display:none;
+    }
+
+    .is-four-fifths{
+      width:100%;
+    }
+  }
+}
+
+table{
+  margin:0.5rem 0 1rem 0;
+  font-size:0.9rem;
+
+  tr{
+    background-color: rgba($primary,0.08);
+  }
+
+  tr:nth-child(even) {
+    background-color: white;
+  }
+
+  .header-row{
+    background-color: rgba($primary,0.2);
+  }
+
+  td, th{
+    padding:0.4rem;
+  }
+}
+
 .text{
   overflow: hidden;
 }

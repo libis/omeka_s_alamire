@@ -283,7 +283,19 @@ class ApiSearch extends AbstractPlugin
         ];
         $searchFormSettings['resource'] = $resource;
         // Fix to be removed.
-        $searchFormSettings['resource_fields'] = $searchConfigSettings['resource_fields'] ?? [];
+        $searchEngine = $this->searchConfig->engine();
+        $searchAdapter = $searchEngine ? $searchEngine->adapter() : null;
+        if ($searchAdapter) {
+            $availableFields = $searchAdapter->setSearchEngine($searchEngine)->getAvailableFields();
+            $searchFormSettings['available_fields'] = array_combine(array_keys($availableFields), array_keys($availableFields));
+        } else {
+            $searchFormSettings['available_fields'] = [];
+        }
+
+        // Solr doesn't allow unavailable args anymore (invalid or unknown).
+        $searchFormSettings['only_available_fields'] = $searchAdapter
+            && $searchAdapter instanceof \SearchSolr\Adapter\SolariumAdapter;
+
         $searchQuery = $this->apiFormAdapter->toQuery($query, $searchFormSettings);
         $searchQuery->setResources([$resource]);
 
@@ -416,14 +428,14 @@ class ApiSearch extends AbstractPlugin
     protected function limitQuery(Query $searchQuery, array $query, array $options): void
     {
         if (is_numeric($query['page'])) {
-            $searchConfig = $query['page'] > 0 ? (int) $query['page'] : 1;
+            $searchPage = $query['page'] > 0 ? (int) $query['page'] : 1;
             if (is_numeric($query['per_page']) && $query['per_page'] > 0) {
                 $perPage = (int) $query['per_page'];
                 $this->paginator->setPerPage($perPage);
             } else {
                 $perPage = $this->paginator->getPerPage();
             }
-            $searchQuery->setLimitPage($searchConfig, $perPage);
+            $searchQuery->setLimitPage($searchPage, $perPage);
             return;
         }
 
@@ -435,8 +447,8 @@ class ApiSearch extends AbstractPlugin
         $offset = $query['offset'] > 0 ? (int) $query['offset'] : null;
         if ($limit && $offset) {
             // TODO Check the formule to convert offset and limit to page and per page (rarely used).
-            $searchConfig = $offset > $limit ? 1 + (int) (($offset - 1) / $limit) : 1;
-            $searchQuery->setLimitPage($searchConfig, $limit);
+            $searchPage = $offset > $limit ? 1 + (int) (($offset - 1) / $limit) : 1;
+            $searchQuery->setLimitPage($searchPage, $limit);
         } elseif ($limit) {
             $searchQuery->setLimitPage(1, $limit);
         } elseif ($offset) {
@@ -449,32 +461,34 @@ class ApiSearch extends AbstractPlugin
      *
      * @todo Factorize with \AdvancedSearch\FormAdapter\ApiFormAdapter::normalizeProperty().
      *
-     * @param string|int $property
+     * @param string|int $termOrId
      * @return string
      */
-    protected function normalizeProperty($property)
+    protected function normalizeProperty($termOrId): string
     {
         static $properties;
 
-        if (!$property) {
+        if (!$termOrId) {
             return '';
         }
 
         if (is_null($properties)) {
             $sql = <<<'SQL'
-SELECT property.id, CONCAT(vocabulary.prefix, ":", property.local_name)
+SELECT
+    CONCAT(vocabulary.prefix, ":", property.local_name),
+    property.id
 FROM property
 JOIN vocabulary ON vocabulary.id = property.vocabulary_id
 SQL;
-            $properties = $this->entityManager->getConnection()
-                ->executeQuery($sql)->fetchAll(\PDO::FETCH_KEY_PAIR);
+            $properties = array_map('intval', $this->entityManager->getConnection()->executeQuery($sql)->fetchAllKeyValue());
         }
-        if (is_numeric($property)) {
-            $property = (int) $property;
-            return $properties[$property] ?? '';
+
+        if (is_numeric($termOrId)) {
+            return array_search((int) $termOrId, $properties) ?: '';
         }
-        $property = (string) $property;
-        return in_array($property, $properties) ? $property : '';
+
+        $termOrId = (string) $termOrId;
+        return isset($properties[$termOrId]) ? $termOrId : '';
     }
 
     /**

@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016
- * Copyright Daniel Berthereau, 2017-2021
+ * Copyright Daniel Berthereau, 2017-2022
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -42,6 +42,19 @@ class SearchConfigAdapter extends AbstractEntityAdapter
     protected $sortFields = [
         'id' => 'id',
         'name' => 'name',
+        'path' => 'path',
+        'engine' => 'engine',
+        'created' => 'created',
+        'modified' => 'modified',
+    ];
+
+    protected $scalarFields = [
+        'id' => 'id',
+        'name' => 'name',
+        'path' => 'path',
+        'engine' => 'engine',
+        'form_adapter' => 'formAdapter',
+        'settings' => 'settings',
         'created' => 'created',
         'modified' => 'modified',
     ];
@@ -73,7 +86,7 @@ class SearchConfigAdapter extends AbstractEntityAdapter
                 $searchEngineAlias,
                 \Doctrine\ORM\Query\Expr\Join::WITH,
                 $expr->andX(
-                    $expr->eq($searchEngineAlias . '.id', 'omeka_root.index'),
+                    $expr->eq($searchEngineAlias . '.id', 'omeka_root.engine'),
                     $expr->in(
                         $searchEngineAlias . '.id',
                         $this->createNamedParameter($qb, $query['engine_id'])

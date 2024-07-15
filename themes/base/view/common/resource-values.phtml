@@ -23,13 +23,13 @@ endif;
     continue;
   endif;
    
-  if($propertyData['property']->term() == "alamire:thumbnail" || $propertyData['alternate_label'] == "Manuscript Label"):
+  if($propertyData['property']->term() == "alamire:thumbnail" || $propertyData['alternate_label'] == "Manuscript Label"  || $propertyData['alternate_label'] == "Chant Label"):
     continue;
   endif;  
   ?>
   <?php if($comment == "extra" && $firstextra):?>
    
-    <div class="columns is-2" style="padding-top:1rem;padding-bottom:2rem;">
+    <div class="columns extra-block" style="padding-top:1rem;padding-bottom:2rem;">
       <div class="column is-12">        
         <div><a class="extra-button button is-primary is-small is-outlined" href="#firstextra">
           <span class="icon">
@@ -64,7 +64,7 @@ endif;
       endif;
     endif;
   ?>       
-  <div class="columns is-2" style="<?php echo $style;?>">  
+  <div class="columns <?php echo $propertyData['alternate_label']; ?>" style="<?php echo $style;?>">  
     <div class="column is-one-fifth">
       <?php if ($propertyData['alternate_label']): ?>
         <?php if($propertyData['alternate_label'] == "Archival record"):  
@@ -253,6 +253,10 @@ endif;
             endif;
             $values['alamire:bibliographicCitation']['values'] = "";
           ?>   
+          <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscriptID'):
+            $id = strtolower($value->asHtml());
+            echo '<a target="_blank" href="https://idemdatabase.org/item/'.$id.'">'.$value->asHtml().'</a>';
+            ?>  
           <?php elseif($propertyData['property']->term() == 'alamire:hasVersion'):
             echo '<a target="_blank" href="'.$value->asHtml().'">'.$value->asHtml().'</a>';
             ?>  

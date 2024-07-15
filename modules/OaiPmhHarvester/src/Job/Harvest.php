@@ -124,6 +124,9 @@ class Harvest extends AbstractJob
             case 'manuscript':                
                 $method = '_alamireToJson';
                 break;     
+            case 'chant':                
+                $method = '_alamireToJson';
+                break;    
             case 'oai_dcterms':
             case 'oai_dcq':
             case 'oai_qdc':
@@ -169,7 +172,7 @@ class Harvest extends AbstractJob
                 $message = 'Server unavailable. Retrying.'; // @translate
                 $this->logger->warn(sprintf(
                     'Error: the harvester does not list records with url %1$s. Retrying %2$d/%3$d times in %4$d seconds', // @translate
-                    $url, 1, self::REQUEST_MAX_RETRY, self::REQUEST_WAIT * 3
+                    $url, 1, self::REQUEST_MAX_RETRY, self::REQUEST_WAIT
                 ));
 
                 sleep(self::REQUEST_WAIT * 3);
@@ -309,7 +312,7 @@ class Harvest extends AbstractJob
     }
 
     protected function itemExists($item, $id_version, $resource_type){
-        
+        //return false;
 		$args = $this->job->getArgs();
         $query = [];
 		
@@ -621,8 +624,10 @@ class Harvest extends AbstractJob
 		if(strpos($args["endpoint"], 'Manuscript') !== false):
 			$meta['o:resource_template'] = ["o:id" => "2"];
 		elseif(strpos($args["endpoint"], 'Composition') !== false):
-			$meta['o:resource_template'] = ["o:id" => "3"];			
-		endif;
+			$meta['o:resource_template'] = ["o:id" => "3"];
+        elseif(strpos($args["endpoint"], 'Chant') !== false):
+            $meta['o:resource_template'] = ["o:id" => "15"];			
+        endif;
 
         $meta["o:site"][] = 1;
 

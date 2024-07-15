@@ -2,203 +2,402 @@
 
 namespace AdvancedSearch\View\Helper;
 
+use AdvancedSearch\Mvc\Controller\Plugin\SearchResources;
 use Laminas\View\Helper\AbstractHelper;
 use Omeka\Api\Exception\NotFoundException;
 
 /**
  * View helper for rendering search filters.
+ *
+ * Override core helper in order to add the urls without the filters and
+ * resources without template, class, etc.
+ *
+ * @see \Omeka\View\Helper\SearchFilters
  */
 class SearchFilters extends AbstractHelper
 {
+    use SearchFiltersTrait;
+
     /**
      * The default partial view script.
      */
     const PARTIAL_NAME = 'common/search-filters';
 
     /**
-     * Render filters from search query.
-     *
-     * @return array
+     * @var string
      */
-    public function __invoke($partialName = null)
+    protected $baseUrl;
+
+    /**
+     * The cleaned query.
+     *
+     * @var array
+     */
+    protected $query;
+
+    /**
+     * Render filters from search query, with urls if needed (if set in theme).
+     */
+    public function __invoke($partialName = null, ?array $query = null): string
     {
         $partialName = $partialName ?: self::PARTIAL_NAME;
 
-        $translate = $this->getView()->plugin('translate');
+        $view = $this->getView();
+        $plugins = $view->getHelperPluginManager();
+        $url = $plugins->get('url');
+        $api = $plugins->get('api');
+        $params = $plugins->get('params');
+        $translate = $plugins->get('translate');
+        $cleanQuery = $plugins->get('cleanQuery');
 
         $filters = [];
-        $api = $this->getView()->api();
-        $query = $this->getView()->params()->fromQuery();
-        $queryTypes = [
-            'eq' => $translate('is exactly'),
-            'neq' => $translate('is not exactly'),
-            'in' => $translate('contains'),
-            'nin' => $translate('does not contain'),
-            'sw' => $translate('starts with'),
-            'nsw' => $translate('does not start with'),
-            'ew' => $translate('ends with'),
-            'new' => $translate('does not end with'),
-            'res' => $translate('is resource with ID'),
-            'nres' => $translate('is not resource with ID'),
-            'ex' => $translate('has any value'),
-            'nex' => $translate('has no values'),
-        ];
+        $query = $query ?? $params->fromQuery();
 
-        foreach ($query as $key => $value) {
-            if ($value != null) {
-                switch ($key) {
-                    // Search by class
-                    case 'resource_class_id':
-                        if (!is_array($value)) {
-                            $value = [$value];
+        $this->baseUrl = $url(null, [], true);
+        $this->query = $cleanQuery($query);
+        unset(
+            $this->query['page'],
+            $this->query['offset'],
+            $this->query['submit'],
+            $this->query['__searchConfig'],
+            $this->query['__searchQuery']
+        );
+
+        // This function fixes some forms that add an array level.
+        // This function manages only one level, so check value when needed.
+        $flatArray = function ($value): array {
+            if (!is_array($value)) {
+                return [$value];
+            }
+            $firstKey = key($value);
+            if (is_numeric($firstKey)) {
+                return $value;
+            }
+            return is_array(reset($value)) ? $value[$firstKey] : [$value[$firstKey]];
+        };
+
+        // Normally, query is already cleaned.
+        // TODO Remove checks of search keys, already done during event api.search.pre.
+        foreach ($this->query as $key => $value) {
+            if ($value === null || $value === '' || $value === []) {
+                continue;
+            }
+
+            switch ($key) {
+                // Fulltext
+                case 'fulltext_search':
+                    $filterLabel = $translate('Search full-text'); // @translate
+                    $filters[$filterLabel][$this->urlQuery($key)] = $value;
+                    break;
+
+                // Search by class
+                case 'resource_class_id':
+                    if (!is_array($value)) {
+                        $value = [$value];
+                    }
+                    $filterLabel = $translate('Class');
+                    foreach ($value as $subKey => $subValue) {
+                        if (!is_numeric($subValue)) {
+                            continue;
                         }
-                        foreach ($value as $subValue) {
-                            if (!is_numeric($subValue)) {
-                                continue;
-                            }
-                            $filterLabel = $translate('Class');
+                        if ($subValue) {
                             try {
-                                $filterValue = $api->read('resource_classes', $subValue)->getContent()->label();
+                                $filterValue = $translate($api->read('resource_classes', $subValue)->getContent()->label());
                             } catch (NotFoundException $e) {
-                                $filterValue = $translate('Unknown class');
+                                $filterValue = $translate('Unknown class'); // @translate
                             }
-                            $filters[$filterLabel][] = $filterValue;
+                        } else {
+                            $filterValue = $translate('[none]'); // @translate
                         }
-                        break;
+                        $filters[$filterLabel][$this->urlQuery($key, $subKey)] = $filterValue;
+                    }
+                    break;
 
-                    // Search values (by property or all)
-                    case 'property':
-                        $engine = 0;
-                        foreach ($value as $queryRow) {
-                            if (!(
-                                is_array($queryRow)
-                                && array_key_exists('property', $queryRow)
-                                && array_key_exists('type', $queryRow)
-                            )) {
-                                continue;
+                // Search values (by property or all)
+                case 'property':
+                    $queryTypesLabels = $this->getQueryTypesLabels();
+                    $easyMeta = $plugins->get('easyMeta');
+                    // TODO The array may be more than zero when firsts are standard (see core too for inverse).
+                    $index = 0;
+                    foreach ($value as $subKey => $queryRow) {
+                        if (!is_array($queryRow)
+                            || empty($queryRow['type'])
+                            || !isset(SearchResources::PROPERTY_QUERY['reciprocal'][$queryRow['type']])
+                        ) {
+                            continue;
+                        }
+                        $queryType = $queryRow['type'];
+                        $value = $queryRow['text'] ?? null;
+                        $noValue = in_array($queryType, SearchResources::PROPERTY_QUERY['value_none'], true);
+                        if ($noValue) {
+                            $value = null;
+                        } elseif ((is_array($value) && !count($value))
+                            || (!is_array($value) && !strlen((string) $value))
+                        ) {
+                            continue;
+                        }
+                        $joiner = $queryRow['joiner'] ?? null;
+                        $queriedProperties = $queryRow['property'] ?? null;
+                        // Properties may be an array with an empty value
+                        // (any property) in advanced form, so remove empty
+                        // strings from it, in which case the check should
+                        // be skipped.
+                        if (is_array($queriedProperties) && in_array('', $queriedProperties, true)) {
+                            $queriedProperties = [];
+                        }
+                        if ($queriedProperties) {
+                            $propertyLabel = [];
+                            $properties = is_array($queriedProperties) ? $queriedProperties : [$queriedProperties];
+                            foreach ($properties as $property) {
+                                $label = $easyMeta->propertyLabels($property);
+                                $propertyLabel[] = $label ? $translate($label) : $translate('Unknown property'); // @translate
                             }
-                            $propertyId = $queryRow['property'];
-                            $queryType = $queryRow['type'];
-                            $joiner = $queryRow['joiner'] ?? null;
-                            $value = $queryRow['text'] ?? null;
-
-                            if (!$value && $queryType !== 'nex' && $queryType !== 'ex') {
-                                continue;
-                            }
-                            if ($propertyId) {
-                                if (is_numeric($propertyId)) {
-                                    try {
-                                        $property = $api->read('properties', $propertyId)->getContent();
-                                    } catch (NotFoundException $e) {
-                                        $property = null;
-                                    }
-                                } else {
-                                    $property = $api->searchOne('properties', ['term' => $propertyId])->getContent();
-                                }
-
-                                if ($property) {
-                                    $propertyLabel = $translate($property->label());
-                                } else {
-                                    $propertyLabel = $translate('Unknown property');
-                                }
+                            $propertyLabel = implode(' ' . $translate('OR') . ' ', $propertyLabel);
+                        } else {
+                            $propertyLabel = $translate('[Any property]'); // @translate
+                        }
+                        $filterLabel = $noValue
+                            ? $propertyLabel
+                            : ($propertyLabel . ' ' . $queryTypesLabels[$queryType]);
+                        if ($index > 0) {
+                            if ($joiner === 'or') {
+                                $filterLabel = $translate('OR') . ' ' . $filterLabel;
+                            } elseif ($joiner === 'not') {
+                                $filterLabel = $translate('EXCEPT') . ' ' . $filterLabel;
                             } else {
-                                $propertyLabel = $translate('[Any property]');
+                                $filterLabel = $translate('AND') . ' ' . $filterLabel;
                             }
-                            if (!isset($queryTypes[$queryType])) {
-                                continue;
-                            }
-                            $filterLabel = $propertyLabel . ' ' . $queryTypes[$queryType];
-                            if ($engine > 0) {
-                                if ($joiner === 'or') {
-                                    $filterLabel = $translate('OR') . ' ' . $filterLabel;
-                                } else {
-                                    $filterLabel = $translate('AND') . ' ' . $filterLabel;
-                                }
-                            }
-
-                            $filters[$filterLabel][] = $value;
-                            $engine++;
                         }
-                        break;
-                    case 'search':
-                        $filterLabel = $translate('Search');
-                        $filters[$filterLabel][] = $value;
-                        break;
+                        $filters[$filterLabel][$this->urlQuery($key, $subKey)] = $noValue
+                            ? $queryTypesLabels[$queryType]
+                            : implode(', ', $flatArray($value));
+                        ++$index;
+                    }
+                    break;
 
-                    // Search resource template
-                    case 'resource_template_id':
-                        if (!is_array($value)) {
-                            $value = [$value];
+                case 'search':
+                    $filterLabel = $translate('Search');
+                    $filters[$filterLabel][$this->urlQuery($key)] = $value;
+                    break;
+
+                // Search resource template
+                case 'resource_template_id':
+                    if (!is_array($value)) {
+                        $value = [$value];
+                    }
+                    $filterLabel = $translate('Template');
+                    foreach ($value as $subKey => $subValue) {
+                        if (!is_numeric($subValue)) {
+                            continue;
                         }
-                        foreach ($value as $subValue) {
-                            if (!is_numeric($subValue)) {
-                                continue;
-                            }
-                            $filterLabel = $translate('Template');
+                        if ($subValue) {
                             try {
                                 $filterValue = $api->read('resource_templates', $subValue)->getContent()->label();
                             } catch (NotFoundException $e) {
-                                $filterValue = $translate('Unknown template');
+                                $filterValue = $translate('Unknown template'); // @translate
                             }
-                            $filters[$filterLabel][] = $filterValue;
+                        } else {
+                            $filterValue = $translate('[none]'); // @translate
                         }
-                        break;
+                        $filters[$filterLabel][$this->urlQuery($key, $subKey)] = $filterValue;
+                    }
+                    break;
 
-                    // Search item set
-                    case 'item_set_id':
-                        if (!is_array($value)) {
-                            $value = [$value];
+                // Search item set
+                case 'item_set_id':
+                    if (!is_array($value)) {
+                        $value = [$value];
+                    }
+                    $filterLabel = $translate('Item set');
+                    foreach ($value as $subKey => $subValue) {
+                        if (!is_numeric($subValue)) {
+                            continue;
                         }
-                        foreach ($value as $subValue) {
-                            if (!is_numeric($subValue)) {
-                                continue;
-                            }
-                            $filterLabel = $translate('Item set');
+                        if ($subValue) {
                             try {
                                 $filterValue = $api->read('item_sets', $subValue)->getContent()->displayTitle();
                             } catch (NotFoundException $e) {
-                                $filterValue = $translate('Unknown item set');
+                                $filterValue = $translate('Unknown item set'); // @translate
                             }
-                            $filters[$filterLabel][] = $filterValue;
+                        } else {
+                            $filterValue = $translate('[none]'); // @translate
                         }
-                        break;
+                        $filters[$filterLabel][$this->urlQuery($key, $subKey)] = $filterValue;
+                    }
+                    break;
 
-                    // Search user
-                    case 'owner_id':
-                        $filterLabel = $translate('User');
+                // Search user
+                case 'owner_id':
+                    $filterLabel = $translate('User');
+                    if ($value) {
                         try {
                             $filterValue = $api->read('users', $value)->getContent()->name();
                         } catch (NotFoundException $e) {
-                            $filterValue = $translate('Unknown user');
+                            $filterValue = $translate('Unknown user'); // @translate
                         }
-                        $filters[$filterLabel][] = $filterValue;
-                        break;
+                    } else {
+                        $filterValue = $translate('[none]'); // @translate
+                    }
+                    $filters[$filterLabel][$this->urlQuery($key)] = $filterValue;
+                    break;
 
-                    case 'site_id':
-                        $filterLabel = $translate('Site');
-                        try {
-                            $filterValue = $api->read('sites', $value)->getContent()->title();
-                        } catch (NotFoundException $e) {
-                            $filterValue = $translate('Unknown site');
+                // Search site
+                case 'site_id':
+                    if (!is_array($value)) {
+                        $value = [$value];
+                    }
+                    $filterLabel = $translate('Site');
+                    foreach ($value as $subKey => $subValue) {
+                        if (!is_numeric($subValue)) {
+                            continue;
                         }
-                        $filters[$filterLabel][] = $filterValue;
-                        break;
-                }
+                        // Normally, "0" is moved to "in_sites".
+                        if ($subValue) {
+                            try {
+                                $filterValue = $api->read('sites', ['id' => $subValue])->getContent()->title();
+                            } catch (NotFoundException $e) {
+                                $filterValue = $translate('Unknown site'); // @translate
+                            }
+                        } else {
+                            $filterValue = $translate('[none]'); // @translate
+                        }
+                        $filters[$filterLabel][$this->urlQuery($key, $subKey)] = $filterValue;
+                    }
+                    break;
+
+                case 'in_sites':
+                    $filterLabel = $translate('In a site'); // @translate
+                    $filters[$filterLabel][$this->urlQuery($key)] = $value
+                        ? $translate('yes') // @translate
+                        : $translate('no'); // @translate
+                    break;
+
+                case 'datetime':
+                    $queryTypesDatetime = [
+                        'gt' => $translate('after'),
+                        'gte' => $translate('after or on'),
+                        'eq' => $translate('on'),
+                        'neq' => $translate('not on'),
+                        'lte' => $translate('before or on'),
+                        'lt' => $translate('before'),
+                        'ex' => $translate('has any date / time'),
+                        'nex' => $translate('has no date / time'),
+                    ];
+
+                    $value = $this->query['datetime'];
+                    $engine = 0;
+                    foreach ($value as $subKey => $queryRow) {
+                        $joiner = $queryRow['joiner'];
+                        $field = $queryRow['field'];
+                        $type = $queryRow['type'];
+                        $datetimeValue = $queryRow['value'];
+
+                        $fieldLabel = $field === 'modified' ? $translate('Modified') : $translate('Created');
+                        $filterLabel = $fieldLabel . ' ' . $queryTypesDatetime[$type];
+                        if ($engine > 0) {
+                            if ($joiner === 'or') {
+                                $filterLabel = $translate('OR') . ' ' . $filterLabel;
+                            } elseif ($joiner === 'not') {
+                                $filterLabel = $translate('EXCEPT') . ' ' . $filterLabel; // @translate
+                            } else {
+                                $filterLabel = $translate('AND') . ' ' . $filterLabel;
+                            }
+                        }
+                        $filters[$filterLabel][$this->urlQuery($key, $subKey)] = $datetimeValue;
+                        ++$engine;
+                    }
+                    break;
+
+                case 'is_public':
+                    $filters[$translate('Visibility')][$this->urlQuery($key)] = $value
+                        ? $translate('Public')
+                        : $translate('Private');
+                    break;
+
+                case 'resource_class_term':
+                    $filterLabel = $translate('Class'); // @translate
+                    foreach ($flatArray($value) as $subKey => $subValue) {
+                        $filters[$filterLabel][$this->urlQuery($key, $subKey)] = $subValue;
+                    }
+                    break;
+
+                case 'has_media':
+                    $filterLabel = $translate('Has media'); // @translate
+                    $filters[$filterLabel][$this->urlQuery($key)] = $value
+                        ? $translate('yes') // @translate
+                        : $translate('no'); // @translate
+                    break;
+
+                case 'has_original':
+                    $filterLabel = $translate('Has original'); // @translate
+                    $filters[$filterLabel][$this->urlQuery($key)] = $value
+                        ? $translate('yes') // @translate
+                        : $translate('no'); // @translate
+                    break;
+
+                case 'has_thumbnails':
+                    $filterLabel = $translate('Has thumbnails'); // @translate
+                    $filters[$filterLabel][$this->urlQuery($key)] = $value
+                        ? $translate('yes') // @translate
+                        : $translate('no'); // @translate
+                    break;
+
+                case 'media_types':
+                    $filterLabel = $translate('Media types'); // @translate
+                    foreach ($flatArray($value) as $subKey => $subValue) {
+                        $filters[$filterLabel][$this->urlQuery($key, $subKey)] = $subValue;
+                    }
+                    break;
+
+                default:
+                    break;
             }
         }
 
-        $result = $this->getView()->trigger(
+        $result = $view->trigger(
             'view.search.filters',
-            ['filters' => $filters, 'query' => $query],
+            ['filters' => $filters, 'query' => $query, 'baseUrl' => $this->baseUrl],
             true
         );
         $filters = $result['filters'];
 
-        return $this->getView()->partial(
-            $partialName,
-            [
-                'filters' => $filters,
-            ]
-        );
+        return $view->partial($partialName, [
+            'filters' => $filters,
+        ]);
+    }
+
+    /**
+     * Get url of the query without the specified key and subkey.
+     *
+     * @param string|int $key
+     * @param string|int|null $subKey
+     * @return string
+     */
+    protected function urlQuery($key, $subKey = null): string
+    {
+        $newQuery = $this->query;
+        if (is_null($subKey) || !is_array($newQuery[$key]) || count($newQuery[$key]) <= 1) {
+            unset($newQuery[$key]);
+        } else {
+            unset($newQuery[$key][$subKey]);
+        }
+        return $newQuery
+            ? $this->baseUrl . '?' . http_build_query($newQuery, '', '&', PHP_QUERY_RFC3986)
+            : $this->baseUrl;
+    }
+
+    /**
+     * Get one or more property ids by JSON-LD terms or by numeric ids.
+     *
+     * @param array|int|string|null $termsOrIds One or multiple ids or terms.
+     * @return int[] The property ids matching terms or ids, or all properties
+     * by terms.
+     */
+    protected function getPropertyIds($termsOrIds = null): array
+    {
+        if (is_scalar($termsOrIds)) {
+            $termsOrIds = [$termsOrIds];
+        }
+        return $this->view->easyMeta()->propertyIds($termsOrIds);
     }
 }

@@ -132,7 +132,8 @@ class SearchEngineController extends AbstractActionController
             $searchEngine
                 ->setName($name)
                 ->setSettings($formData);
-            $this->entityManager->flush($searchEngine);
+            $this->entityManager->persist($searchEngine);
+            $this->entityManager->flush();
             $this->messenger()->addSuccess(new Message(
                 'Search index "%s" successfully configured.',  // @translate
                 $searchEngine->getName()
@@ -174,6 +175,8 @@ class SearchEngineController extends AbstractActionController
         $jobArgs['start_resource_id'] = $startResourceId;
         $jobArgs['resource_names'] = $resourceNames;
         $jobArgs['force'] = $force;
+        // Synchronous dispatcher for testing purpose.
+        // $job = $this->jobDispatcher()->dispatch(\AdvancedSearch\Job\IndexSearch::class, $jobArgs, $searchEngine->getServiceLocator()->get('Omeka\Job\DispatchStrategy\Synchronous'));
         $job = $this->jobDispatcher()->dispatch(\AdvancedSearch\Job\IndexSearch::class, $jobArgs);
 
         $urlHelper = $this->viewHelpers()->get('url');

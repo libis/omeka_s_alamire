@@ -38,31 +38,57 @@ abstract class AbstractAdapter implements AdapterInterface
     /**
      * @var \Laminas\ServiceManager\ServiceLocatorInterface
      */
-    protected $serviceLocator;
+    protected $services;
+
+    /**
+     * @var \AdvancedSearch\Api\Representation\SearchEngineRepresentation
+     */
+    protected $searchEngine;
 
     public function setServiceLocator(ServiceLocatorInterface $serviceLocator): AdapterInterface
     {
-        $this->serviceLocator = $serviceLocator;
+        $this->services = $serviceLocator;
         return $this;
     }
 
-    public function getAvailableFields(SearchEngineRepresentation $engine): array
+    public function setSearchEngine(SearchEngineRepresentation $searchEngine): AdapterInterface
+    {
+        $this->searchEngine = $searchEngine;
+        return $this;
+    }
+
+    public function getSearchEngine(): ?SearchEngineRepresentation
+    {
+        return $this->searchEngine;
+    }
+
+    public function getAvailableFields(): array
     {
         return [];
     }
 
-    public function getAvailableFacetFields(SearchEngineRepresentation $engine): array
+    public function getAvailableFacetFields(): array
     {
         return [];
     }
 
-    public function getAvailableSortFields(SearchEngineRepresentation $engine): array
+    public function getAvailableSortFields(): array
     {
         return [];
+    }
+
+    public function getAvailableFieldsForSelect(): array
+    {
+        $fields = $this->getAvailableFields();
+        // Manage the case when there is no label.
+        return array_replace(
+            array_column($fields, 'name', 'name'),
+            array_filter(array_column($fields, 'label', 'name'))
+        );
     }
 
     protected function getServiceLocator(): ServiceLocatorInterface
     {
-        return $this->serviceLocator;
+        return $this->services;
     }
 }

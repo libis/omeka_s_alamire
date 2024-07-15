@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016-2017
- * Copyright Daniel Berthereau, 2018-2021
+ * Copyright Daniel Berthereau, 2018-2022
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -437,7 +437,6 @@ class SearchConfigController extends AbstractActionController
     protected function prepareDataForForm(array $settings): array
     {
         // Ok search.
-        // Ok resource_fields.
         // Ok autosuggest.
         // Ok sort.
         // Ok facet.
@@ -464,8 +463,10 @@ class SearchConfigController extends AbstractActionController
         $advanced = $settings['form']['filters'][$keyAdvancedFilter];
         $settings['form']['advanced'] = $advanced['fields'];
         $settings['form']['max_number'] = $advanced['max_number'];
-        $settings['form']['field_joiner'] = $advanced['field_joiner'];
-        $settings['form']['field_operator'] = $advanced['field_operator'];
+        $settings['form']['field_joiner'] = (bool) $advanced['field_joiner'];
+        $settings['form']['field_joiner_not'] = (bool) ($advanced['field_joiner_not'] ?? false);
+        $settings['form']['field_operator'] = (bool) $advanced['field_operator'];
+        $settings['form']['field_operators'] = $advanced['field_operators'] ?? [];
         $settings['form']['filters'][$keyAdvancedFilter] = [
             'field' => 'advanced',
             'label' => 'Filters',
@@ -491,9 +492,13 @@ class SearchConfigController extends AbstractActionController
             $params['search']['default_query'] = trim($params['search']['default_query'] ?? '', "? \t\n\r\0\x0B");
         }
 
+        if (isset($params['search']['default_query_post'])) {
+            $params['search']['default_query_post'] = trim($params['search']['default_query_post'] ?? '', "? \t\n\r\0\x0B");
+        }
+
         // Add a warning because it may be a hard to understand issue.
         if (isset($params['facet']['languages'])) {
-            $params['facet']['languages'] = array_unique(array_map('trim', $params['facet']['languages']));
+            $params['facet']['languages'] = array_values(array_unique(array_map('trim', $params['facet']['languages'])));
             if (!empty($params['facet']['languages']) && !in_array('', $params['facet']['languages'])) {
                 $this->messenger()->addWarning(
                     'Note that you didn’t set a trailing "|", so all values without language will be removed.' // @translate
@@ -510,9 +515,13 @@ class SearchConfigController extends AbstractActionController
             // 'daterangestartend' => 'DateRangeStartEnd',
             'hidden' => 'Hidden',
             'multicheckbox' => 'MultiCheckbox',
+            'multiselect' => 'MultiSelect',
+            'multiselectflat' => 'MultiSelectFlat',
+            'multitext' => 'MultiText',
             'noop' => 'Noop',
             'number' => 'Number',
             // 'numberrange' => 'NumberRange',
+            'omeka' => 'Omeka',
             // 'place' => 'Place',
             'radio' => 'Radio',
             'select' => 'Select',
@@ -530,8 +539,13 @@ class SearchConfigController extends AbstractActionController
                 unset($params['form']['filters'][$keyFilter]);
                 continue;
             }
-            $filterField = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $filter['type'] ?? 'Noop'));
-            $params['form']['filters'][$keyFilter]['type'] = $inputTypes[$filterField] ?? ucfirst($filterField);
+            $filterType = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $filter['type'] ?? 'Noop'));
+            if (substr($filterType, 0, 5) === 'omeka') {
+                $subFilterType = trim(substr($filterType, 5), '/ ');
+                $params['form']['filters'][$keyFilter]['type'] = trim('Omeka/' . ($inputTypes[$subFilterType] ?? ucfirst($subFilterType)), '/');
+            } else {
+                $params['form']['filters'][$keyFilter]['type'] = $inputTypes[$filterType] ?? ucfirst($filterType);
+            }
             if ($filter['type'] === 'Advanced') {
                 if ($keyAdvanced !== false) {
                     unset($params['form']['filters'][$keyAdvanced]);
@@ -547,7 +561,9 @@ class SearchConfigController extends AbstractActionController
                     $params['form']['advanced'],
                     $params['form']['max_number'],
                     $params['form']['field_joiner'],
-                    $params['form']['field_operator']
+                    $params['form']['field_joiner_not'],
+                    $params['form']['field_operator'],
+                    $params['form']['field_operators']
                 );
                 return $params;
             }
@@ -562,12 +578,16 @@ class SearchConfigController extends AbstractActionController
         $params['form']['filters'][$keyAdvanced]['fields'] = $advanced;
         $params['form']['filters'][$keyAdvanced]['max_number'] = $params['form']['max_number'] ?? 5;
         $params['form']['filters'][$keyAdvanced]['field_joiner'] = $params['form']['field_joiner'] ?? false;
+        $params['form']['filters'][$keyAdvanced]['field_joiner_not'] = $params['form']['field_joiner_not'] ?? false;
         $params['form']['filters'][$keyAdvanced]['field_operator'] = $params['form']['field_operator'] ?? false;
+        $params['form']['filters'][$keyAdvanced]['field_operators'] = $params['form']['field_operators'] ?? [];
         unset(
             $params['form']['advanced'],
             $params['form']['max_number'],
             $params['form']['field_joiner'],
-            $params['form']['field_operator']
+            $params['form']['field_joiner_not'],
+            $params['form']['field_operator'],
+            $params['form']['field_operators']
         );
 
         // TODO Store the final form as an array to be created via factory. https://docs.laminas.dev/laminas-form/v3/form-creation/creation-via-factory/
