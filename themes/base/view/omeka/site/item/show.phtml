@@ -172,8 +172,9 @@ endif;
     
     <?php endif;?>  
 
-    <?php if($item->value('alamire:fileID') && $type == "Chant"):?>    
-      <iframe style="width:100%;min-height:50vh;" src="<?php echo $item->value('alamire:fileID') ?>"></iframe>         
+    <?php if($item->value('alamire:fileID') && $type == "Chant"):?>   
+      <?php $file_link = str_replace("data.idemdatabase.org","lib.is",$item->value('alamire:fileID').'');?> 
+      <iframe style="width:100%;min-height:900px;margin:0.5rem 0 2.5rem 0;" src="<?php echo $file_link; ?>"></iframe>         
     <?php endif;?>
     
     <?php if($type == "Composition" || $type == "Chant"):?>
@@ -201,7 +202,7 @@ endif;
       //related manuscript (chants) query
       $query = "";          
       //local 377
-      parse_str("property[0][joiner]=and&property[0][property]=378&property[0][type]=eq&property[0][text]=".$item->value('alamire:identifier')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
+      parse_str("property[0][joiner]=and&property[0][property]=384&property[0][type]=eq&property[0][text]=".$item->value('alamire:identifier')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
       $chants = $this->api()->search('items',$query);
       $chants = $chants->getContent();
     ?>
