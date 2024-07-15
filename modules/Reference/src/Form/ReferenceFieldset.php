@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
+
 namespace Reference\Form;
 
 use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
 use Laminas\Form\Form;
-use Omeka\Form\Element\PropertySelect;
-use Omeka\Form\Element\ResourceClassSelect;
+use Omeka\Form\Element as OmekaElement;
 
 // FIXME Use a fieldset, not a form.
 class ReferenceFieldset extends Form
@@ -20,31 +20,35 @@ class ReferenceFieldset extends Form
         $argsFieldset = $this->get('o:block[__blockIndex__][o:data][args]');
         $argsFieldset
             ->add([
-                'name' => 'property',
-                'type' => PropertySelect::class,
+                'name' => 'properties',
+                'type' => OmekaElement\PropertySelect::class,
                 'options' => [
-                    'label' => 'Property', // @translate
+                    'label' => 'Properties', // @translate
                     'term_as_value' => true,
                     'empty_option' => '',
                 ],
                 'attributes' => [
+                    'id' => 'reference-args-properties',
                     'required' => false,
                     'class' => 'chosen-select',
-                    'data-placeholder' => 'Select a property…', // @translate
+                    'multiple' => 'multiple',
+                    'data-placeholder' => 'Select properties…', // @translate
                 ],
             ])
             ->add([
-                'name' => 'resource_class',
-                'type' => ResourceClassSelect::class,
+                'name' => 'resource_classes',
+                'type' => OmekaElement\ResourceClassSelect::class,
                 'options' => [
-                    'label' => 'Resource class', // @translate
+                    'label' => 'Resource classes', // @translate
                     'empty_option' => '',
                     'term_as_value' => true,
                 ],
                 'attributes' => [
+                    'id' => 'reference-args-resource-classes',
                     'required' => false,
                     'class' => 'chosen-select',
-                    'data-placeholder' => 'Select a resource class…', // @translate
+                    'multiple' => 'multiple',
+                    'data-placeholder' => 'Select resource classes…', // @translate
                 ],
             ])
             ->add([
@@ -65,6 +69,7 @@ class ReferenceFieldset extends Form
                     ],
                 ],
                 'attributes' => [
+                    'id' => 'reference-args-resource-name',
                     'class' => 'chosen-select',
                 ],
             ])
@@ -81,16 +86,21 @@ class ReferenceFieldset extends Form
                     ],
                 ],
                 'attributes' => [
+                    'id' => 'reference-args-order',
                     'class' => 'chosen-select',
                 ],
             ])
             ->add([
                 'name' => 'query',
-                'type' => Element\Text::class,
+                'type' => OmekaElement\Query::class,
                 'options' => [
-                    'label' => 'Query to limit resources', // @translate
-                    'info' => 'Limit the reference to a particular subset of resources, for example a site, via an advanced search query.', // @translate
-                    'documentation' => 'https://omeka.org/s/docs/user-manual/sites/site_pages/#browse-preview',
+                    'label' => 'Search pool query', // @translate
+                    'info' => 'Restrict references to a particular subset of resources, for example a site.', // @translate
+                    'query_resource_type' => null,
+                    'query_partial_excludelist' => ['common/advanced-search/site'],
+                ],
+                'attributes' => [
+                    'id' => 'reference-args-query',
                 ],
             ])
             ->add([
@@ -101,7 +111,7 @@ class ReferenceFieldset extends Form
                     'info' => 'Limit the results to the specified languages. Use "|" to separate multiple languages. Use "||" for values without language.', // @translate
                 ],
                 'attributes' => [
-                    'id' => 'languages',
+                    'id' => 'reference-args-languages',
                     'placeholder' => 'fra|way|apy||',
                 ],
             ]);
@@ -122,7 +132,20 @@ class ReferenceFieldset extends Form
                 'type' => Element\Text::class,
                 'options' => [
                     'label' => 'Heading', // @translate
-                    'info' => 'Translatable title above references, if any. The placeholder {total} can be used.', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'reference-options-heading',
+                ],
+            ])
+            ->add([
+                'name' => 'by_initial',
+                'type' => Element\Checkbox::class,
+                'options' => [
+                    'label' => 'One page by initial', // @translate
+                    'info' => 'This option is recommended for big lists.', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'reference-options-by-initial',
                 ],
             ])
             ->add([
@@ -132,6 +155,9 @@ class ReferenceFieldset extends Form
                     'label' => 'Link to single records', // @translate
                     'info' => 'When a reference has only one item, link to it directly instead of to the items/browse page.', // @translate
                 ],
+                'attributes' => [
+                    'id' => 'reference-options-link-to-single',
+                ],
             ])
             ->add([
                 'name' => 'custom_url',
@@ -140,12 +166,18 @@ class ReferenceFieldset extends Form
                     'label' => 'Custom url for single', // @translate
                     'info' => 'May be set with modules such Clean Url or Ark. May slow the display when there are many single references.', // @translate
                 ],
+                'attributes' => [
+                    'id' => 'reference-options-custom-url',
+                ],
             ])
             ->add([
                 'name' => 'skiplinks',
                 'type' => Element\Checkbox::class,
                 'options' => [
                     'label' => 'Add skiplinks above and below list', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'reference-options-skiplinks',
                 ],
             ])
             ->add([
@@ -154,12 +186,18 @@ class ReferenceFieldset extends Form
                 'options' => [
                     'label' => 'Add first letter as headings between references', // @translate
                 ],
+                'attributes' => [
+                    'id' => 'reference-options-headings',
+                ],
             ])
             ->add([
                 'name' => 'total',
                 'type' => Element\Checkbox::class,
                 'options' => [
                     'label' => 'Add the total of resources for each reference', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'reference-options-total',
                 ],
             ])
             ->add([
@@ -170,7 +208,7 @@ class ReferenceFieldset extends Form
                     'info' => 'For example, display the items by subject. Let 0 to display a simple list. Maximum is 1024.', // @translate
                 ],
                 'attributes' => [
-                    'id' => 'list_by_max',
+                    'id' => 'reference-options-list-by-max',
                     'required' => false,
                     'min' => 0,
                     'max' => 1024,
@@ -178,7 +216,7 @@ class ReferenceFieldset extends Form
             ])
             ->add([
                 'name' => 'subject_property',
-                'type' => PropertySelect::class,
+                'type' => OmekaElement\PropertySelect::class,
                 'options' => [
                     'label' => 'Subject values', // @translate
                     'info' => 'Allow to list related resources. For example, in a library where there are items of types "Authors" and "Documents", and if the creator of the documents are linked resources, then select "Creator" to see the list of documents by author. This option is skipped when option "max by reference" is used.', // @translate
@@ -186,7 +224,7 @@ class ReferenceFieldset extends Form
                     'empty_option' => '',
                 ],
                 'attributes' => [
-                    'id' => 'subject_property',
+                    'id' => 'reference-options-subject-property',
                     'required' => false,
                     'class' => 'chosen-select',
                     'data-placeholder' => 'Select a property…', // @translate
@@ -204,6 +242,7 @@ class ReferenceFieldset extends Form
                         'template' => 'common/block-layout/reference',
                     ],
                     'attributes' => [
+                        'id' => 'reference-options-template',
                         'class' => 'chosen-select',
                     ],
                 ]);
