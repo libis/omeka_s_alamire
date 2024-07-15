@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016-2017
- * Copyright Daniel Berthereau, 2017-2021
+ * Copyright Daniel Berthereau, 2017-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -38,7 +38,6 @@ use Omeka\Stdlib\Message;
 use SearchSolr\Api\Representation\SolrCoreRepresentation;
 use SearchSolr\Api\Representation\SolrMapRepresentation;
 use Solarium\Client as SolariumClient;
-use Solarium\Exception\HttpException as SolariumServerException;
 use Solarium\QueryType\Update\Query\Document as SolariumInputDocument;
 
 /**
@@ -103,17 +102,22 @@ class SolariumIndexer extends AbstractIndexer
     protected $serverId;
 
     /**
-     * @var string|false
+     * @var string|null
      */
     protected $indexField;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $indexName;
 
     /**
-     * @var string|false
+     * @var string
+     */
+    protected $mainLocale;
+
+    /**
+     * @var string|null
      */
     protected $support;
 
@@ -198,7 +202,10 @@ class SolariumIndexer extends AbstractIndexer
         }
 
         if (empty($this->api)) {
-            $this->init();
+            $result = $this->init();
+            if (!$result) {
+                return $this;
+            }
         }
 
         $resourceNames = [
@@ -244,7 +251,7 @@ class SolariumIndexer extends AbstractIndexer
      *
      * @todo Create/use a full service manager factory.
      */
-    protected function init()
+    protected function init(): ?IndexerInterface
     {
         $services = $this->getServiceLocator();
         $this->api = $services->get('Omeka\ApiManager');
@@ -260,8 +267,22 @@ class SolariumIndexer extends AbstractIndexer
         $this->getSupportFields();
         $this->prepareFomatters();
 
+        // Force indexation of required fields, in particular resource type,
+        // visibility and sites, because they are the base of Omeka.
+        // So check required fields one time and abord early.
+        $missingMaps = $this->getSolrCore()->missingRequiredMaps();
+        if ($missingMaps) {
+            $this->getLogger()->err(new Message(
+                'Unable to index resources in Solr core "%1$s". Some required fields are not mapped: %2$s', // @translate
+                $this->getSolrCore()->name(), implode(', ', $missingMaps)
+            ));
+            return null;
+        }
+
         $doc = new SolariumInputDocument();
         $this->solariumHelpers = $doc->getHelper();
+
+        $this->mainLocale = $services->get('Omeka\Settings')->get('locale');
 
         return $this;
     }
@@ -286,7 +307,6 @@ class SolariumIndexer extends AbstractIndexer
         $resourceName = $resource->getResourceName();
         $resourceId = $resource->getId();
 
-        $solrCoreSettings = $this->solrCore->settings();
         /** @var \SearchSolr\ValueExtractor\ValueExtractorInterface $valueExtractor */
         $valueExtractor = $this->valueExtractorManager->get($resourceName);
 
@@ -305,50 +325,47 @@ class SolariumIndexer extends AbstractIndexer
             $document->addField($this->indexField, $this->indexName);
         }
 
-        // Force the indexation of visibility, resource type and sites, even if
-        // not selected in mapping, because they are the base of Omeka.
-
-        $isPublicField = $solrCoreSettings['is_public_field'];
-        $document->addField($isPublicField, $resource->isPublic());
-
-        $resourceNameField = $solrCoreSettings['resource_name_field'];
-        $document->addField($resourceNameField, $resourceName);
-
-        $sitesField = $solrCoreSettings['sites_field'];
-        switch ($resourceName) {
-            case 'items':
-                $sites = array_map(function (\Omeka\Entity\Site $v) {
-                    return $v->getId();
-                }, $resource->getSites()->toArray());
-                $document->addField($sitesField, array_values($sites));
-                break;
-
-            case 'item_sets':
-                $sites = array_map(function (\Omeka\Entity\SiteItemSet $v) {
-                    return $v->getSite()->getId();
-                }, $resource->getSiteItemSets()->toArray());
-                $document->addField($sitesField, $sites);
-                break;
-
-            default:
-                return;
-        }
-
+        /** @var \SearchSolr\Api\Representation\SolrMapRepresentation $solrMap */
         foreach ($this->solrCore->mapsByResourceName($resourceName) as $solrMap) {
             $solrField = $solrMap->fieldName();
             $source = $solrMap->source();
 
-            // Index the required fields one time only except if the admin wants
-            // to store it in a different field too.
-            if ($source === 'is_public' && $solrField === $isPublicField) {
+            // Required fields (resource name, visibility, etc.) are already
+            // checked, so they are all added during value extraction.
+
+            // Resource name is not available through the representation.
+            if ($source === 'resource_name') {
+                $document->addField($solrField, $resourceName);
+            }
+
+            if ($source === 'site/o:id') {
+                switch ($resourceName) {
+                    case 'items':
+                        $sites = array_map(function (\Omeka\Entity\Site $v) {
+                            return $v->getId();
+                        }, $resource->getSites()->toArray());
+                        $document->addField($solrField, array_values($sites));
+                        break;
+                    case 'item_sets':
+                        $sites = array_map(function (\Omeka\Entity\SiteItemSet $v) {
+                            return $v->getSite()->getId();
+                        }, $resource->getSiteItemSets()->toArray());
+                        $document->addField($solrField, $sites);
+                        break;
+                    case 'media':
+                        $sites = array_map(function (\Omeka\Entity\Site $v) {
+                            return $v->getId();
+                        }, $resource->getItem()->getSites()->toArray());
+                        $document->addField($solrField, array_values($sites));
+                        break;
+                    default:
+                        // Nothing to do.
+                        break;
+                }
                 continue;
             }
-            // The admin can’t modify this parameter via the standard interface.
-            if ($source === 'resource_name' && $solrField === $sitesField) {
-                continue;
-            }
-            // The admin can’t modify this parameter via the standard interface.
-            if ($source === 'site/o:id' && $solrField === $sitesField) {
+
+            if ($source === 'search_index' && $solrField === $this->indexField) {
                 continue;
             }
 
@@ -362,27 +379,51 @@ class SolariumIndexer extends AbstractIndexer
                 continue;
             }
 
-            $values = $this->formatValues($values, $solrMap);
-            if (!count($values)) {
+            $formattedValues = $this->formatValues($values, $solrMap);
+            if (!count($formattedValues)) {
                 continue;
             }
 
-            if ($this->isSingleValuedFields[$resourceName][$solrField]) {
+            if ($this->isSingleValuedFields[$solrField]) {
+                // Store single fields one time only (checked above).
                 $isSingleFieldFilled[$solrField] = true;
-                $document->addField($solrField, reset($values));
+                $document->addField($solrField, reset($formattedValues));
             } else {
-                foreach ($values as $value) {
+                foreach ($formattedValues as $value) {
                     $document->addField($solrField, $value);
                 }
             }
 
             if ($this->support === 'drupal') {
                 // Only one value is filled for special values of Drupal.
-                $this->appendDrupalValues($resource, $document, $solrField, reset($values));
+                $value = reset($values);
+                // Generally, the value is a ValueRepresentation.
+                $locale = is_object($value) && method_exists($value, 'lang')
+                    ? $value->lang()
+                    : null;
+                $formattedValue = reset($formattedValues);
+                $this->appendDrupalValues($resource, $document, $solrField, $formattedValue, $locale);
             }
         }
 
         $this->appendSupportedFields($resource, $document);
+
+        // Remove the duplicates in the multiple indexes: this is generally an
+        // unintentional issue (or related to a drupal field).
+        // It's recommended to use Solr boost mechanisms to boost a property or
+        // a document.
+        foreach ($document->getFields() as $field => $values) {
+            if (empty($this->isSingleValuedFields[$field]) && is_array($values) && count($values) > 1) {
+                $deduplicatedValues = array_unique($values);
+                if (count($deduplicatedValues) !== count($values)) {
+                    // Note: to remove a field removes the boost data too.
+                    $document->removeField($field);
+                    foreach ($deduplicatedValues as $value) {
+                        $document->addField($field, $value);
+                    }
+                }
+            }
+        }
 
         $this->solariumDocuments[$documentId] = $document;
     }
@@ -393,15 +434,22 @@ class SolariumIndexer extends AbstractIndexer
         $valueFormatter = $this->formatters[$solrMap->setting('formatter', '')] ?: $this->formatters['standard'];
         $result = [];
         foreach ($values as $value) {
-            $result = array_merge($result, $valueFormatter->format($value));
+            $formattedResult = $valueFormatter->format($value);
+            // FIXME Indexation of "0" breaks Solr, so currently replaced by "00".
+            $formattedResult = array_map(function ($v) {
+                return $v === '0' ? '00' : $v;
+            }, $formattedResult);
+            $result = array_merge($result, $formattedResult);
         }
-        return $result;
+        // Don't use array_unique before, because objects may not be stringable.
+        return array_unique($result);
     }
 
     protected function appendSupportedFields(Resource $resource, SolariumInputDocument $document): void
     {
         foreach ($this->supportFields as $solrField => $value) switch ($solrField) {
             // Drupal.
+            // TODO Don't use "index_id", but the name set in the map, that should be "index_id" anyway.
             case 'index_id':
                 // Already set for multi-index, and it is a single value.
                 break;
@@ -459,35 +507,81 @@ class SolariumIndexer extends AbstractIndexer
             // Index documents by one to avoid to skip well formatted documents.
             $isMultiple = count($this->solariumDocuments) > 1;
             if ($isMultiple) {
-                foreach ($this->solariumDocuments as $documentId => $document) {
+                // To improve speed when error and avoid 100 requests, try
+                // indexing by ten first, then individually, so usually 11 to 20
+                // requests.
+                foreach (array_chunk($this->solariumDocuments, 10, true) as $solariumDocs) {
                     try {
                         $update = $client
                             ->createUpdate()
-                            ->addDocument($document)
+                            ->addDocuments($solariumDocs)
                             ->addCommit();
                         $client->update($update);
-                    } catch (SolariumServerException $e) {
-                        $dId = explode('-', $documentId);
-                        $error = json_decode((string) $e->getBody(), true);
-                        $message = is_array($error) && isset($error['error']['msg']) ? $error['error']['msg'] : $e->getMessage();
-                        $message = new Message('Indexing of resource %1$s failed: %2$s', array_pop($dId), $message);
-                        $this->getLogger()->err($message);
                     } catch (\Exception $e) {
-                        $dId = explode('-', $documentId);
-                        $message = new Message('Indexing of resource %1$s failed: %2$s', array_pop($dId), $e->getMessage());
-                        $this->getLogger()->err($message);
+                        if (count($solariumDocs) > 1) {
+                            foreach ($solariumDocs as $documentId => $document) {
+                                if (!$document) {
+                                    $dId = explode('-', $documentId);
+                                    $dId = array_pop($dId);
+                                    $this->commitError($document, $dId, $e);
+                                    continue;
+                                }
+                                try {
+                                    $update = $client
+                                    ->createUpdate()
+                                    ->addDocument($document)
+                                    ->addCommit();
+                                    $client->update($update);
+                                } catch (\Exception $e) {
+                                    $dId = explode('-', $documentId);
+                                    $dId = array_pop($dId);
+                                    $this->commitError($document, $dId, $e);
+                                }
+                            }
+                        } else {
+                            $dId = explode('-', key($solariumDocs));
+                            $dId = array_pop($dId);
+                            $this->commitError(reset($solariumDocs), $dId, $e);
+                        }
                     }
                 }
             } else {
                 $dId = explode('-', key($this->solariumDocuments));
-                $error = json_decode((string) $e->getMessage(), true);
-                $message = is_array($error) || isset($error['error']['msg']) ? $error['error']['msg'] : $e->getMessage();
-                $message = new Message('Indexing of resource %1$s failed: %2$s', array_pop($dId), $message);
-                $this->getLogger()->err($message);
+                $dId = array_pop($dId);
+                $this->commitError(reset($this->solariumDocuments), $dId, $e);
             }
         }
 
         $this->solariumDocuments = [];
+    }
+
+    /**
+     * Prepare the commit message error for log.
+     *
+     * To get a better message: get the data ($request->getRawData()) and post it
+     * in Solr admin board.
+     * @see \Solarium\Core\Client\Adapter\Http::createContext()
+     */
+    protected function commitError(?SolariumInputDocument $document, string $dId, \Exception $exception): self
+    {
+        if (!$document) {
+            $message = new Message('Indexing of resource failed: empty of invalid document: %s', $exception);
+            $this->getLogger()->err($message);
+            return $this;
+        }
+        $error = method_exists($exception, 'getBody') ? json_decode((string) $exception->getBody(), true) : null;
+        $message = is_array($error) && isset($error['error']['msg'])
+            ? $error['error']['msg']
+            : $exception->getMessage();
+        if ($message === 'Solr HTTP error: Bad Request (400)') {
+            // TODO Retry the request here, because \Solarium\Core\Client\Adapter\Http::createContext()
+            $message = new Message('Invalid document (wrong field type or missing required field).'); // @translate
+        } elseif ($message === 'Solr HTTP error: HTTP request failed') {
+            $message = new Message('Solr HTTP error: HTTP request failed due to network or certificate issue.'); // @translate
+        }
+        $message = new Message('Indexing of resource %1$s failed: %2$s', $dId, $message);
+        $this->getLogger()->err($message);
+        return $this;
     }
 
     /**
@@ -507,14 +601,15 @@ class SolariumIndexer extends AbstractIndexer
 
     protected function prepareIndexFieldAndName()
     {
-        $field = $this->getSolrCore()->setting('index_field') ?: false;
+        $fields = $this->getSolrCore()->mapsBySource('search_index', 'generic') ?: [];
         $name = $this->engine->settingAdapter('index_name') ?: false;
-        if ($field && $name) {
-            $this->indexField = $field;
+        if ($fields && $name) {
+            $this->indexField = reset($fields);
+            $this->indexField = $this->indexField->fieldName();
             $this->indexName = $name;
         } else {
-            $this->indexField = false;
-            $this->indexName = false;
+            $this->indexField = null;
+            $this->indexName = null;
         }
         return $this;
     }
@@ -551,20 +646,20 @@ class SolariumIndexer extends AbstractIndexer
      * a multi-mapped single-value field is already filled in order not to send
      * multiple values to a single valued field.
      *
+     * Because the multivalued quality is defined by the schema, it is not
+     * related to the resource name, so a single list is created.
+     * It avoids complexity with generic/resources/specific resources names too.
+     *
      * @todo Move the single valued check inside Solr core settings to do it one time.
      */
     protected function prepareSingleValuedFields(): void
     {
-        $solrCore = $this->getSolrCore();
-        $schema = $solrCore->schema();
+        $schema = $this->getSolrCore()->schema();
         $this->isSingleValuedFields = [];
-        foreach ($this->getSolrCore()->mapsByResourceName() as $resourceName => $solrMaps) {
-            $this->isSingleValuedFields[$resourceName] = [];
-            foreach ($solrMaps as $solrMap) {
-                $solrField = $solrMap->fieldName();
-                $schemaField = $schema->getField($solrField);
-                $this->isSingleValuedFields[$resourceName][$solrField] = $schemaField && !$schemaField->isMultivalued();
-            }
+        foreach ($this->getSolrCore()->maps() as $solrMap) {
+            $solrField = $solrMap->fieldName();
+            $schemaField = $schema->getField($solrField);
+            $this->isSingleValuedFields[$solrField] = $schemaField && !$schemaField->isMultivalued();
         }
     }
 
@@ -585,7 +680,7 @@ class SolariumIndexer extends AbstractIndexer
     protected function getSupportFields()
     {
         if (is_null($this->supportFields)) {
-            $this->support = $this->solrCore->setting('support') ?: false;
+            $this->support = $this->solrCore->setting('support') ?: null;
             $this->supportFields = array_filter($this->solrCore->schemaSupport($this->support));
             // Manage some static values.
             foreach ($this->supportFields as $solrField => &$value) switch ($solrField) {
@@ -599,7 +694,8 @@ class SolariumIndexer extends AbstractIndexer
                     // The site should be the language site one, but urls don't
                     // include locale in Omeka.
                     // TODO Check if the site url should be the default site one or the root of Omeka.
-                    $value = $this->solrCore->setting('site_url') ?: 'http://localhost/';
+                    $helpers = $this->getServiceLocator()->get('ViewHelperManager');
+                    $value = $helpers->get('ServerUrl')->__invoke($helpers->get('BasePath')->__invoke('/'));
                     break;
                 case 'hash':
                     $value = $this->serverId;
@@ -667,35 +763,61 @@ class SolariumIndexer extends AbstractIndexer
      * @param SolariumInputDocument $document
      * @param string $solrField
      * @param mixed $value
+     * @param string $locale
      * @return self
      */
-    protected function appendDrupalValues(Resource $resource, SolariumInputDocument $document, $solrField, $value)
+    protected function appendDrupalValues(Resource $resource, SolariumInputDocument $document, $solrField, $value, ?string $valueLocale = null)
     {
         $resourceName = $resource->getResourceName();
         if (!isset($this->vars['solr_maps'][$resourceName][$solrField])) {
             return $this;
         }
 
-        // FIXME Use the translated values in Drupal sort fields.
+        // When a value has a locale, only this locale is stored, else all
+        // locales defined in the config.
+
         // In Drupal, the same value is copied in each language field for sort…
         // @link https://git.drupalcode.org/project/search_api_solr/-/blob/4.x/src/Plugin/search_api/backend/SearchApiSolrBackend.php#L1130-1172
         // For example, field is "ss_title", so sort field is "sort_X3b_fr_title".
         // This is slighly different from Drupal process.
         $prefix = $this->vars['solr_maps'][$resourceName][$solrField]['prefix'];
         $matches = [];
-        if (in_array(mb_substr($prefix . '_', 0, 3), ['tm_', 'ts_', 'sm_', 'ss_'])) {
-            foreach ($this->vars['locales'] as $locale) {
-                $field = 'sort_X3b_' . $locale . '_' . $this->vars['solr_maps'][$resourceName][$solrField]['name'];
-                if (!$document->{$field}) {
-                    $value = mb_substr((string) $value, 0, 128);
-                    $document->addField($field, $value);
+        if (in_array($prefix, ['tm', 'ts', 'sm', 'ss'])) {
+            // Don't translate a field twice.
+            if (strpos($solrField, '_X3b_') !== false) {
+                return $this;
+            }
+            // Drupal needs two letters language codes, except for undetermined.
+            // TODO Use the right mapping for iso language 3 characters to 2 characters.
+            if ($valueLocale && $valueLocale !== 'und' && strlen($valueLocale) > 2) {
+                $valueLocale = substr($valueLocale, 0, 2);
+            }
+            // For sort, only the first 128 characters can be indexed.
+            $valueSort = mb_substr((string) $value, 0, 128);
+            $name = $this->vars['solr_maps'][$resourceName][$solrField]['name'];
+            foreach ($valueLocale ? [$valueLocale] : $this->vars['locales'] as $locale) {
+                $field = 'sort_X3b_' . $locale . '_' . $name;
+                // Add only one sort value.
+                if (!isset($document->{$field})) {
+                    $document->addField($field, $valueSort);
+                }
+            }
+            // The title and body (description) should be translated too.
+            if (in_array($solrField, ['tm_title', 'ts_title', 'tm_body', 'ts_body'])) {
+                $tmOrTs = $prefix === 'ts' ? 'ts' : 'tm';
+                foreach ($valueLocale ? [$valueLocale] : $this->vars['locales'] as $locale) {
+                    $field = $tmOrTs . '_X3b_' . $locale . '_' . $name;
+                    // There may be multiple titles or bodies, but avoid issues.
+                    if (!isset($document->{$field})) {
+                        $document->addField($field, $value);
+                    }
                 }
             }
         } elseif (strpos($solrField, 'random_') !== 0
             && preg_match('/^([a-z]+)m(_.*)/', $solrField, $matches)
         ) {
             $field = $matches[1] . 's' . $matches[2];
-            if (!$document->{$field}) {
+            if (!isset($document->{$field})) {
                 $document->addField($field, $value);
             }
         }

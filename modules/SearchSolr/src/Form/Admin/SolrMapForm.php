@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2017
- * Copyright Daniel Berthereau, 2017-2021
+ * Copyright Daniel Berthereau, 2017-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -34,6 +34,7 @@ use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
 use Laminas\Form\Form;
 use Omeka\Api\Manager as ApiManager;
+use SearchSolr\Form\Element as SearchSolrElement;
 use SearchSolr\ValueExtractor\Manager as ValueExtractorManager;
 use SearchSolr\ValueFormatter\Manager as ValueFormatterManager;
 
@@ -94,10 +95,32 @@ class SolrMapForm extends Form
         $this
             ->get('o:pool')
             ->add([
-                'name' => 'data_types',
-                'type' => 'Omeka\Form\Element\DataTypeSelect',
+                'name' => 'filter_resources',
+                'type' => Element\Text::class,
                 'options' => [
-                    'label' => 'Limit to data types', // @translate
+                    'label' => 'Index only resources matching this standard query', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'filter_resources',
+                    'required' => false,
+                ],
+            ])
+            ->add([
+                'name' => 'filter_value_resources',
+                'type' => Element\Text::class,
+                'options' => [
+                    'label' => 'Index only value resources matching this standard query', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'filter_value_resources',
+                    'required' => false,
+                ],
+            ])
+            ->add([
+                'name' => 'data_types',
+                'type' => SearchSolrElement\DataTypeSelect::class,
+                'options' => [
+                    'label' => 'Index only these data types', // @translate
                 ],
                 'attributes' => [
                     'id' => 'data_types',
@@ -108,7 +131,7 @@ class SolrMapForm extends Form
             ])
             ->add([
                 'name' => 'data_types_exclude',
-                'type' => 'Omeka\Form\Element\DataTypeSelect',
+                'type' => SearchSolrElement\DataTypeSelect::class,
                 'options' => [
                     'label' => 'Exclude data types', // @translate
                 ],
@@ -166,28 +189,12 @@ class SolrMapForm extends Form
     }
 
     /**
-     * @return \SearchSolr\ValueExtractor\Manager
-     */
-    public function getValueExtractorManager()
-    {
-        return $this->valueExtractorManager;
-    }
-
-    /**
      * @param ValueFormatterManager $valueFormatterManager
      */
     public function setValueFormatterManager(ValueFormatterManager $valueFormatterManager)
     {
         $this->valueFormatterManager = $valueFormatterManager;
         return $this;
-    }
-
-    /**
-     * @return \SearchSolr\ValueFormatter\Manager
-     */
-    public function getValueFormatterManager()
-    {
-        return $this->valueFormatterManager;
     }
 
     /**
@@ -200,76 +207,29 @@ class SolrMapForm extends Form
     }
 
     /**
-     * @return \Omeka\Api\Manager
-     */
-    public function getApiManager()
-    {
-        return $this->apiManager;
-    }
-
-    /**
      * @return array|null
      */
     protected function getSourceOptions()
     {
-        $valueExtractorManager = $this->getValueExtractorManager();
-
         $resourceName = $this->getOption('resource_name');
         /** @var \SearchSolr\ValueExtractor\ValueExtractorInterface $valueExtractor */
-        $valueExtractor = $valueExtractorManager->get($resourceName);
+        $valueExtractor = $this->valueExtractorManager->get($resourceName);
         if (!isset($valueExtractor)) {
             return null;
         }
 
-        return $this->getFieldsOptions($valueExtractor->getMapFields());
+        // Recursive select is no more used, neither prefix/suffix.
+        // See older version if needed.
+        return $valueExtractor->getMapFields();
     }
 
-    /**
-     * @return array
-     */
-    protected function getFieldsOptions($fields, $valuePrefix = '', $labelPrefix = '')
+    protected function getFormatterOptions(): array
     {
         $options = [];
-
-        foreach ($fields as $name => $field) {
-            $label = $field['label'];
-            $value = $name;
-
-            if (!empty($field['children'])) {
-                $childrenOptions = $this->getFieldsOptions($field['children'],
-                    $valuePrefix ? "$valuePrefix/$value" : $value,
-                    $labelPrefix ? "$labelPrefix / $label" : $label);
-                $options = array_merge($options, $childrenOptions);
-            } else {
-                $value = $valuePrefix ? "$valuePrefix/$value" : $value;
-                if ($labelPrefix) {
-                    if (!isset($options[$labelPrefix])) {
-                        $options[$labelPrefix] = ['label' => $labelPrefix];
-                    }
-                    $options[$labelPrefix]['options'][$value] = $label;
-                } else {
-                    $options[$value] = $label;
-                }
-            }
-        }
-
-        return $options;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getFormatterOptions()
-    {
-        $valueFormatterManager = $this->getValueFormatterManager();
-
-        $options = [];
-
-        foreach ($valueFormatterManager->getRegisteredNames() as $name) {
-            $valueFormatter = $valueFormatterManager->get($name);
+        foreach ($this->valueFormatterManager->getRegisteredNames() as $name) {
+            $valueFormatter = $this->valueFormatterManager->get($name);
             $options[$name] = $valueFormatter->getLabel();
         }
-
         return $options;
     }
 }

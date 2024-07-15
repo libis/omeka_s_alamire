@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2017
- * Copyright Daniel Berthereau, 2017-2021
+ * Copyright Daniel Berthereau, 2017-2023
  * Copyright Paul Sarrassat, 2018
  *
  * This software is governed by the CeCILL license under French law and abiding
@@ -65,8 +65,17 @@ class MapController extends AbstractActionController
 
     public function browseAction()
     {
+        /** @var \SearchSolr\Api\Representation\SolrCoreRepresentation $solrCore */
         $solrCoreId = $this->params('coreId');
         $solrCore = $this->api()->read('solr_cores', $solrCoreId)->getContent();
+
+        $missingMaps = $solrCore->missingRequiredMaps();
+        if ($missingMaps) {
+            $this->messenger()->addError(new Message(
+                'Some required fields are missing or not available in the core: "%s". Update the generic or the resource mappings.', // @translate
+                implode('", "', array_unique($missingMaps))
+            ));
+        }
 
         $valueExtractors = [];
         foreach ($this->valueExtractorManager->getRegisteredNames() as $name) {
@@ -119,6 +128,7 @@ class MapController extends AbstractActionController
         }, $maps);
 
         // Add all missing maps with a generic multivalued text field.
+        // Don't add a map if it exists at a upper level.
         $result = [];
         $properties = $api->search('properties')->getContent();
         $usedPropertyIds = $this->listUsedPropertyIds($resourceName);
@@ -127,6 +137,7 @@ class MapController extends AbstractActionController
             if (!in_array($property->id(), $usedPropertyIds)) {
                 continue;
             }
+
             $term = $property->term();
             // Skip property that are already mapped.
             if (in_array($term, $maps)) {
@@ -171,12 +182,15 @@ class MapController extends AbstractActionController
 
         // Get all existing indexed properties.
         $maps = $solrCore->mapsByResourceName($resourceName);
+
         // Map as associative array by map id and keep only the source.
         $mapList = [];
         foreach ($maps as $map) {
-            $mapList[$map->id()] = $map->source();
+            // Only the maps with the current resource name are removed.
+            if ($map->resourceName() === $resourceName) {
+                $mapList[$map->id()] = $map->source();
+            }
         }
-        $maps = $mapList;
 
         // Add all missing maps.
         $result = [];
@@ -187,14 +201,15 @@ class MapController extends AbstractActionController
             if (in_array($property->id(), $usedPropertyIds)) {
                 continue;
             }
-            $term = $property->term();
+
             // Skip property that are not mapped.
-            if (!in_array($term, $maps)) {
+            $term = $property->term();
+            if (!in_array($term, $mapList)) {
                 continue;
             }
 
             // There may be multiple maps with the same term.
-            $ids = array_keys(array_filter($maps, function ($v) use ($term) {
+            $ids = array_keys(array_filter($mapList, function ($v) use ($term) {
                 return $v === $term;
             }));
             $api->batchDelete('solr_maps', $ids);
@@ -375,9 +390,12 @@ class MapController extends AbstractActionController
     protected function getSourceLabels()
     {
         $sourceLabels = [
-            'id' => 'Internal identifier',
+            'resource_name' => 'Resource type', // @translate
+            'id' => 'Internal id', // @translate
             'is_public' => 'Public', // @translate
             'is_open' => 'Is open', // @translate
+            'site' => 'Site', // @translate
+            'owner' => 'Owner', // @translate
             'created' => 'Created', // @translate
             'modified' => 'Modified', // @translate
             'resource_class' => 'Resource class', // @translate
@@ -429,24 +447,34 @@ class MapController extends AbstractActionController
      * @param string $resourceName
      * @return \Omeka\Api\Representation\PropertyRepresentation[]
      */
-    protected function listUsedPropertyIds($resourceName)
+    protected function listUsedPropertyIds($resourceName): array
     {
         $resourceTypes = [
+            'resources' => \Omeka\Entity\Resource::class,
             'items' => \Omeka\Entity\Item::class,
             'item_sets' => \Omeka\Entity\ItemSet::class,
+            'media' => \Omeka\Entity\Media::class,
         ];
+
+        // Manage "generic" type.
+        if (!isset($resourceTypes[$resourceName])) {
+            return [];
+        }
 
         $qb = $this->connection->createQueryBuilder()
             ->select('DISTINCT value.property_id')
             ->from('value', 'value')
             ->innerJoin('value', 'resource', 'resource', 'resource.id = value.resource_id')
-            ->where('resource.resource_type = :resource_type')
-            ->setParameter('resource_type', $resourceTypes[$resourceName])
             ->orderBy('value.property_id', 'ASC');
+        if ($resourceName !== 'resources') {
+            $qb
+                ->where('resource.resource_type = :resource_type')
+                ->setParameter('resource_type', $resourceTypes[$resourceName]);
+        }
 
         return $this->connection
             ->executeQuery($qb, $qb->getParameters())
-            ->fetchAll(\PDO::FETCH_COLUMN, 0);
+            ->fetchFirstColumn();
     }
 
     /**

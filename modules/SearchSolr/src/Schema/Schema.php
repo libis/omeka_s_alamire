@@ -40,9 +40,6 @@ class Schema
      */
     protected $fields = [];
 
-    /**
-     * @param string $schemaUrl
-     */
     public function __construct(string $schemaUrl)
     {
         $this->schemaUrl = $schemaUrl;
@@ -64,11 +61,14 @@ class Schema
             if ($contents === false) {
                 // False result might be because file_get_contents is disabled, trying with curl
                 if (function_exists('curl_init')) {
-                    $c = curl_init();
-                    curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($c, CURLOPT_URL, $this->schemaUrl);
-                    $contents = curl_exec($c);
-                    curl_close($c);
+                    $curl = curl_init();
+                    curl_setopt_array($curl, [
+                        CURLOPT_RETURNTRANSFER => 1,
+                        CURLOPT_URL => $this->schemaUrl,
+                        CURLOPT_USERAGENT => 'curl/' . curl_version()['version'],
+                    ]);
+                    $contents = curl_exec($curl);
+                    curl_close($curl);
                 }
             }
 
@@ -92,31 +92,48 @@ class Schema
             }
 
             $response = json_decode($contents, true);
+            if (!is_array($response)) {
+                // Remove the credentials of the url for the logs.
+                $parsed = parse_url($this->schemaUrl);
+                $credentials = isset($parsed['username']) ? substr($parsed['username'], 0, 1) . '***:***@' : '';
+                $url = $parsed['scheme'] . '://' . $credentials . $parsed['host'] . ':' . $parsed['port'] . $parsed['path'];
+                $message = new Message(
+                    'Response is not valid. Check output of %s, that should be valid json data.', // @translate
+                    $url
+                );
+                throw new SolariumException((string) $message);
+            }
+
+            if (empty($response['schema'])) {
+                // Remove the credentials of the url for the logs.
+                $parsed = parse_url($this->schemaUrl);
+                $credentials = isset($parsed['username']) ? substr($parsed['username'], 0, 1) . '***:***@' : '';
+                $url = $parsed['scheme'] . '://' . $credentials . $parsed['host'] . ':' . $parsed['port'] . $parsed['path'];
+                $message = new Message(
+                    'Response is not valid. Check output of %s, that should be a json with a key "schema".', // @translate
+                    $url
+                );
+                throw new SolariumException((string) $message);
+            }
+
             $this->setSchema($response['schema']);
         }
 
         return $this->schema;
     }
 
-    /**
-     * @param array $schema
-     */
     public function setSchema(array $schema): Schema
     {
         $this->schema = $schema;
         return $this;
     }
 
-    /**
-     * @param string $name
-     * @return Field|null
-     */
     public function getField(string $name): ?Field
     {
         // Fill fields only when needed.
         if (!array_key_exists($name, $this->fields)) {
-            $fieldsByName = $this->getFieldsByName();
-            $field = $fieldsByName[$name] ?? $this->getDynamicFieldFor($name);
+            $field = $this->getFieldsByName()[$name]
+                ?? $this->getDynamicFieldFor($name);
             if ($field) {
                 $type = $this->getType($field['type']);
                 $field = new Field($name, $field, $type);
@@ -126,9 +143,6 @@ class Schema
         return $this->fields[$name];
     }
 
-    /**
-     * @return array[]
-     */
     public function getFieldsByName(): array
     {
         if (!isset($this->fieldsByName)) {
@@ -145,10 +159,6 @@ class Schema
         return $this->fieldsByName;
     }
 
-    /**
-     * @param string $name
-     * @return array
-     */
     public function getDynamicFieldFor(string $name): ?array
     {
         $map = $this->getDynamicFieldsMap();
@@ -180,9 +190,6 @@ class Schema
         return null;
     }
 
-    /**
-     * @return array[]
-     */
     public function getDynamicFieldsMap(): array
     {
         if (!isset($this->dynamicFieldsMap)) {
@@ -209,7 +216,6 @@ class Schema
 
     /**
      * @param string $fieldNameType "prefix", "suffix", or all fields.
-     * @return array
      */
     public function getDynamicFieldsMapByMainPart(?string $fieldNameType = null): array
     {
@@ -243,18 +249,11 @@ class Schema
         }
     }
 
-    /**
-     * @param string $name
-     * @return array|null
-     */
     public function getType(string $name): ?array
     {
         return $this->getTypesByName()[$name] ?? null;
     }
 
-    /**
-     * @return array
-     */
     public function getTypesByName(): array
     {
         if (!isset($this->typesByName)) {
@@ -279,7 +278,6 @@ class Schema
      *
      * @link https://forum.omeka.org/t/search-field-doesnt-return-results-with-solr/11650/12
      * @link https://lucene.apache.org/solr/guide/solr-tutorial.html#create-a-catchall-copy-field
-     * @return bool
      */
     public function checkDefaultField(): bool
     {

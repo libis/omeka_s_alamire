@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016
- * Copyright Daniel Berthereau 2018-2021
+ * Copyright Daniel Berthereau 2018-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -95,7 +95,7 @@ class SolrConfigFieldset extends Fieldset
                 'label' => $solrCore->name(),
             ];
             if (isset($coreIndexes[$solrCore->id()])
-                && !$solrCore->setting('index_field')
+                && !$solrCore->mapsBySource('search_index', 'resources')
                 && !in_array($searchEngineId, $coreIndexes[$solrCore->id()])
             ) {
                 $option['label'] = sprintf($translator->translate('%s (unavailable: option multi-index not set)'), $option['label']); // @translate

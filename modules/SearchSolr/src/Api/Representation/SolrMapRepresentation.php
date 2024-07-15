@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2017
- * Copyright Daniel Berthereau, 2020
+ * Copyright Daniel Berthereau, 2020-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -92,10 +92,10 @@ class SolrMapRepresentation extends AbstractEntityRepresentation
         return $this->resource->getSource();
     }
 
-    public function pool(?string $name = null, $default = null): array
+    public function pool(?string $name = null, $default = null)
     {
         if (!is_null($this->pool)) {
-            return $name ? $this->pool[$name] ?? $default : $this->pool;
+            return is_null($name) ? $this->pool : ($this->pool[$name] ?? $default);
         }
 
         $this->pool = $this->resource->getPool();
@@ -114,7 +114,7 @@ class SolrMapRepresentation extends AbstractEntityRepresentation
             $this->pool[$dataTypeName] = $result;
         }
 
-        return $name ? $this->pool[$name] ?? $default : $this->pool;
+        return is_null($name) ? $this->pool : ($this->pool[$name] ?? $default);
     }
 
     public function settings(): array
@@ -142,7 +142,7 @@ class SolrMapRepresentation extends AbstractEntityRepresentation
         if (strpos($source, '/') === false) {
             $subField = '';
         } else {
-            list(, $subField) = explode('/', $source, 2);
+            [, $subField] = explode('/', $source, 2);
         }
         $subMap = new SolrSubMap($this->resource, $this->adapter);
         return $subMap

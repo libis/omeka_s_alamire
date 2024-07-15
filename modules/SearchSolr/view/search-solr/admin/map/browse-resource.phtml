@@ -1,7 +1,7 @@
 <?php
 /*
  * Copyright BibLibre, 2017
- * Copyright Daniel Berthereau, 2017-2021
+ * Copyright Daniel Berthereau, 2017-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -34,8 +34,12 @@
  * @var string $resourceName
  */
 
-$translate = $this->plugin('translate');
-$escape = $this->plugin('escapeHtml');
+$plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$translate = $plugins->get('translate');
+$hyperlink = $plugins->get('hyperlink');
+
+$this->headLink()->appendStylesheet($this->assetUrl('css/search-solr-admin.css', 'SearchSolr'));
 
 $this->htmlElement('body')->appendAttribute('class', 'solr-map browse');
 ?>
@@ -65,9 +69,9 @@ $this->htmlElement('body')->appendAttribute('class', 'solr-map browse');
 
 <nav class="breadcrumbs">
     <?php
-    echo $this->hyperlink($translate('Search'), $this->url('admin/search'));
-    echo $this->hyperlink($translate('Solr cores'), $this->url('admin/search/solr'));
-    echo $this->hyperlink(sprintf($translate('Resources list for core "%s"'), $solrCore->name()), $this->url('admin/search/solr/core-id-map', [], true));
+    echo $hyperlink($translate('Search'), $this->url('admin/search'));
+    echo $hyperlink($translate('Solr cores'), $this->url('admin/search/solr'));
+    echo $hyperlink(sprintf($translate('Resources list for core "%s"'), $solrCore->name()), $this->url('admin/search/solr/core-id-map', [], true));
     ?><span><?php
     echo sprintf($translate('Maps for "%s"'), $resourceName);
     ?></span>
@@ -89,9 +93,15 @@ $this->htmlElement('body')->appendAttribute('class', 'solr-map browse');
                 <tr>
                     <td>
                         <span><?= $map->fieldName() ?></span>
+                        <div></div>
                         <ul class="actions">
+                        <?php if ($map->resourceName() !== $resourceName): ?>
                             <li>
-                                <?= $this->hyperlink('', $map->adminUrl('edit'), [
+                                <span class="field-generic"><?= $map->resourceName() ?></span>
+                            </li>
+                        <?php endif; ?>
+                            <li>
+                                <?= $hyperlink('', $map->adminUrl('edit'), [
                                     'class' => 'o-icon-edit',
                                     'title' => $translate('Edit'),
                                 ]) ?>
@@ -107,9 +117,18 @@ $this->htmlElement('body')->appendAttribute('class', 'solr-map browse');
                     </td>
                     <td><?= $map->source() ?></td>
                     <td><?php
+                        $filterResources = $map->pool('filter_resources');
+                        $filterValueResources = $map->pool('filter_value_resources');
                         $dataTypes = $map->pool('data_types');
                         $dataTypesExclude = $map->pool('data_types_exclude');
-                        if ($dataTypes || $dataTypesExclude): ?>
+                        ?>
+                        <?php if ($filterResources): ?>
+                        <div><?= $translate('Filtered by resources') ?></div>
+                        <?php endif; ?>
+                        <?php if ($filterValueResources): ?>
+                        <div><?= $translate('Filtered by value resources') ?></div>
+                        <?php endif; ?>
+                        <?php if ($dataTypes || $dataTypesExclude): ?>
                         <dl>
                             <?php if ($dataTypes) echo '<dt>' . $translate('Data types') . '</dt><dd>' . implode('</dd><dd>', $dataTypes) . '</dd>'; ?>
                             <?php if ($dataTypesExclude) echo '<dt>' . $translate('Excluded data types') . '</dt><dd>' . implode('</dd><dd>', $dataTypesExclude) . '</dd>'; ?>

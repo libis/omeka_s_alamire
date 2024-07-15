@@ -31,7 +31,11 @@ return [
         'factories' => [
             Form\Admin\SolrCoreForm::class => Service\Form\SolrCoreFormFactory::class,
             Form\Admin\SolrMapForm::class => Service\Form\SolrMapFormFactory::class,
-            'Omeka\Form\Element\DataTypeSelect' => Service\Form\Element\DataTypeSelectFactory::class,
+            Form\Element\DataTypeSelect::class => Service\Form\Element\DataTypeSelectFactory::class,
+        ],
+        'aliases' => [
+            // Use aliases to keep core keys.
+            'Omeka\Form\Element\DataTypeSelect' => Form\Element\DataTypeSelect::class,
         ],
     ],
     'controllers' => [
@@ -217,12 +221,18 @@ return [
         'config' => [
             'searchsolr_server_id' => null,
         ],
+        // A mapping table of codes.
+        // To be copied and completed in main Omeka config/local.config.php for the value formatter "Table".
+        'table' => [
+        ],
     ],
     'searchsolr_value_extractors' => [
         'factories' => [
+            'generic' => Service\ValueExtractor\ResourceValueExtractorFactory::class,
+            'resources' => Service\ValueExtractor\ResourceValueExtractorFactory::class,
             'items' => Service\ValueExtractor\ResourceValueExtractorFactory::class,
             'item_sets' => Service\ValueExtractor\ResourceValueExtractorFactory::class,
-            // 'media' => Service\ValueExtractor\ResourceValueExtractorFactory::class,
+            'media' => Service\ValueExtractor\ResourceValueExtractorFactory::class,
         ],
     ],
     'searchsolr_value_formatters' => [
@@ -230,11 +240,15 @@ return [
             'date' => ValueFormatter\Date::class,
             'date_range' => ValueFormatter\DateRange::class,
             'plain_text' => ValueFormatter\PlainText::class,
+            'html_escaped_text' => ValueFormatter\HtmlEscapedText::class,
+            'raw_text' => ValueFormatter\RawText::class,
             'point' => ValueFormatter\Point::class,
             'standard' => ValueFormatter\Standard::class,
             'standard_with_uri' => ValueFormatter\StandardWithUri::class,
             'standard_without_uri' => ValueFormatter\StandardWithoutUri::class,
+            'table' => ValueFormatter\Table::class,
             'uri' => ValueFormatter\Uri::class,
+            'year' => ValueFormatter\Year::class,
         ],
     ],
 ];
