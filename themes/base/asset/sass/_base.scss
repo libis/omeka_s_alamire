@@ -704,13 +704,30 @@ h5.title{
   }
 }
 
+.trans-text{
+  max-height: 300px;
+  overflow: auto;
+}
+
 .inventory-wrapper{  
+
   .tabs{
     font-size: 0.8rem;
     font-weight: bold;
     margin-bottom: 1rem;
     margin-top: 0.5rem;
   }  
+
+  #incipitFilter{
+    min-width: 250px;
+    max-width:100%;
+  }
+
+  .select select{
+    width: 200px;
+    max-width:100%;
+    margin-right: 5px;
+  }
 
   #polyphony{
     margin-bottom:0.5rem;
@@ -739,7 +756,7 @@ h5.title{
 
 table{
   margin:0.5rem 0 1rem 0;
-  font-size:0.9rem;
+  width: 100%;
 
   tr{
     background-color: rgba($primary,0.08);
