@@ -122,8 +122,8 @@ endif;
                   if(str_contains($cite->asHtml(),"$$")):
                     $cite = explode(" $$ ",$cite->asHtml());  
                      
-                    if(isset($cite[3])):
-                      $sort_cites[trim($cite[0]).trim($cite[3])] = $cite;
+                    if(isset($cite[5])):
+                      $sort_cites[trim($cite[0]).trim($cite[5])] = $cite;
                     else:
                       $sort_cites[] = $cite;
                     endif;
@@ -144,12 +144,22 @@ endif;
                   if($rel):
                     echo '<div style="margin-bottom:0.5rem;">';
                     echo '<a href="'.$rel->url().'">'.$rels[0].'</a>';
-                    if($rels[2] != " link:" && $auth):
-                      $link = str_replace(" link:","",$rels[2]);
+                    $label = "";
+                    //page
+                    if(trim($rels[2]) == "fol."){
+                      $label = trim($rels[3]);
+                    }
+                    else{
+                      //fol
+                      $label = trim($rels[2]);
+                    }
+                    
+                    if(str_contains($rels[4],"http") && $auth):
+                      $link = str_replace(" link:","",$rels[4]);
                       $link = str_replace("&amp;","&",$link);
-                      echo ' <span style="font-style:italic;border-bottom:1px solid #cc6733"><a target="_blank" href="'.$link.'">'.$rels[1].'</a></span>';
+                      echo ' <span style="font-style:italic;border-bottom:1px solid #cc6733"><a target="_blank" href="'.$link.'">'.$label.'</a></span>';
                     else:
-                      echo ' <span style="font-style:italic;">'.$rels[1].'</span>';
+                      echo ' <span style="font-style:italic;">'.$label.'</span>';
                     endif;  
                     echo '</div>';
                   else:
