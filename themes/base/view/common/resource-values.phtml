@@ -148,6 +148,7 @@ endif;
                     //page
                     if(trim($rels[2]) == "fol."){
                       $label = trim($rels[3]);
+                      $label = str_replace("page:","p.",$label);
                     }
                     else{
                       //fol
@@ -386,15 +387,21 @@ endif;
              
               $i=0;
               foreach($rels as $irel):
-                $label = "";
+                $label = "";$seq = "";
                 //page
                 if(trim($irel[5]) == "fol."){
                   $label = trim($irel[6]);
+                  $label = str_replace("page:","p.",$label);
                 }
                 else{
                   //fol
                   $label = trim($irel[5]);
                 }
+
+                if($irel[4]){
+                  $seq = "<span style='width:27px;margin-right:2px;display:inline-block;'>".trim($irel[4]).". </span>";
+                }
+
                 if($irel[0] && $irel[1] == "  "):
                   $lvl1[] = "$irel[0]";
 
@@ -440,7 +447,8 @@ endif;
                       $composer = "<strong>".$composer."</strong>: ";
                     endif;  
 
-                    echo  $composer.'<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
+
+                    echo  $seq.$composer.'<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
                     
                     if(str_contains($irel[7],"http") && $auth):
                       echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a>';
