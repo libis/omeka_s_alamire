@@ -193,6 +193,26 @@ endif;
               endif;
               $values['alamire:creator_display']['values'] = "";
             ?>
+          <?php elseif($propertyData['property']->term() == 'alamire:arranger_display'):?>
+            <?php 
+              if($values['alamire:arranger_display']['values']):
+                $cites = $values['alamire:arranger_display']['values'];
+                $sort_cites = array();
+                foreach($cites as $cite):
+                  if(str_contains($cite->asHtml(),"$$")):
+                    $cite = explode(" $$ ",$cite->asHtml());     
+                    $sort_cites[trim($cite[1])] = $cite[0];
+                  else:
+                    echo $cite->asHtml();  
+                  endif;  
+                endforeach;
+                ksort($sort_cites);  
+                foreach($sort_cites as $cite):        
+                  echo '<div style="margin-bottom:0.5rem;">'.trim($cite)."</div>";                    
+                endforeach;                      
+              endif;
+              $values['alamire:arranger_display']['values'] = "";
+            ?>  
           <?php elseif($propertyData['property']->term() == 'alamire:relatedArchivalRecord'):?>
             <?php 
               $archive = explode(" $$ ",$value->asHtml());                
