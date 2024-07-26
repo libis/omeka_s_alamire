@@ -371,8 +371,8 @@ endif;
               $sorted_rels = array();
               foreach($rels as $rel):
                 $irel = explode("$$",$rel);
-                if(!empty($irel[6])):
-                  $sorted_rels[trim($irel[6])] = $irel;
+                if(!empty($irel[8])):
+                  $sorted_rels[trim($irel[8])] = $irel;
                 else:
                   $sorted_rels[] = $irel;
                 endif;  
@@ -386,6 +386,15 @@ endif;
              
               $i=0;
               foreach($rels as $irel):
+                $label = "";
+                //page
+                if(trim($irel[5]) == "fol."){
+                  $label = trim($irel[6]);
+                }
+                else{
+                  //fol
+                  $label = trim($irel[5]);
+                }
                 if($irel[0] && $irel[1] == "  "):
                   $lvl1[] = "$irel[0]";
 
@@ -433,10 +442,10 @@ endif;
 
                     echo  $composer.'<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
                     
-                    if(str_contains($irel[5],"http") && $auth):
-                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[5]).'">'.$irel[4].'</a>';
+                    if(str_contains($irel[7],"http") && $auth):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a>';
                     else:
-                      echo $irel[4];
+                      echo $label;
                     endif;  
                   else:
                     if($i != 0):
@@ -446,10 +455,10 @@ endif;
                     endif; 
                     //echo $irel[3]." ".$irel[4]."<br>";
                     echo $irel[3];
-                    if(str_contains($irel[5],"http") && $auth):
-                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[5]).'">'.$irel[4].'</a>';
+                    if(str_contains($irel[7],"http") && $auth):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a>';
                     else:
-                      echo $irel[4];
+                      echo $label;
                     endif; 
                   endif;   
                     
@@ -461,26 +470,26 @@ endif;
                 else:
                   if(in_array($irel[1],$lvl1)):
                      echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$irel[3].' ';
-                     if(str_contains($irel[5],"http") && $auth):
-                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[5]).'">'.$irel[4].'</a><br>';
+                     if(str_contains($irel[7],"http") && $auth):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a><br>';
                     else:
-                      echo $irel[4].'<br>';
+                      echo $label.'<br>';
                     endif; 
                      $lvl2[] = $irel[0]; 
                   elseif(in_array($irel[1],$lvl2)):
                     echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$irel[3].' ';
-                    if(str_contains($irel[5],"http") && $auth):
-                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[5]).'">'.$irel[4].'</a><br>';
+                    if(str_contains($irel[7],"http") && $auth):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a><br>';
                     else:
-                      echo $irel[4].'<br>';
+                      echo $label.'<br>';
                     endif; 
                     $lvl3[] = $irel[0];
                   elseif(in_array($irel[1],$lvl3)):
                     echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$irel[3].' ';
-                    if(str_contains($irel[5],"http") && $auth):
-                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[5]).'">'.$irel[4].'</a><br>';
+                    if(str_contains($irel[7],"http") && $auth):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a><br>';
                     else:
-                      echo $irel[4].'<br>';
+                      echo $label.'<br>';
                     endif; 
                     $lvl4[] = $irel[0];   
                   endif;  
