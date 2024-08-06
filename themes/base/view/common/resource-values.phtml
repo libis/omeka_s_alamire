@@ -362,6 +362,16 @@ endif;
           <?php elseif($propertyData['property']->term() == 'alamire:relatedAudio'):
             $rels = explode("$$",$value->asHtml());
             echo trim($rels[0]);
+            ?>       
+          <?php elseif($propertyData['property']->term() == 'alamire:differentiaLabel'):
+            $label =  $values['alamire:differentiaLabel']['values'][0]->asHtml();
+            $url = '';
+            if(!empty($values['alamire:differentiaURL']['values'])):
+              $url = $values['alamire:differentiaURL']['values'][0]->asHtml();
+            endif;
+            $values['alamire:differentiaLabel']['values'] = "";
+            $values['alamire:differentiaURL']['values'] = "";
+            echo '<a target="_blank" href="'.trim($url).'">'.trim($label).'</a>';
             ?>                   
           <?php elseif($propertyData['property']->term() == 'alamire:relatedComposition'):?>
             <?php 
