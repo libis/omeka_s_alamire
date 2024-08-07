@@ -653,6 +653,9 @@ class Harvest extends AbstractJob
             if($localName == "pid"):
                 $texts = str_replace("#","",$texts);   
             endif;    
+            if($localName == "cantusID"):
+                $texts = str_replace("ci-","",$texts);   
+            endif;  
             if($localName == "relatedComposition"):                
                 $texts= array($texts.'');
             else:

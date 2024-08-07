@@ -271,6 +271,7 @@ endif;
                 <div class="select">
                   <select id="feastFilter">
                     <option value="" disabled selected>Filter by feast</option>
+                    <option value="">All</option>
                     <?php foreach($feasts as $feast):?>
                       <option value="<?php echo $feast;?>"><?php echo $feast;?></option>
                     <?php endforeach;?>
@@ -279,6 +280,7 @@ endif;
                 <div class="select">      
                   <select id="genreFilter">
                     <option value="" disabled selected>Filter by genre</option>
+                    <option value="">All</option>
                     <?php foreach($genres as $genre):?>
                       <option value="<?php echo $genre;?>"><?php echo $genre ? $genre : "none";?></option>
                     <?php endforeach;?>
@@ -300,9 +302,7 @@ endif;
               <?php foreach($chants as $key=>$chant):?>              
                 <tr class="data" data-incipit="<?php echo $chant->value("alamire:incipit")?>" data-feast="<?php echo $chant->value("alamire:feast")?>" data-genre="<?php echo $chant->value("alamire:genre")?>">                  
                   <td style="text-align:center;">
-                    <?php if(!str_contains($oldkey,$chant->value("alamire:folio"))):?>
                     <?php echo $chant->value("alamire:folio");?>
-                    <?php endif;?>  
                   </td>
                   <td><a target="_blank" href="<?php echo $chant->url();?>"><?php echo $chant->value("alamire:incipit");?></td>
                   <td><?php echo $chant->value("alamire:feast");?></td>
@@ -445,9 +445,9 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     });
 
     $('.text').each(function(){
-      if($(this).height() > 150){
+      /*if($(this).height() > 150){
         $(this).readmore({ speed: 75, collapsedHeight: 150, moreLink: '<a class="more-link" href="#">Show more</a>', lessLink: '<a class="more-link" href="#">Show less</a>' });;
-      }      
+      }*/      
     });
 
     $(".copy").click(function(e){
@@ -459,7 +459,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
 
     $('.thumbnails').appendTo('.navigation');
     $(".Inventory").appendTo("#polyphony");
-    $(".inventory-wrapper").insertAfter(".extra-block");
+    $(".inventory-wrapper").insertBefore(".extra-block");
 
     $('.collapsible').click(function() {
      var index = $(this).data('index');     
