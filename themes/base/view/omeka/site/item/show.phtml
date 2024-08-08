@@ -138,46 +138,69 @@ endif;
         $translations = $item->value('alamire:translation',array("all" => true));
       ?>
       <?php foreach($originals as $index=>$original):?>
-      <div class="columns">        
-        <div class="column is-4">
-          <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">Transcription
-            <?php if($item->value('alamire:relatedManuscript')):
-              $rel = $item->value('alamire:relatedManuscript')->asHtml();
-              $rel = explode("$$",$rel);
-              echo " from: ".$rel[0];
-            endif;?>  
-          </h3>
-          <div class="trans-text">
-          <?php echo $original;?>
-          </div>
-        </div>
-        <div class="column is-6">
-          <div class="tabs is-small">
-            <ul>  
-              <?php foreach($translations as $key=>$trans):?>
-                  <?php $trans = explode("$$",$trans);?>
-                  <li class="tab <?php echo $trans[0];?>"><a href="#<?php echo trim($trans[0])."-".$key;?>"><?php echo $trans[0];?></a></li>
-              <?php endforeach;?>         
-            </ul>
-          </div>
-          <?php foreach($translations as $key=>$trans):?>
-            <?php $trans = explode("$$",$trans);?>
-            <div id="<?php echo trim($trans[0])."-".$key;?>" class="tab-pane translation <?php echo $trans[0];?>">
+        <?php 
+            $orginal = explode("$$",$original);
+            $text_id = trim($orginal[0]);
+            $original = $orginal[1];
+        ?>
+        <div class="columns">        
+          <div class="column is-4">
+            <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">Transcription
+              <?php if($item->value('alamire:relatedManuscript')):
+                $rel = $item->value('alamire:relatedManuscript')->asHtml();
+                $rel = explode("$$",$rel);
+                echo " from: ".$rel[0];
+              endif;?>  
+            </h3>
             <div class="trans-text">
-            <?php echo $trans[2];?>
+            <?php echo $original;?>
             </div>
-            <br><br>
-            <?php if($trans[1]):?>
-            <?php echo "Translator: ".$trans[1];?><br>
-            <?php endif;?>
-            <?php if($trans[3]):?>
-            <?php echo "Provided by: ".$trans[3];?>
-            <?php endif;?>
+          </div>
+          <div class="column is-6 translation-column">
+            <div class="tabs is-small">
+              <ul>  
+                <?php foreach($translations as $key=>$trans):?>
+                    <?php $trans1 = explode("$$",$trans);?>
+                    <?php $trans_id = trim(array_shift($trans1));?>
+                    <?php $trans = implode("$$",$trans1);?>
+                    <?php if($trans_id == $text_id):?>
+                      <?php $transs = explode("||",$trans);?>
+                      <?php foreach($transs as $trans):?>      
+                        <?php $trans = explode("$$",$trans);?>   
+                        <li class="tab <?php echo $trans[0];?>"><a href="#<?php echo trim($trans[0])."-".$key;?>"><?php echo $trans[0];?></a></li>
+                      <?php endforeach;?>  
+                    <?php endif;?>  
+                <?php endforeach;?>         
+              </ul>
             </div>
-          <?php endforeach;?>         
-        </div>
-      </div> 
-      <?php endforeach;?>
+            <?php foreach($translations as $key=>$trans):?>
+              <?php $trans1 = explode("$$",$trans);?>
+              <?php $trans_id = trim(array_shift($trans1));?>
+              <?php $trans = implode("$$",$trans1);?>
+
+              <?php if(trim($trans_id) == $text_id):?>              
+                <?php $transs = explode("||",$trans);?>
+              
+                <?php foreach($transs as $trans):?>
+                  <?php $trans = explode("$$",$trans);?>
+                  <div id="<?php echo trim($trans[0])."-".$key;?>" class="tab-pane translation <?php echo $trans[0];?>">
+                  <div class="trans-text">
+                  <?php echo $trans[2];?>
+                  </div>
+                  <br><br>
+                  <?php if(strlen(trim($trans[1])) != 0):?>
+                  <?php echo "Translator: ".$trans[1];?><br>
+                  <?php endif;?>
+                  <?php if(strlen(trim($trans[3])) != 0):?>
+                  <?php echo "Provided by: ".$trans[3];?>
+                  <?php endif;?>
+                  </div>
+                <?php endforeach;?>  
+              <?php endif;?>  
+            <?php endforeach;?>         
+          </div>
+        </div> 
+        <?php endforeach;?>
     
     <?php endif;?>  
 
@@ -472,16 +495,20 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
       });
     }); 
 
-    $('li.tab:first').addClass('is-active');
-    $('.tab-pane:first').addClass('is-active');
+    $('li.tab:first-child').addClass('is-active');
+    $('div.tab-pane').addClass('is-active');    
+    $('.translation-column > .tab-pane ~ .tab-pane').removeClass('is-active');    
 
     $('li.tab').click(function(e) {
       e.preventDefault();
       var hash = $(this).children('a').eq(0).attr('href');
-      $('.tab-pane').removeClass('is-active');
+      //$('.tab-pane ').removeClass('is-active');
+      $(hash).siblings().removeClass("is-active");
       $(hash).addClass('is-active');
-      $('li.tab').removeClass('is-active');
+      //$('li.tab').removeClass('is-active');
+      $(this).siblings().removeClass("is-active");
       $(this).addClass('is-active');
+
       return true;
     });
 

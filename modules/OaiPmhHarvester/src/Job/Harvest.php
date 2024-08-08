@@ -656,7 +656,7 @@ class Harvest extends AbstractJob
             if($localName == "cantusID"):
                 $texts = str_replace("ci-","",$texts);   
             endif;  
-            if($localName == "relatedComposition"):                
+            if($localName == "relatedComposition" || $localName == "translation"):                
                 $texts= array($texts.'');
             else:
                 $texts = explode('||',$texts);
