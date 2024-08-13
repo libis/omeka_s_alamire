@@ -344,6 +344,63 @@ endif;
       </div>  
     <?php endif;?>  
 
+    <?php 
+      //related manuscript (chants) query
+      $query = "";          
+      //local 385, prod 402
+      parse_str("property[0][joiner]=and&property[0][property]=402&property[0][type]=eq&property[0][text]=".$item->value('alamire:cantusID')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
+      $chants = $this->api()->search('items',$query);
+      $chants = $chants->getContent();
+    ?>
+    <?php if($chants && sizeof($chants) > 1):?>
+      <div class="columns">        
+        <div class="column  is-12">
+          <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Concordances in the Cantus Index network</h4>
+        
+          <div class="inventory-wrapper">
+          
+          <?php if($chants):?>
+            <div id="chants" class="">  
+              <table>
+                <tr class="header-row">
+                  <th>Siglum</th>
+                  <th>Folio</th>
+                  <th>Incipit</th>
+                  <th>Office</th>
+                  <th>Genre</th>  
+                  <th>Position</th>
+                  <th>Feast</th>
+                  <th>Mode</th>
+                  <th>Image</th>
+                  <th>DB</th>
+                                  
+                </tr>
+                <?php $oldkey="";?>  
+                <?php foreach($chants as $key=>$chant):?>              
+                  <tr class="data" data-incipit="<?php echo $chant->value("alamire:incipit")?>" data-feast="<?php echo $chant->value("alamire:feast")?>" data-genre="<?php echo $chant->value("alamire:genre")?>">                  
+                    <td><?php echo $chant->value("alamire:relatedManuscriptID");?></td>
+                    <td style="text-align:center;">
+                      <?php echo $chant->value("alamire:folio");?>
+                    </td>
+                    <td><a target="_blank" href="<?php echo $chant->url();?>"><?php echo $chant->value("alamire:incipit");?></td>
+                    <td><?php echo $chant->value("alamire:office");?></td>
+                    <td><?php echo $chant->value("alamire:genre");?></td>
+                    <td><?php echo $chant->value("alamire:position");?></td>
+                    <td><?php echo $chant->value("alamire:feast");?></td>
+                    <td><?php echo $chant->value("alamire:mode");?></td>
+                    <td><?php //echo $chant->value("alamire:genre");?></td>
+                    <td><?php //echo $chant->value("alamire:genre");?></td>
+                  </tr>
+                  <?php $oldkey = $key;?>
+                <?php endforeach;?> 
+              </table>  
+            </div>  
+          <?php endif;?>
+          </div>
+        </div>
+      </div>  
+    <?php endif;?>  
+
     <div class="columns"> 
       <div class="column  is-12">
         <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Permalinks</h4>
