@@ -352,7 +352,7 @@ endif;
       $chants = $this->api()->search('items',$query);
       $chants = $chants->getContent();
     ?>
-    <?php if($chants && sizeof($chants) > 1):?>
+    <?php if($type == "Chant" && sizeof($chants) > 1):?>
       <div class="columns">        
         <div class="column  is-12">
           <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Concordances in the Cantus Index network</h4>
