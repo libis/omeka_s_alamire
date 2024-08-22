@@ -102,6 +102,12 @@ endif;
           parse_str("property[0][joiner]=and&property[0][property]=387&property[0][type]=eq&property[0][text]=".$item->value('alamire:folio')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_by=mmfc%3AsiblingOrder&sort_order=asc&submit=Search",$query);
           $chants = $this->api()->search('items',$query);
           $chants = $chants->getContent();
+          $sort_chants = array();
+          foreach($chants as $chant):
+            $sort_chants[$chant->value("alamire:position")] = $chant;
+          endforeach;  
+          ksort($sort_chants);
+          $chants = $sort_chants;
         ?>
         <table>
         <?php foreach($chants as $key=>$chant):?>
