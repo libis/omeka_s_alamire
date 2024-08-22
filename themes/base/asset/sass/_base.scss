@@ -270,14 +270,19 @@ h5.title{
 }
 
 //overlay columns
+.featured-section{
+  padding: 0;
+  padding-bottom: 2.5rem;
+}
 .featured-block{
   min-height: 320px;
   position: relative;
-  padding: 2rem;
+  background-color: rgba($primary,1);
   transition: all 400ms ease-out;
 
   &:hover{
-    opacity: 0.8;
+    background: rgba($primary,1);
+    
   }
 
   a{color:white;}
@@ -286,12 +291,24 @@ h5.title{
     font-weight: 600;
   }
 
+  .overlay2{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: rgba(black,0.1);
+  }
+
   .overlay{
     position: absolute;
-    bottom: 2rem;
+    bottom: 0;
+    padding: 2rem;
 
     .title{
       max-width: 350px;
+
+      a{
+        border-bottom:3px solid white;
+      }
     }
 
     p, .subtitle{
@@ -759,16 +776,18 @@ table{
   width: 100%;
   border-collapse: collapse;
 
-  tr{
-    background-color: rgba($primary,0.08);
-  }
-
-  tr:nth-child(even) {
-    //background-color: white;
-  }
-
   td{    
     border-bottom: 1px solid rgba($primary,0.5)
+  }
+
+  tr{
+    background: white;
+  }
+
+  tr:last-child{
+    td{    
+      border-bottom: none;
+    }
   }
 
   .header-row{
@@ -777,6 +796,12 @@ table{
 
   td, th{
     padding:0.4rem;
+  }
+}
+
+#chantstable{
+  .hidden-folio{
+    display:none;
   }
 }
 

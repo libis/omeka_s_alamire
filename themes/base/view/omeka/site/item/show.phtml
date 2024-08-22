@@ -240,12 +240,11 @@ endif;
       //related manuscript (chants) query
       $query = "";          
       //local 377, prod 378
-      parse_str("property[0][joiner]=and&property[0][property]=378&property[0][type]=eq&property[0][text]=".$item->value('alamire:identifier')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
+      parse_str("property[0][joiner]=and&property[0][property]=377&property[0][type]=eq&property[0][text]=".$item->value('alamire:identifier')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
       $chants = $this->api()->search('items',$query);
       $chants = $chants->getContent();
-    ?>
-    <?php if($chants):?>
-      <?php
+    
+      if($chants):
         $sort_chants = array();
         $feasts = array();
         $genres = array();
@@ -318,7 +317,7 @@ endif;
                 <button style="text-decoration:none" id="allFilter" class="button is-text is-small"><span>Reset</span><span class="icon is-small"><i class="fas fa-times"></i></span></button>
               </div>
             </nav>  
-            <table>
+            <table id="chantstable">
                 <tr class="header-row">
                   <th>Folio</th>
                   <th>Incipit</th>
@@ -331,7 +330,11 @@ endif;
               <?php foreach($chants as $key=>$chant):?>              
                 <tr class="data" data-incipit="<?php echo $chant->value("alamire:incipit")?>" data-feast="<?php echo $chant->value("alamire:feast")?>" data-genre="<?php echo $chant->value("alamire:genre")?>">                  
                   <td style="text-align:center;">
-                    <?php echo $chant->value("alamire:folio");?>
+                    <?php if(!str_contains($oldkey,$chant->value("alamire:folio"))):?>
+                      <?php echo $chant->value("alamire:folio");?>
+                    <?php else:?>
+                      <span class="hidden-folio"><?php echo $chant->value("alamire:folio");?></span>  
+                    <?php endif;?> 
                   </td>
                   <td><a target="_blank" href="<?php echo $chant->url();?>"><?php echo $chant->value("alamire:incipit");?></td>
                   <td><?php echo $chant->value("alamire:feast");?></td>
@@ -378,8 +381,7 @@ endif;
                   <th>Feast</th>
                   <th>Mode</th>
                   <th>Image</th>
-                  <th>DB</th>
-                                  
+                  <th>DB</th>                                  
                 </tr>
                 <?php $oldkey="";?>  
                 <?php foreach($chants as $key=>$chant):?>              
@@ -394,8 +396,6 @@ endif;
                     <td><?php echo $chant->value("alamire:position");?></td>
                     <td><?php echo $chant->value("alamire:feast");?></td>
                     <td><?php echo $chant->value("alamire:mode");?></td>
-                    <td><?php //echo $chant->value("alamire:genre");?></td>
-                    <td><?php //echo $chant->value("alamire:genre");?></td>
                   </tr>
                   <?php $oldkey = $key;?>
                 <?php endforeach;?> 
@@ -514,9 +514,9 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     $( ".expand" ).each(function( index, element ) {
       if( jQuery(this).next(".hidden-content").is(':empty')){
         jQuery(this).remove();
-      }
-      
+      }      
     });
+
     jQuery(".expand").click(function() {
         jQuery(this).next(".hidden-content", this).toggle();
         $(this).html(function(i, text){
@@ -528,12 +528,6 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     jQuery(".extra-button").click(function(e) {
         e.preventDefault();
         jQuery(".extra").toggle();
-    });
-
-    $('.text').each(function(){
-      /*if($(this).height() > 150){
-        $(this).readmore({ speed: 75, collapsedHeight: 150, moreLink: '<a class="more-link" href="#">Show more</a>', lessLink: '<a class="more-link" href="#">Show less</a>' });;
-      }*/      
     });
 
     $(".copy").click(function(e){
@@ -561,6 +555,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     $('li.tab:first-child').addClass('is-active');
     $('div.tab-pane').addClass('is-active');    
     $('.translation-column > .tab-pane ~ .tab-pane').removeClass('is-active');    
+    $('#chants').removeClass('is-active');    
 
     $('li.tab').click(function(e) {
       e.preventDefault();
@@ -578,11 +573,17 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     //filter table
     $("#incipitFilter").on("keyup", function() {
       var value = $(this).val().toLowerCase();
+      if(value){
+        $('.hidden-folio').show();
+      }else{
+        $('.hidden-folio').hide();
+      }
       $('#chants tr.data').hide();
       $("#chants tr.data").filter(function() {       
         if($(this).text().toLowerCase().indexOf(value) > -1){
           //contains text
           $(this).show();
+         
          
          if($('#genreFilter').val()){
           if ($(this).data('genre') != $('#genreFilter').val()) {           
@@ -595,7 +596,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
             $(this).hide();
           }
          }          
-        }     
+        } 
       });
     });
     
@@ -613,6 +614,8 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
       $('#chants tr.data').show();
       $('#genreFilter option:first').prop('selected',true);
       $('#feastFilter option:first').prop('selected',true);
+      
+      $('.hidden-folio').hide();
     });
 
     function filterFunction() {
@@ -621,7 +624,8 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
       $("#chants tr.data").filter(function() {       
         if($(this).text().toLowerCase().indexOf(value) > -1){
           //contains text
-          $(this).show();
+          $(this).show();          
+          $('.hidden-folio').show();
          
          if($('#genreFilter').val()){
           if ($(this).data('genre') != $('#genreFilter').val()) {           

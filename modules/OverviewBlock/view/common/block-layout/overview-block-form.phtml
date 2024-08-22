@@ -2,11 +2,29 @@
 use Zend\Form\Element\Textarea;
 ?>
 <?php echo $this->blockAttachmentsForm($block);?>
+<?php if(isset($block)):
+  $searchbar = $block->dataValue('searchbar');
+else:
+  $searchbar = 0;
+endif;?>
+<div class="field">
+  <div class="field-meta">
+      <label>Show searchbar</label>
+      <a href="#" class="expand" aria-label="Expand" title="Expand"></a>
+      <div class="collapsible">
+        <div class="field-description">Show the searchbar</div>
+      </div>
+  </div>
+  <div class="inputs">
+      <input type="checkbox" class="" value="searchbar" <?php echo ($searchbar == 'searchbar' ? 'checked' : '') ?> name="o:block[__blockIndex__][o:data][searchbar]">
+  </div>
+</div>
 <a href="#" class="expand" aria-label="Expand" title="Expand"><strong>Blocks</strong></a>
 <div class="collapsible">
 <p>
   This block will only appear when 3 images (attachments) are selected.
 </p>
+
 <hr />
 <div class="field">
   <div class="field-meta">
