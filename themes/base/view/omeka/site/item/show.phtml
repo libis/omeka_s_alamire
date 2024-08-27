@@ -554,8 +554,12 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
 
     $('li.tab:first-child').addClass('is-active');
     $('div.tab-pane').addClass('is-active');    
+    if($('#polyphony').length){
+      $('#chants').removeClass('is-active');
+    }
+
     $('.translation-column > .tab-pane ~ .tab-pane').removeClass('is-active');    
-    $('#chants').removeClass('is-active');    
+       
 
     $('li.tab').click(function(e) {
       e.preventDefault();
