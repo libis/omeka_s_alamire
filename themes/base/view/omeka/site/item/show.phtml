@@ -104,7 +104,7 @@ endif;
           $chants = $chants->getContent();
           $sort_chants = array();
           foreach($chants as $chant):
-            $sort_chants[$chant->value("alamire:position")] = $chant;
+            $sort_chants[$chant->value("alamire:position")."0"] = $chant;
           endforeach;  
           ksort($sort_chants);
           $chants = $sort_chants;
