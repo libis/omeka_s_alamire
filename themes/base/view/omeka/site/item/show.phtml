@@ -258,7 +258,7 @@ endif;
       ?>
       <div class="columns">        
         <div class="column is-12">
-          <div class="inventory-wrapper">
+          <div class="inventory-wrapper" style="margin-bottom:1rem;">
           <h4 class="has-text-weight-semibold is-6 section-head">Inventory</h4>
             
           <?php if($item->value("alamire:relatedComposition") && $chants):?>
@@ -539,7 +539,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
 
     $('.thumbnails').appendTo('.navigation');
     $(".Inventory").appendTo("#polyphony");
-    $(".inventory-wrapper").insertBefore(".extra-block");
+    $(".inventory-wrapper").insertAfter(".extra");
 
     $('.collapsible').click(function() {
      var index = $(this).data('index');     
