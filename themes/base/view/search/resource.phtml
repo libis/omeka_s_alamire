@@ -60,7 +60,7 @@ $hyperlink = $plugins->get('hyperlink');
     <?php endif;?>    
     <div class="column">            
         <div class="resource-metadata">
-            <h4 class="title is-6"><?= $resource->link($resource->displayTitle()) ?></h4>
+            <h4 class="title is-6"><a href="<?= $resource->url();?>"><?= $resource->displayTitle(); ?></a></h4>
             
             <?php if($type):?>
                 <h5 class="subtitle is-7" style="font-weight:300;text-transform:uppercase;color:#cc6634;font-size:0.75rem;"><?php echo $type;?></h5>
