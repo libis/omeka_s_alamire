@@ -808,6 +808,8 @@ table{
 .text{
   overflow: auto;
   max-height:250px;  
+  scrollbar-width: thin;
+  scrollbar-color: $primary $primary;
 }
 
 .inventory-wrapper{
