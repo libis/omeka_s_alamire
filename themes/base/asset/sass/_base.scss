@@ -807,13 +807,15 @@ table{
 
 .text{
   overflow: auto;
-  max-height:250px;
+  max-height:250px;  
 }
 
 .inventory-wrapper{
   .text, #chants{
     overflow: auto;
-    max-height:350px;
+    max-height:350px;    
+    scrollbar-width: thin;
+    scrollbar-color: $primary $primary;
   }
 }
 
