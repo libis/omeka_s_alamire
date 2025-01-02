@@ -1,7 +1,10 @@
 name: Build and Deploy
 
 on: 
-  push: 
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '.github/workflows/build-deploy.yml'
   workflow_dispatch:
 
 jobs:
