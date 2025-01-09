@@ -20,7 +20,6 @@ if (strpos($url, 'page/home') !== false || $url == "https://idemdatabase.org/") 
     $parts = explode("/",$url);
     $id = end($parts);
     $query = 'property[0][joiner]=and&property[0][property]=339&property[0][type]=eq&property[0][text]='.$id;
-    //$query = 'property[0][joiner]=and&property[0][property]=233&property[0][type]=eq&property[0][text]='.$id;
     parse_str($query,$query);    
     $item = $this->api()->searchOne('items',$query);
     $item = $item->getContent();   

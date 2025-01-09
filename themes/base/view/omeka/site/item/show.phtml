@@ -57,7 +57,6 @@ endif;
         <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo str_replace("http://resolver.libis.be/","https://data.idemdatabase.org/",$item->value('alamire:hasVersion'));?>">
           <span>VIEW MANUSCRIPT</span></a>
       </div>
-
     <?php endif;?>  
     
  
@@ -99,7 +98,7 @@ endif;
           //folio query
           $query = "";     
           //local 380     
-          parse_str("property[0][joiner]=and&property[0][property]=387&property[0][type]=eq&property[0][text]=".$item->value('alamire:folio')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_by=mmfc%3AsiblingOrder&sort_order=asc&submit=Search",$query);
+          parse_str("property[0][joiner]=and&property[0][property]=alamire:folio&property[0][type]=eq&property[0][text]=".$item->value('alamire:folio')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_by=mmfc%3AsiblingOrder&sort_order=asc&submit=Search",$query);
           $chants = $this->api()->search('items',$query);
           $chants = $chants->getContent();
           $sort_chants = array();
@@ -240,7 +239,7 @@ endif;
       //related manuscript (chants) query
       $query = "";          
       //local 377, prod 378
-      parse_str("property[0][joiner]=and&property[0][property]=378&property[0][type]=eq&property[0][text]=".$item->value('alamire:identifier')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
+      parse_str("property[0][joiner]=and&property[0][property]=alamire:relatedManuscriptID&property[0][type]=eq&property[0][text]=".$item->value('alamire:identifier')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
       $chants = $this->api()->search('items',$query);
       $chants = $chants->getContent();
     
@@ -355,11 +354,51 @@ endif;
       </div>  
     <?php endif;?>  
 
+    <?php if($type == "Printed Source" && $item->value("alamire:relatedProductionUnit")):?>
+      <div class="production-unit-wrapper">
+      <h4 class="has-text-weight-semibold is-6 section-head" style="margin-bottom:0.5rem;">Inventory</h4>
+          <?php foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):?>
+            <?php $pu = $pu->valueResource();?>
+            <div class="production-unit" >           
+              <a href="<?php echo $pu->url();?>" style="font-style:italic;">
+                <?php echo $pu->displayTitle();?>
+                <?php echo "[".$pu->value("alamire:rismNr")."; ".$pu->value("alamire:part")."]";?>
+              </a>
+
+              <a style="vertical-align:top;vertical-align:-moz-middle-with-baseline;" href="<?php echo $pu->value("alamire:rismUrl");?>"><span><img style="height:19px;margin:0 5px;" src="/themes/base/asset/img/rism.png"></span></a>
+              <a href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>
+           
+              <div class="hidden-content" style="display:none">
+                <div class="metadata">
+                  <?php echo $pu->displayValues();?>
+                </div>
+                <?php if($pu->value("alamire:relatedComposition")):?>
+                  <div class="text" style="max-height:250px;margin-bottom:1rem;">
+                  <table class="">
+                    <?php foreach($pu->value("alamire:relatedComposition", ['all' => true]) as $comp):?>
+                      <?php $comp = $comp->valueResource();?>
+                      <?php if($comp):?>
+                        <tr>
+                          <td><?php echo $comp->value("alamire:creator");?></td>
+                          <td><a href="<?php echo $comp->url();?>"><?php echo $comp->value("alamire:title");?></a></td>
+                          <td>fol?</td>
+                        </tr>
+                      <?php endif;?>
+                    <?php endforeach;?>  
+                  </table>   
+                  </div>   
+                <?php endif;?>     
+              </div>    
+            </div>     
+          <?php endforeach;?>         
+        </div>
+    <?php endif;?>
+      
     <?php 
       //related manuscript (chants) query
       $query = "";          
       //local 385, prod 402
-      parse_str("property[0][joiner]=and&property[0][property]=402&property[0][type]=eq&property[0][text]=".$item->value('alamire:cantusID')."&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
+      parse_str("property[0][joiner]=and&property[0][property]=alamire:cantusID&property[0][type]=eq&property[0][text]=".$item->value('alamire:cantusID')."&resource_class_id[]=&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
       $chants = $this->api()->search('items',$query);
       $chants = $chants->getContent();
     ?>
@@ -505,10 +544,10 @@ $property = $this->params()->fromQuery('property');
 $subjectValues = $item->displaySubjectValues($page, 25, $property);
 ?>
 <?php if ($subjectValues): ?>
-<div id="item-linked">
+<!--<div id="item-linked">
     <h3><?php echo $translate('Linked resources'); ?></h3>
     <?php echo $subjectValues; ?>
-</div>
+</div>-->
 <?php endif; ?>
 
 <?php $this->trigger('view.show.after'); ?>
@@ -562,8 +601,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
       $('#chants').removeClass('is-active');
     }
 
-    $('.translation-column > .tab-pane ~ .tab-pane').removeClass('is-active');    
-       
+    $('.translation-column > .tab-pane ~ .tab-pane').removeClass('is-active');           
 
     $('li.tab').click(function(e) {
       e.preventDefault();
@@ -590,8 +628,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
       $("#chants tr.data").filter(function() {       
         if($(this).text().toLowerCase().indexOf(value) > -1){
           //contains text
-          $(this).show();
-         
+          $(this).show();         
          
          if($('#genreFilter').val()){
           if ($(this).data('genre') != $('#genreFilter').val()) {           

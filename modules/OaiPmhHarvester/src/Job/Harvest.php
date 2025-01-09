@@ -121,12 +121,21 @@ class Harvest extends AbstractJob
             case 'composition':                
 				$method = '_alamireToJson';
                 break;    
+            case 'MPcomposition':                
+                $method = '_alamireToJson';
+                break;       
             case 'manuscript':                
                 $method = '_alamireToJson';
                 break;     
             case 'chant':                
                 $method = '_alamireToJson';
                 break;    
+            case 'PrintedSource':                
+                $method = '_alamireToJson';
+                break;    
+            case 'ProductionUnit':                
+                $method = '_alamireToJson';
+                break;        
             case 'oai_dcterms':
             case 'oai_dcq':
             case 'oai_qdc':
@@ -168,6 +177,11 @@ class Harvest extends AbstractJob
 
             /** @var \SimpleXMLElement $response */
             $response = \simplexml_load_file($url);
+            $timeout = 120;
+            $context = stream_context_create(['http' => ['timeout' => $timeout]]);
+            $data = file_get_contents($url, false, $context);
+            $response = simplexml_load_string($data);
+
             if (!$response) {
                 $message = 'Server unavailable. Retrying.'; // @translate
                 $this->logger->warn(sprintf(
@@ -272,14 +286,14 @@ class Harvest extends AbstractJob
             gc_collect_cycles();
             $this->logger->info("mem: ".memory_get_usage());
 
-            /*$identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
+            $identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
             foreach ($identityMap as $entityClass => $entities) {
                 foreach ($entities as $idHash => $entity) {
                     if (!isset($originalIdentityMap[$entityClass][$idHash])) {
                         $entityManager->detach($entity);
                     }
                 }
-            }*/
+            }
 
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken <> ''
                 ? $response->ListRecords->resumptionToken
@@ -612,6 +626,50 @@ class Harvest extends AbstractJob
                   $imgc++;
                 }
             }    
+
+            //add resources
+            if(strpos($args["endpoint"], 'MPComposition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
+                if($localName == 'relatedComposition'){
+                    $i=0;
+                    foreach ($dcMetadata->$localName as $pid) {
+                        parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=3&site_id=", $query);
+                        $result = $this->api->search("items",$query);
+                        $result = $result->getContent();
+                        $this->logger->info("related");
+                        if($result){
+                            $this->logger->info("result");
+                            $elementTexts['alamire:relatedComposition'][] = [
+                                'property_id' => 200,
+                                'type' => 'resource',
+                                'is_public' => true,
+                                'value_resource_id' => $result[0]->id(),
+                                'value_resource_name' => 'items'
+                            ];
+                        }
+                        $i++;
+                    }
+                }
+                if($localName == 'relatedProductionUnit'){
+                    $i=0;
+                    foreach ($dcMetadata->$localName as $pid) {
+                        parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=21&site_id=", $query);
+                        $result = $this->api->search("items",$query);
+                        $result = $result->getContent();
+                        $this->logger->info("related");
+                        if($result){
+                            $this->logger->info("result");
+                            $elementTexts['alamire:relatedProductionUnit'][$i] = [
+                                'property_id' => 394,
+                                'type' => 'resource',
+                                'is_public' => true,
+                                'value_resource_id' => $result[0]->id(),
+                                'value_resource_name' => 'items'
+                            ];
+                        }
+                        $i++;
+                    }                    
+                }
+            endif;
         }
         $meta = $elementTexts;
         $imgs = array();
@@ -623,10 +681,14 @@ class Harvest extends AbstractJob
         endif;
 		if(strpos($args["endpoint"], 'Manuscript') !== false):
 			$meta['o:resource_template'] = ["o:id" => "2"];
-		elseif(strpos($args["endpoint"], 'Composition') !== false):
+		elseif(strpos($args["endpoint"], 'omposition') !== false):
 			$meta['o:resource_template'] = ["o:id" => "3"];
         elseif(strpos($args["endpoint"], 'Chant') !== false):
-            $meta['o:resource_template'] = ["o:id" => "15"];			
+            $meta['o:resource_template'] = ["o:id" => "15"];	
+        elseif(strpos($args["endpoint"], 'ProductionUnit') !== false):
+            $meta['o:resource_template'] = ["o:id" => "21"];	    	
+        elseif(strpos($args["endpoint"], 'PrintedSource') !== false):
+            $meta['o:resource_template'] = ["o:id" => "18"];		
         endif;
 
         $meta["o:site"][] = 1;
