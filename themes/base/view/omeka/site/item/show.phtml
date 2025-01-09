@@ -357,10 +357,17 @@ endif;
     <?php if($type == "Printed Source" && $item->value("alamire:relatedProductionUnit")):?>
       <div class="production-unit-wrapper">
       <h4 class="has-text-weight-semibold is-6 section-head" style="margin-bottom:0.5rem;">Inventory</h4>
-          <?php foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):?>
-            <?php $pu = $pu->valueResource();?>
+        <?php $pus = [];?>
+        <?php foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):?>
+          <?php $pu = $pu->valueResource();?>
+          <?php if($pu):?>
+            <?php $pus[$pu->value("alamire:sequence")] = $pu;?>
+          <?php endif;?>
+        <?php endforeach;?>  
+        <?php ksort($pus);?>
+          <?php foreach($pus as $pu):?>            
             <div class="production-unit" >           
-              <a href="<?php echo $pu->url();?>" style="font-style:italic;">
+              <a target="_blank" href="<?php echo $pu->value("alamire:fileID");?>" style="font-style:italic;">
                 <?php echo $pu->displayTitle();?>
                 <?php echo "[".$pu->value("alamire:rismNr")."; ".$pu->value("alamire:part")."]";?>
               </a>
