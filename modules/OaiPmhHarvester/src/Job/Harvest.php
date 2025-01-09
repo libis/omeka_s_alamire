@@ -639,7 +639,7 @@ class Harvest extends AbstractJob
                         $this->logger->info("related");
                         if($result){
                             $this->logger->info("result");
-                            $elementTexts['alamire:relatedComposition'][] = [
+                            $elementTexts['alamire:relatedComposition'][$i] = [
                                 'property_id' => 200,
                                 'type' => 'resource',
                                 'is_public' => true,

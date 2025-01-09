@@ -361,7 +361,7 @@ endif;
         <?php foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):?>
           <?php $pu = $pu->valueResource();?>
           <?php if($pu):?>
-            <?php $pus[$pu->value("alamire:sequence")] = $pu;?>
+            <?php $pus[$pu->value("alamire:sequence").''] = $pu;?>
           <?php endif;?>
         <?php endforeach;?>  
         <?php ksort($pus);?>
