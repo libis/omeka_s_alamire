@@ -286,15 +286,7 @@ class Harvest extends AbstractJob
             gc_collect_cycles();
             $this->logger->info("mem: ".memory_get_usage());
 
-            $identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
-            foreach ($identityMap as $entityClass => $entities) {
-                foreach ($entities as $idHash => $entity) {
-                    if (!isset($originalIdentityMap[$entityClass][$idHash])) {
-                        $entityManager->detach($entity);
-                    }
-                }
-            }
-
+            
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken <> ''
                 ? $response->ListRecords->resumptionToken
                 : false;
@@ -306,6 +298,15 @@ class Harvest extends AbstractJob
                 'o-module-oai-pmh-harvester:stats' => $stats,
             ];
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
+            $identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
+            foreach ($identityMap as $entityClass => $entities) {
+                foreach ($entities as $idHash => $entity) {
+                    if (!isset($originalIdentityMap[$entityClass][$idHash])) {
+                        $entityManager->detach($entity);
+                    }
+                }
+            }
+
         } while ($resumptionToken);
 
         // Update job.
@@ -659,7 +660,7 @@ class Harvest extends AbstractJob
                         if($result){
                             $this->logger->info("result");
                             $elementTexts['alamire:relatedProductionUnit'][$i] = [
-                                'property_id' => 394,
+                                'property_id' => 438,
                                 'type' => 'resource',
                                 'is_public' => true,
                                 'value_resource_id' => $result[0]->id(),
