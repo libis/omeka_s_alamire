@@ -354,9 +354,9 @@ endif;
       </div>  
     <?php endif;?>  
 
-    <?php if($type == "Printed Source" && $item->value("alamire:relatedProductionUnit")):?>
-      <div class="production-unit-wrapper">
-      <h4 class="has-text-weight-semibold is-6 section-head" style="margin-bottom:0.5rem;">Inventory</h4>
+    <?php if($type == "Printed Source" && $item->value("alamire:relatedProductionUnit")):?>      
+      <div class="inventory-wrapper production-unit-wrapper">
+        <h4 class="has-text-weight-semibold is-6 section-head" style="margin-bottom:0.5rem;">Inventory</h4>
         <?php $pus = [];?>
         <?php foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):?>
           <?php $pu = $pu->valueResource();?>
@@ -396,9 +396,38 @@ endif;
                   </div>   
                 <?php endif;?>     
               </div>    
-            </div>     
-          <?php endforeach;?>         
+          </div>     
+        <?php endforeach;?>         
+      </div>
+    <?php endif;?>
+
+    <?php if($type == "Composition" && $item->value("alamire:relatedProductionUnit")):?>    
+      <div class="columns production-unit-comp-wrapper">
+        <div class="column is-one-fifth">
+          <h4 class="has-text-weight-semibold is-6 ">Appears in</h4>
         </div>
+        <div class="column is-four-fifths">
+          <?php $pus = array();?>
+          <?php foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):?>
+            <?php $pu = $pu->valueResource();?>
+            <?php if($pu):?>
+              <?php $pus[$pu->value("alamire:sequence").''] = $pu;?>
+            <?php endif;?>
+          <?php endforeach;?>  
+
+          <div class="values">
+          <?php ksort($pus);?>
+            <?php foreach($pus as $pu):?>        
+            <div class="value resource items" lang="">
+              <?php echo $pu->displayTitle();?>
+                <a class="resource-link" target="_blank" href="<?php echo $pu->value("alamire:fileID");?>" style="font-style:italic;">
+                  <?php echo $pu->value("alamire:folio");?>>
+                </a>
+              <?php endforeach;?>  
+            </div>          
+          </div>
+        </div>                  
+      </div>
     <?php endif;?>
       
     <?php 
@@ -590,6 +619,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     $('.thumbnails').appendTo('.navigation');
     $(".Inventory").appendTo("#polyphony");
     $(".inventory-wrapper").insertAfter(".extra");
+    $(".production-unit-comp-wrapper").insertAfter(".Composer");
 
     $('.collapsible').click(function() {
      var index = $(this).data('index');     
