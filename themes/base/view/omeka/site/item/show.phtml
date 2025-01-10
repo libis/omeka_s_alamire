@@ -410,18 +410,18 @@ endif;
           <?php $pus = array();?>
           <?php foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):?>
             <?php $pu = $pu->valueResource();?>
-            <?php if($pu):?>
-              <?php $pus[$pu->value("alamire:sequence").''] = $pu;?>
+            <?php if($pu):?>              
+              <?php $pus[$pu->value("alamire:identifier").''] = $pu;?>
             <?php endif;?>
           <?php endforeach;?>  
 
           <div class="values">
-          <?php ksort($pus);?>
+          <?php //ksort($pus);?>
             <?php foreach($pus as $pu):?>        
               <div class="value resource items" lang="">
                 <?php echo $pu->displayTitle();?>
                 <a class="resource-link" target="_blank" href="<?php echo $pu->value("alamire:fileID");?>" style="font-style:italic;">
-                  <?php echo $pu->value("alamire:pageFolio");?>>
+                  <?php echo $pu->value("alamire:pageFolio");?>
                 </a>
               </div>
             <?php endforeach;?>                   
