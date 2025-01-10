@@ -418,13 +418,13 @@ endif;
           <div class="values">
           <?php ksort($pus);?>
             <?php foreach($pus as $pu):?>        
-            <div class="value resource items" lang="">
-              <?php echo $pu->displayTitle();?>
+              <div class="value resource items" lang="">
+                <?php echo $pu->displayTitle();?>
                 <a class="resource-link" target="_blank" href="<?php echo $pu->value("alamire:fileID");?>" style="font-style:italic;">
-                  <?php echo $pu->value("alamire:folio");?>>
+                  <?php echo $pu->value("alamire:pageFolio");?>>
                 </a>
-              <?php endforeach;?>  
-            </div>          
+              </div>
+            <?php endforeach;?>                   
           </div>
         </div>                  
       </div>
