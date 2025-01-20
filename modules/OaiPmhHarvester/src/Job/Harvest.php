@@ -689,7 +689,7 @@ class Harvest extends AbstractJob
         elseif(strpos($args["endpoint"], 'ProductionUnit') !== false):
             $meta['o:resource_template'] = ["o:id" => "21"];	    	
         elseif(strpos($args["endpoint"], 'PrintedSource') !== false):
-            $meta['o:resource_template'] = ["o:id" => "18"];		
+            $meta['o:resource_template'] = ["o:id" => "22"];		
         endif;
 
         $meta["o:site"][] = 1;
