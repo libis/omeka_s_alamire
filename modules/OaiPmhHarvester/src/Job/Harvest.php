@@ -350,7 +350,7 @@ class Harvest extends AbstractJob
         foreach($results as $result):
           if($result):
             try{
-              //don't update files for to avoid redownload
+              //don't update files to avoid redownload
               if(isset($item['o:media'])):
                 unset($item['o:media']);
               endif;
