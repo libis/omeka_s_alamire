@@ -849,9 +849,17 @@ footer.footer{
 
   .metadata{
     padding: 2rem 0 1rem 0;
+
+    .values{
+      margin-bottom:0.5rem;
+      
+      .value{
+        margin-bottom:0rem;
+      }
+    }
   }
   .metadata .columns{
-    padding-bottom: 8px;
+    padding-bottom: 10px;
   }
 }
 
