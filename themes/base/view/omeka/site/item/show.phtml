@@ -388,7 +388,12 @@ endif;
                         <tr>
                           <td><?php echo $comp->value("alamire:creator");?></td>
                           <td><a href="<?php echo $comp->url();?>"><?php echo $comp->value("alamire:title");?></a></td>
-                          <td>fol?</td>
+                          <?php 
+                            $ints = $comp->value("alamire:interstitialInfo");
+                            $expl = explode('$$',$ints.'');
+                            $fol = isset($expl[1]) ? trim($expl[1]) : "";
+                          ?>
+                          <td><?= $fol; ?></td>
                         </tr>
                       <?php endif;?>
                     <?php endforeach;?>  
@@ -406,11 +411,11 @@ endif;
     <?php if($type == "Composition" && $item->value("alamire:relatedProductionUnit")):?>    
       <?php 
           $ints_a = [];$expl='';
-          $ints = $item->value("alamire:interstitialInfo", ['all' => true]);
-          foreach($ints as $int):
-            $expl = explode('$$',$int.'');
-            $ints_a[trim($expl[0])] = ["fol" => trim($expl[1]), "link" => trim($expl[2])];
-          endforeach;  
+            $ints = $item->value("alamire:interstitialInfo", ['all' => true]);
+            foreach($ints as $int):
+              $expl = explode('$$',$int.'');
+              $ints_a[trim($expl[0])] = ["fol" => trim($expl[1]), "link" => trim($expl[2])];
+            endforeach;  
       ?>
       <div class="columns production-unit-comp-wrapper">
         <div class="column is-one-fifth">
