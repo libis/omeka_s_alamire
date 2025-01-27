@@ -88,7 +88,9 @@ endif;
             ?>
             </div>
         <?php endif; ?>
-
+        <?php if(!$item->value('alamire:creator_display') && $type == "Composition"):?>   
+          <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Identification</h4>    
+        <?php endif;?>
         <?php echo $item->displayValues(); ?>
       </div>
       <?php if($type == "Chant"):?>
@@ -387,7 +389,10 @@ endif;
                       <?php if($comp):?>
                         <tr>
                           <td><?php echo $comp->value("alamire:creator");?></td>
-                          <td><a href="<?php echo $comp->url();?>"><?php echo $comp->value("alamire:title");?></a></td>
+                          <td>
+                            <a href="<?php echo $comp->url();?>"><?php echo $comp->value("alamire:title");?></a>
+                            
+                          </td>
                           <?php 
                             $ints = $comp->value("alamire:interstitialInfo");
                             $expl = explode('$$',$ints.'');
@@ -395,6 +400,35 @@ endif;
                           ?>
                           <td><?= $fol; ?></td>
                         </tr>
+                        <?php 
+                          //children?
+                          if($comp->value("alamire:structure")):
+                            $structure = explode(";",$comp->value("alamire:structure"));
+                            //remove own id
+                            array_pop($structure);
+                            foreach($structure as $struc):
+                              $query = "";          
+                              //local 377, prod 378
+                              parse_str("property[0][joiner]=and&property[0][property]=alamire:identifier&property[0][type]=eq&property[0][text]=".$struc."&resource_class_id[]=&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search",$query);
+                              $child = $this->api()->search('items',$query);
+                              $child = $child->getContent();
+                              if($child):?>
+                                <tr>
+                                  <td><?php echo $child[0]->value("alamire:creator");?></td>
+                                  <td>
+                                  &nbsp;&nbsp;&nbsp;&nbsp;<a href="<?php echo $child[0]->url();?>"><?php echo $child[0]->value("alamire:title");?></a>
+                                  </td>
+                                  <?php 
+                                    $ints = $child[0]->value("alamire:interstitialInfo");
+                                    $expl = explode('$$',$ints.'');
+                                    $fol = isset($expl[1]) ? trim($expl[1]) : "";
+                                  ?>
+                                  <td><?= $fol; ?></td>
+                                </tr>
+                              <?php endif;  
+                            endforeach; 
+                          endif;
+                        ?>
                       <?php endif;?>
                     <?php endforeach;?>  
                   </table>   
