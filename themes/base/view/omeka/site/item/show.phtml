@@ -55,7 +55,7 @@ endif;
         
       <?php endif;?>  
         <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo str_replace("http://resolver.libis.be/","https://data.idemdatabase.org/",$item->value('alamire:hasVersion'));?>">
-          <span>VIEW MANUSCRIPT</span></a>
+          <span>VIEW SOURCE</span></a>
       </div>
     <?php endif;?>  
     
@@ -372,11 +372,18 @@ endif;
         <?php endforeach;?>  
         <?php ksort($pus);?>
           <?php foreach($pus as $pu):?>            
-            <div class="production-unit" >           
+            <div class="production-unit" >        
+              <?php if($auth):?>   
               <a target="_blank" href="<?php echo $pu->value("alamire:fileID");?>" style="font-style:italic;">
                 <?php echo $pu->displayTitle();?>
                 <?php echo "[".$pu->value("alamire:rismNr")."; ".$pu->value("alamire:part")."]";?>
               </a>
+              <?php else:?>
+                <span style="font-style:italic;">
+                <?php echo $pu->displayTitle();?>
+                <?php echo "[".$pu->value("alamire:rismNr")."; ".$pu->value("alamire:part")."]";?>
+                </span>
+              <?php endif;?>
 
               <a style="vertical-align:top;vertical-align:-moz-middle-with-baseline;" href="<?php echo $pu->value("alamire:rismUrl");?>"><span><img style="height:19px;margin:0 5px;" src="/themes/base/asset/img/rism.png"></span></a>
               <a href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>
@@ -394,16 +401,14 @@ endif;
                         <tr>
                           <td><?php echo $comp->value("alamire:creator");?></td>
                           <td>
-                            <?php
-                            if($comp->value("alamire:structure")):
-                              $structure = explode(";",$comp->value("alamire:structure"));
-                              //remove own id
-                              if(sizeof($structure) > 1):
-                                echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-                              endif;
-                            endif;  
-                            ?>
-                            <a href="<?php echo $comp->url();?>"><?php echo $comp->value("alamire:title");?></a>                            
+                            <?php if($comp->value("alamire:structure")):?>
+                              <?php $structure = explode(";",$comp->value("alamire:structure"));?>                              
+                              <?php if(sizeof($structure) > 1):?>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $comp->value("alamire:title");?>
+                              <?php else:?>
+                                <a href="<?php echo $comp->url();?>"><?php echo $comp->value("alamire:title");?></a>   
+                              <?php endif;?>
+                            <?php endif;?>                                                       
                           </td>
                           <?php 
                             $ints = $comp->value("alamire:interstitialInfo");
