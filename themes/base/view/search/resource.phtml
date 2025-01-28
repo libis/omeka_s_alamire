@@ -44,7 +44,7 @@ $hyperlink = $plugins->get('hyperlink');
 <?php endif;?>
 
 <div class="columns">
-    <?php if($type == "Manuscript" || $type == "Printer Source"):?>
+    <?php if($resource->primaryMedia()):?>
     <div class="column is-2">
         <div class="resource-thumbnail">
             <?php $media = $resource->primaryMedia(); ?>
