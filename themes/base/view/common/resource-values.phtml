@@ -64,7 +64,7 @@ endif;
         $style="padding-top:1rem;";
       endif;
       
-      if(!str_contains("title",$propertyData['alternate_label'])):
+      if(!str_contains($propertyData['alternate_label'],"title")):
         $alt_class = $propertyData['alternate_label'];
       endif;
     endif;
