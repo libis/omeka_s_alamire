@@ -414,8 +414,10 @@ endif;
                             $ints = $comp->value("alamire:interstitialInfo");
                             $expl = explode('$$',$ints.'');
                             $fol = isset($expl[1]) ? trim($expl[1]) : "";
+                            $link = isset($expl[2]) ? trim($expl[2]) : ""
                           ?>
-                          <td><?= $fol; ?></td>
+                          <td>
+                            <a href="<?php echo $link;?>"><?= $fol; ?></a></td>
                         </tr>                     
                       <?php endif;?>
                     <?php endforeach;?>  

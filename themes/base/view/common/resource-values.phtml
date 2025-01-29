@@ -48,7 +48,7 @@ endif;
     
   <?php $firstextra = true;?>
   <?php endif; ?>
-  <?php if($comment != "extra" && $comment != ""):?>
+  <?php if($comment != "extra" && $comment != "" && !str_contains("title",$comment)):?>
     <div class="columns is-12"> 
       <div class="column">
         <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;"><?php echo $comment;?></h4>
