@@ -48,7 +48,7 @@ endif;
     
   <?php $firstextra = true;?>
   <?php endif; ?>
-  <?php if($comment != "extra" && $comment != "" && !str_contains("title",$comment)):?>
+  <?php if($comment != "extra" && $comment):?>
     <div class="columns is-12"> 
       <div class="column">
         <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;"><?php echo $comment;?></h4>
@@ -57,14 +57,19 @@ endif;
   <?php endif; ?>
   <?php
     $style="";$extra_class="";
+    $alt_class="";
     if ($propertyData['alternate_label']):
       if($propertyData['alternate_label'] == "Inventory" || $propertyData['alternate_label'] == "Audio" || $propertyData['alternate_label'] == "Bibliography"):
         $extra_class="section-head";
         $style="padding-top:1rem;";
       endif;
+      
+      if(!str_contains("title",$propertyData['alternate_label'])):
+        $alt_class = $propertyData['alternate_label'];
+      endif;
     endif;
   ?>       
-  <div class="columns <?php echo $propertyData['alternate_label']; ?>" style="<?php echo $style;?>">  
+  <div class="columns <?php echo $alt_class; ?>" style="<?php echo $style;?>">  
     <div class="column is-one-fifth">
       <?php if ($propertyData['alternate_label']): ?>
         <?php if($propertyData['alternate_label'] == "Archival record"):  
