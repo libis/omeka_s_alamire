@@ -159,8 +159,8 @@ endif;
                       //fol
                       $label = trim($rels[2]);
                     }
-
-                    if($label && $rels[5]):
+                    
+                    if($label && trim($rels[5])):
                       //part
                       $label = $label." (".trim($rels[5]).")";
                     endif;  
