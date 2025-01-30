@@ -128,7 +128,7 @@ endif;
                     $cite = explode(" $$ ",$cite->asHtml());  
                      
                     if(isset($cite[5])):
-                      $sort_cites[trim($cite[0]).trim($cite[5])] = $cite;
+                      $sort_cites[trim($cite[0]).trim($cite[6])] = $cite;
                     else:
                       $sort_cites[] = $cite;
                     endif;
@@ -159,6 +159,11 @@ endif;
                       //fol
                       $label = trim($rels[2]);
                     }
+
+                    if($label && $rels[5]):
+                      //part
+                      $label = $label." (".trim($rels[5]).")";
+                    endif;  
                     
                     if(str_contains($rels[4],"http") && $auth):
                       $link = str_replace(" link:","",$rels[4]);
