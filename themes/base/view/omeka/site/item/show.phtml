@@ -395,9 +395,25 @@ endif;
                 <?php if($pu->value("alamire:relatedComposition")):?>
                   <div class="text" style="max-height:250px;margin-bottom:1rem;">
                   <table class="">
-                    <?php foreach($pu->value("alamire:relatedComposition", ['all' => true]) as $comp):?>
-                      <?php $comp = $comp->valueResource();?>
+                    <?php $s_comps = [];?>
+                  <?php foreach($pu->value("alamire:relatedComposition", ['all' => true]) as $comp):
+                      $comp = $comp->valueResource();
+                      if($comp):
+                      $ints = $comp->value("alamire:interstitialInfo", ['all' => true]);
+                      foreach($ints as $int):
+                      $expl = explode('$$',$int.'');
+                      $ints_a[trim($expl[0])] = ["fol" => trim($expl[1]), "link" => trim($expl[2])];
+                      endforeach;
+                      $s_comps[$ints_a[$pu->displayTitle()]['fol']] = $comp; 
+                      endif;  
+                      endforeach;
+                      ksort($s_comps,SORT_NATURAL);
+                      
+                    ?>
+                    <?php foreach($s_comps as $comp):?>
+                     
                       <?php if($comp):?>
+                        
                         <tr>
                           <td><?php echo $comp->value("alamire:creator");?></td>
                           <td>
