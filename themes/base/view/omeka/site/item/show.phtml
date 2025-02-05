@@ -410,14 +410,26 @@ endif;
                               <?php endif;?>
                             <?php endif;?>                                                       
                           </td>
-                          <?php 
-                            $ints = $comp->value("alamire:interstitialInfo");
-                            $expl = explode('$$',$ints.'');
-                            $fol = isset($expl[1]) ? trim($expl[1]) : "";
-                            $link = isset($expl[2]) ? trim($expl[2]) : ""
-                          ?>
                           <td>
-                            <a href="<?php echo $link;?>"><?= $fol; ?></a></td>
+                          <?php 
+                            $ints_a = [];$expl='';
+                            $ints = $comp->value("alamire:interstitialInfo", ['all' => true]);
+
+                            foreach($ints as $int):
+                              $expl = explode('$$',$int.'');
+                              $ints_a[trim($expl[0])] = ["fol" => trim($expl[1]), "link" => trim($expl[2])];
+                            endforeach;
+                            if(isset($ints_a[$pu->displayTitle()])):                                                
+                              $fol = $ints_a[$pu->displayTitle()]['fol'];
+                              $link = $ints_a[$pu->displayTitle()]['link'];
+                              ?>        
+                              <?php if($auth):?>                     
+                                <a href="<?php echo $link;?>"><?= $fol; ?></a> 
+                              <?php else:?>
+                                <?= $fol; ?> 
+                              <?php endif;?>  
+                            <?php endif;?>  
+                          </td>
                         </tr>                     
                       <?php endif;?>
                     <?php endforeach;?>  
@@ -459,12 +471,19 @@ endif;
             <?php foreach($pus as $pu):?>        
               <div class="value resource items" lang="">
                 <a class="resource-link" href="<?php echo $site->url()."/item/".strtolower($pu->value("alamire:relatedPrintedSource").'');?>"><?php echo $pu->displayTitle();?></a>
-                <a class="resource-link" target="_blank" href="<?php echo $ints_a[$pu->displayTitle()]["link"];?>" style="font-style:italic;">
+                <?php if($auth):?> 
+                  <a class="resource-link" target="_blank" href="<?php echo $ints_a[$pu->displayTitle()]["link"];?>" style="font-style:italic;">
+                    <?php echo $ints_a[$pu->displayTitle()]["fol"];?>
+                    <?php if($pu->value("alamire:part")):?>
+                      <?php echo "(".$pu->value("alamire:part").")";?>
+                    <?php endif;?>  
+                  </a>
+                <?php else:?>
                   <?php echo $ints_a[$pu->displayTitle()]["fol"];?>
                   <?php if($pu->value("alamire:part")):?>
                     <?php echo "(".$pu->value("alamire:part").")";?>
-                  <?php endif;?>  
-                </a>
+                  <?php endif;?>
+                <?php endif;?>
               </div>
             <?php endforeach;?>                   
           </div>
