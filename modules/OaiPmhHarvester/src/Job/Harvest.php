@@ -670,6 +670,28 @@ class Harvest extends AbstractJob
                         $i++;
                     }                    
                 }
+                if($localName == 'interstitialInfo'){
+                    $i=0;
+                    foreach ($dcMetadata->$localName as $pid) {
+                        $pid = explode("$$",$pid.'');
+                        $pid = trim($pid[1]);
+                        parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=21&site_id=", $query);
+                        $result = $this->api->search("items",$query);
+                        $result = $result->getContent();
+                        $this->logger->info("related");
+                        if($result){
+                            $this->logger->info("result");
+                            $elementTexts['alamire:relatedProductionUnit'][$i] = [
+                                'property_id' => 438,
+                                'type' => 'resource',
+                                'is_public' => true,
+                                'value_resource_id' => $result[0]->id(),
+                                'value_resource_name' => 'items'
+                            ];
+                        }
+                        $i++;
+                    }                    
+                }
             endif;
         }
         $meta = $elementTexts;
@@ -719,7 +741,7 @@ class Harvest extends AbstractJob
             if($localName == "cantusID"):
                 $texts = str_replace("ci-","",$texts);   
             endif;  
-            if($localName == "relatedComposition" || $localName == "translation"):                
+            if($localName == "relatedComposition" || $localName == "interstitialInfo" || $localName == "translation"):                
                 $texts= array($texts.'');
             else:
                 $texts = explode('||',$texts);
