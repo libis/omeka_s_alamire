@@ -492,6 +492,7 @@ endif;
             <?php $ed = "";?>  
             <?php foreach($ints_a as $key=>$int):?>    
               <div class="value resource items" lang="">
+                <?php $key = str_replace("[","[RISM ",$key);?>
                 <?php echo $key;?><a style="margin-left:5px;" href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>
                 <div class="hidden-content" style="display: none";>     
                   <?php foreach($int as $in):?>       
