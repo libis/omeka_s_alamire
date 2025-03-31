@@ -23,14 +23,14 @@ $formmail = isset($get["mail"]) ? $get['mail'] : '';
       <div class="column is-8">
       <?php                
         if($_SERVER['REQUEST_METHOD'] == 'POST'):
-         
+          echo $_POST['g-recaptcha-response'];
           if(!isCaptchaValid($secretKey)):
             $error = "reCaptcha is not valid";
           else:  
             $post  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
             $error = '';
             
-            $message = "<p>Name: ".$post["naam"]."</p><p>".$post["vraag"]."</p><p>"."Visit <a href='https://idemdatabase.org'>idemdatabase.org</a></p>";
+            $message = "<p>Name: ".$post["naam"]."</p><p>E-mail: ".$post["mmail"]."</p><p>".$post["vraag"]."</p><p>"."Visit <a href='https://idemdatabase.org'>idemdatabase.org</a></p>";
             $html = new MimePart($message);
             $html->type = Mime::TYPE_HTML;
             $html->charset = 'utf-8';
@@ -55,18 +55,18 @@ $formmail = isset($get["mail"]) ? $get['mail'] : '';
             
             $mail = new Mail\Message();
             $mail->setBody($body);
-            $mail->setFrom($post["mail"], $post["naam"]);
-            if($formmail && filter_var($formmail, FILTER_VALIDATE_EMAIL)):             
+            $mail->setFrom("noreply-alamire-foundation@kuleuven.be", $post["naam"]);
+            /*if($formmail && filter_var($formmail, FILTER_VALIDATE_EMAIL)):             
               $mail->addTo($formmail, $collectie);
               $mail->addCc("info@alamirefoundation.be");
-            else:  
+            else:*/  
               $mail->addTo("info@alamirefoundation.be", 'Alamire Foundation');
-            endif;
+            /*endif;*/
             $mail->setSubject("IDEM: ".$post["onderwerp"]);
 
             $transport = new Mail\Transport\Sendmail();
-            $transport->send($mail);
-            
+            //$transport->send($mail);
+            echo 'send';
             ?>
             <article class="message is-success">
               <div class="message-body">

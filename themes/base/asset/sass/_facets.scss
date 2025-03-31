@@ -1,9 +1,9 @@
 .search-facet-items {   
     max-height: 250px;
     padding: 0.5rem 0;
-    overflow-y: scroll;
+    overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: $primary $primary;
+    scrollbar-color: $primary transparent;
 }
 
 .txtSearch{
@@ -26,14 +26,10 @@
     color: #333;
 }
 
-::-webkit-scrollbar {
-    width: 3px;
-}
 ::-webkit-scrollbar-track {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
     background-color: rgba($primary, 0.5);
-    border-radius: 20px;
     border: transparent;
 }

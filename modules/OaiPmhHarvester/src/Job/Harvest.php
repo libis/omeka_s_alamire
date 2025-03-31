@@ -165,6 +165,10 @@ class Harvest extends AbstractJob
 
             /** @var \SimpleXMLElement $response */
             $response = \simplexml_load_file($url);
+            $timeout = 120;
+            $context = stream_context_create(['http' => ['timeout' => $timeout]]);
+            $data = file_get_contents($url, false, $context);
+            $response = simplexml_load_string($data);
             if (!$response) {
                 $message = 'Server unavailable. Retrying.'; // @translate
                 $this->logger->warn(sprintf(
@@ -269,14 +273,14 @@ class Harvest extends AbstractJob
             gc_collect_cycles();
             $this->logger->info("mem: ".memory_get_usage());
 
-            /*$identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
+            $identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
             foreach ($identityMap as $entityClass => $entities) {
                 foreach ($entities as $idHash => $entity) {
                     if (!isset($originalIdentityMap[$entityClass][$idHash])) {
                         $entityManager->detach($entity);
                     }
                 }
-            }*/
+            }
 
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken <> ''
                 ? $response->ListRecords->resumptionToken

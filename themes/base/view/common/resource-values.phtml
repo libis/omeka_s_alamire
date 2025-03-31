@@ -23,13 +23,13 @@ endif;
     continue;
   endif;
    
-  if($propertyData['property']->term() == "alamire:thumbnail" || $propertyData['alternate_label'] == "Manuscript Label"):
+  if($propertyData['property']->term() == "alamire:thumbnail" || $propertyData['alternate_label'] == "Manuscript Label"  || $propertyData['alternate_label'] == "Chant Label"):
     continue;
   endif;  
   ?>
   <?php if($comment == "extra" && $firstextra):?>
    
-    <div class="columns is-2" style="padding-top:1rem;padding-bottom:2rem;">
+    <div class="columns extra-block" style="padding-top:1rem;padding-bottom:2rem;">
       <div class="column is-12">        
         <div><a class="extra-button button is-primary is-small is-outlined" href="#firstextra">
           <span class="icon">
@@ -64,7 +64,7 @@ endif;
       endif;
     endif;
   ?>       
-  <div class="columns is-2" style="<?php echo $style;?>">  
+  <div class="columns <?php echo str_replace(" ","",$propertyData['alternate_label']); ?>" style="<?php echo $style;?>">  
     <div class="column is-one-fifth">
       <?php if ($propertyData['alternate_label']): ?>
         <?php if($propertyData['alternate_label'] == "Archival record"):  
@@ -148,6 +148,7 @@ endif;
                     //page
                     if(trim($rels[2]) == "fol."){
                       $label = trim($rels[3]);
+                      $label = str_replace("page:","p.",$label);
                     }
                     else{
                       //fol
@@ -203,6 +204,26 @@ endif;
               endif;
               $values['alamire:creator_display']['values'] = "";
             ?>
+          <?php elseif($propertyData['property']->term() == 'alamire:arranger_display'):?>
+            <?php 
+              if($values['alamire:arranger_display']['values']):
+                $cites = $values['alamire:arranger_display']['values'];
+                $sort_cites = array();
+                foreach($cites as $cite):
+                  if(str_contains($cite->asHtml(),"$$")):
+                    $cite = explode(" $$ ",$cite->asHtml());     
+                    $sort_cites[trim($cite[1])] = $cite[0];
+                  else:
+                    echo $cite->asHtml();  
+                  endif;  
+                endforeach;
+                ksort($sort_cites);  
+                foreach($sort_cites as $cite):        
+                  echo '<div style="margin-bottom:0.5rem;">'.trim($cite)."</div>";                    
+                endforeach;                      
+              endif;
+              $values['alamire:arranger_display']['values'] = "";
+            ?>  
           <?php elseif($propertyData['property']->term() == 'alamire:relatedArchivalRecord'):?>
             <?php 
               $archive = explode(" $$ ",$value->asHtml());                
@@ -263,6 +284,10 @@ endif;
             endif;
             $values['alamire:bibliographicCitation']['values'] = "";
           ?>   
+          <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscriptID'):
+            $id = strtolower($value->asHtml());
+            echo '<a target="_blank" href="/item/'.$id.'">'.$value->asHtml().'</a>';
+            ?>  
           <?php elseif($propertyData['property']->term() == 'alamire:hasVersion'):
             echo '<a target="_blank" href="'.$value->asHtml().'">'.$value->asHtml().'</a>';
             ?>  
@@ -362,15 +387,21 @@ endif;
              
               $i=0;
               foreach($rels as $irel):
-                $label = "";
+                $label = "";$seq = "";
                 //page
                 if(trim($irel[5]) == "fol."){
                   $label = trim($irel[6]);
+                  $label = str_replace("page:","p.",$label);
                 }
                 else{
                   //fol
                   $label = trim($irel[5]);
                 }
+
+                if($irel[4] != "  " ){
+                  $seq = "<span style='width:27px;margin-right:2px;display:inline-block;'>".trim($irel[4]).". </span>";
+                }
+
                 if($irel[0] && $irel[1] == "  "):
                   $lvl1[] = "$irel[0]";
 
@@ -416,7 +447,8 @@ endif;
                       $composer = "<strong>".$composer."</strong>: ";
                     endif;  
 
-                    echo  $composer.'<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
+
+                    echo  $seq.$composer.'<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
                     
                     if(str_contains($irel[7],"http") && $auth):
                       echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a>';
@@ -474,7 +506,6 @@ endif;
               endforeach;  
               echo "</div></div>";
               $values['alamire:relatedComposition']['values'] = "";              
-     
 
             //composition  
             elseif($values['alamire:relatedComposition']['values']):  

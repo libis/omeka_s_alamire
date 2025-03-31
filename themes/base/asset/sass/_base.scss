@@ -270,14 +270,19 @@ h5.title{
 }
 
 //overlay columns
+.featured-section{
+  padding: 0;
+  padding-bottom: 2.5rem;
+}
 .featured-block{
   min-height: 320px;
   position: relative;
-  padding: 2rem;
+  background-color: rgba($primary,1);
   transition: all 400ms ease-out;
 
   &:hover{
-    opacity: 0.8;
+    background: rgba($primary,1);
+    
   }
 
   a{color:white;}
@@ -286,17 +291,30 @@ h5.title{
     font-weight: 600;
   }
 
+  .overlay2{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: rgba(black,0.2);
+  }
+
   .overlay{
     position: absolute;
-    bottom: 2rem;
+    bottom: 0;
+    padding: 2rem 1rem;
 
     .title{
       max-width: 350px;
+
+      a{
+        border-bottom:3px solid white;
+      }
     }
 
     p, .subtitle{
       color:white;
       font-weight: 600;
+      font-size: 1.8rem !important;
     }
   }
 }
@@ -704,8 +722,104 @@ h5.title{
   }
 }
 
+.trans-text{
+  max-height: 300px;
+  overflow: auto;
+}
+
+.inventory-wrapper{  
+
+  .tabs{
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+  }  
+
+  #incipitFilter{
+    min-width: 250px;
+    max-width:100%;
+  }
+
+  .select select{
+    width: 200px;
+    max-width:100%;
+    margin-right: 5px;
+  }
+
+  #polyphony{
+    margin-bottom:0.5rem;
+  }
+
+  #chants{
+    margin-bottom: 1rem;;
+  }
+
+  table{
+    max-height: 500px;
+    overflow: auto;
+    margin-bottom: 2rem;
+  }
+
+  .Inventory{
+    .is-one-fifth{
+      display:none;
+    }
+
+    .is-four-fifths{
+      width:100%;
+    }
+  }
+}
+
+table{
+  margin:0.5rem 0 1rem 0;
+  width: 100%;
+  border-collapse: collapse;
+
+  td{    
+    border-bottom: 1px solid rgba($primary,0.5)
+  }
+
+  tr{
+    background: white;
+  }
+
+  tr:last-child{
+    td{    
+      border-bottom: none;
+    }
+  }
+
+  .header-row{
+    background-color: rgba($primary,0.2);
+  }
+
+  td, th{
+    padding:0.4rem;
+  }
+}
+
+#chantstable{
+  .hidden-folio{
+    display:none;
+  }
+}
+
 .text{
-  overflow: hidden;
+  overflow: auto;
+  max-height:250px;  
+  scrollbar-width: thin;
+  scrollbar-color: $primary transparent;
+}
+
+.inventory-wrapper{
+  .text, #chants{
+    overflow: auto;
+    max-height:350px;    
+    scrollbar-width: thin;
+    scrollbar-color: $primary transparent;
+  }
 }
 
 .more-link{
