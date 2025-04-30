@@ -43,7 +43,7 @@ $hyperlink = $plugins->get('hyperlink');
 <?php $type = $template->label();?>
 <?php endif;?>
 
-<div class="columns">
+<div class="columns result-item">
     <?php if($resource->primaryMedia()):?>
     <div class="column is-2">
         <div class="resource-thumbnail">
@@ -68,41 +68,41 @@ $hyperlink = $plugins->get('hyperlink');
             
            
                 <?php if($resource->value('alamire:originGeneral')):?>  
-                    <div class="columns" style="padding-bottom:0.5rem">                 
-                        <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
+                    <div class="columns resource-metadata-group" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" >
                             <strong>Origin</strong>
                         </div>
-                        <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
+                        <div class="column is-7" >
                             <?php echo $resource->value('alamire:originGeneral')->asHtml();?>
                         </div>
                     </div>       
                 <?php endif;?>
                 <?php if($resource->value('alamire:dateCreated')):?>  
-                    <div class="columns" style="padding-bottom:0.5rem">                 
-                        <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
+                    <div class="columns resource-metadata-group" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" >
                             <strong>Date / Date range</strong>
                         </div>
-                        <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
+                        <div class="column is-7" >
                             <?php echo $resource->value('alamire:dateCreated')->asHtml();?>
                         </div>
                     </div>       
                 <?php endif;?>
                 <?php if($resource->value('alamire:holdingInstitution')):?>  
-                    <div class="columns" style="padding-bottom:0.5rem">                 
-                        <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
+                    <div class="columns resource-metadata-group" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" >
                             <strong>Holding institution</strong>
                         </div>
-                        <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
+                        <div class="column is-7" >
                             <?php echo $resource->value('alamire:holdingInstitution')->asHtml();?>
                         </div>
                     </div>       
                 <?php endif;?>
                 <?php if($resource->value('alamire:creator_display')):?>  
-                    <div class="columns" style="padding-bottom:0.5rem">                 
-                        <div class="column is-3" style="padding-bottom:0.5rem;padding-top:0rem;">
+                    <div class="columns resource-metadata-group" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3" >
                             <strong>Composer</strong>
                         </div>
-                        <div class="column is-7" style="padding-bottom:0.5rem;padding-top:0rem;">
+                        <div class="column is-7" >
                         <?php                        
                             $cites = $resource->value('alamire:creator_display',array('all' => true));
                             $sort_cites = array();
@@ -135,29 +135,29 @@ $hyperlink = $plugins->get('hyperlink');
                     </div>       
                 <?php endif;?>
                 <?php if($resource->value('alamire:voices')):?>  
-                    <div class="columns" style="padding-bottom:0.5rem">                 
-                        <div class="column is-3" style="padding-bottom:1rem;padding-top:0rem;">
+                    <div class="columns resource-metadata-group" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3">
                             <strong>Voices</strong>
                         </div>
-                        <div class="column is-7" style="padding-bottom:1rem;padding-top:0rem;">
+                        <div class="column is-7" >
                             <?php echo $resource->value('alamire:voices')->asHtml();?>
                         </div>
                     </div>       
                 <?php endif;?>
 
                 <?php if($resource->value('alamire:category')):?>  
-                    <div class="columns" style="padding-bottom:0.5rem">                 
-                        <div class="column is-3" style="padding-bottom:1rem;padding-top:0rem;">
+                    <div class="columns resource-metadata-group" style="padding-bottom:0.5rem">                 
+                        <div class="column is-3">
                             <strong>Category</strong>
                         </div>
-                        <div class="column is-7" style="padding-bottom:1rem;padding-top:0rem;">
+                        <div class="column is-7">
                             <?php echo $resource->value('alamire:category')->asHtml();?>
                         </div>
                     </div>       
                 <?php endif;?>
 
                 <?php if ($description = $resource->displayDescription()): ?>
-                <div class="columns" style="padding-bottom:0.5rem;padding-top:0.5rem;">                 
+                <div class="columns resource-metadata-group" style="padding-bottom:0.5rem;padding-top:0.5rem;">                 
                     <div class="column is-12" style="padding-bottom:1rem;padding-top:0rem;">
                         <?= $description ?>
                     </div>

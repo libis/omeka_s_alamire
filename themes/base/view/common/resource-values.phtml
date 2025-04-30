@@ -76,7 +76,7 @@ endif;
           $extra_class="no-title";
         endif;?>
       <?php endif;?>  
-      <h4 class="has-text-weight-semibold is-6 <?php echo $extra_class;?>">
+      <h5 class="has-text-weight-semibold is-6 <?php echo $extra_class;?>">
       <?php if ($propertyData['alternate_label']): ?>
       <?php echo $escape($propertyData['alternate_label']); ?>
       <?php else: ?>
@@ -87,7 +87,7 @@ endif;
       <?php elseif ('vocab' === $labelInfo): ?>
       <span class="field-term">(<?php echo $escape($propertyData['property']->vocabulary()->label()); ?>)</span>
       <?php endif; ?>
-      </h4>
+      </h5>
     </div>
     <div class="column is-four-fifths">
       <?php if(($propertyData['property']->term() == "alamire:relatedComposition") || $propertyData['property']->term() == "alamire:description" || $propertyData['property']->term() == "alamire:bibliographicCitation"):?>
@@ -490,9 +490,9 @@ endif;
                   endif;   
                     
                   if($i == 0):
-                      echo '<a href="#" class="expand"><i class="fa fa-chevron-up"></i></a><div class="hidden-content">';
+                      echo '<a href="#" class="expand expand-icon"><i class="fa fa-chevron-up"></i></a><div class="hidden-content">';
                     else:
-                      echo '<a href="#" class="expand"><i class="fa fa-chevron-down"></i></a><div class="hidden-content" style="display:none;">';
+                      echo '<a href="#" class="expand expand-icon"><i class="fa fa-chevron-down"></i></a><div class="hidden-content" style="display:none;">';
                   endif;                  
                 else:
                   if(in_array($irel[1],$lvl1)):

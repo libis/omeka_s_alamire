@@ -11,7 +11,7 @@ $translate = $this->plugin('translate');
 
 <div class="search-header">
     <div class="search-results-count">
-        <?= $this->pagination() ?>
+        <?= $this->pagination('common/pagination') ?>
     </div>
     <?= $this->searchSortSelector($query, $searchPage->subSetting('sort', 'fields')) ?> 
 </div>

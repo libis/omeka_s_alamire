@@ -77,6 +77,18 @@ endif;
     <div id="search-page" class="page">
     <?php endif; ?>
 
+    <div class="facet-filter-nav">
+        <div class="filter-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M3.9 54.9C10.5 40.9 24.5 32 40 32l432 0c15.5 0 29.5 8.9 36.1 22.9s4.6 30.5-5.2 42.5L320 320.9 320 448c0 12.1-6.8 23.2-17.7 28.6s-23.8 4.3-33.5-3l-64-48c-8.1-6-12.8-15.5-12.8-25.6l0-79.1L9 97.3C-.7 85.4-2.8 68.8 3.9 54.9z" fill="none" stroke="black" transform="scale(0.9) translate(25,25)"/>
+            </svg>
+        </div>
+        <a role="button" class="close-icon">
+            <span></span>
+            <span></span>
+        </a>
+    </div>
+
     <?php if ($itemSet): ?>
 
         <?php
@@ -184,4 +196,75 @@ endif;
           $(this).append(button2);
         }        
     });
+
+    $(".facet-active").on("click touchstart", function(e) {
+        e.preventDefault();
+        var href = $(this).attr("href");
+        localStorage.setItem('openPopUp', 'true');
+        window.location.href = href;
+    });
+
+    function activeLink(event) {  
+        event.preventDefault();
+        var facetLink = event.currentTarget.dataset.facetLink;
+        localStorage.setItem('openPopUp', 'true');
+        window.location.href = facetLink;
+    }
+
+    $(window).on('load', function() {
+    var openPopUp = localStorage.getItem('openPopUp');
+    var filterIcon = $(".filter-icon");
+    var closeIcon = $(".close-icon");
+    var page = $('.page');
+    var facetsList = $('.facets').parent();
+
+    if (window.innerWidth < 1024) {
+        if (openPopUp === "true") {
+            var filterNav = $(".facet-filter-nav");
+            $(facetsList).addClass("open-facets-list");
+            $(filterNav).addClass("filter-nav-fixed");
+            $(filterIcon).addClass("active-item");
+            $(page).addClass("pageFixed");
+            localStorage.removeItem('openPopUp');
+        }
+    }
+
+    filterIcon.off("click", filterIconClickHandler);
+    closeIcon.off("click", closeIconClickHandler);
+
+    filterIcon.on("click", filterIconClickHandler);
+    closeIcon.on("click", closeIconClickHandler);
+    });
+
+    function clickOnButton(facetsList, filterNav, filterIcon, page) {
+    var filterOpen = $(facetsList).hasClass("open-facets-list");
+
+    if (!filterOpen) {
+        $(facetsList).addClass("open-facets-list");
+        $(filterNav).addClass("filter-nav-fixed");
+        $(filterIcon).addClass("active-item");
+        $(page).addClass("pageFixed");
+    } else {
+        $(facetsList).removeClass("open-facets-list");
+        $(filterNav).removeClass("filter-nav-fixed");
+        $(filterIcon).removeClass("active-item");
+        $(page).removeClass("pageFixed");
+    }
+    }
+
+    function filterIconClickHandler() {
+        var filterNav = $(".facet-filter-nav");
+        var filterIcon = $(".filter-icon");
+        var page = $('.page');
+        var facetsList = $('.facets').parent();
+        clickOnButton(facetsList, filterNav, filterIcon, page);
+    }
+
+    function closeIconClickHandler() {
+        var filterNav = $(".facet-filter-nav");
+        var filterIcon = $(".filter-icon");
+        var page = $('.page');
+        var facetsList = $('.facets').parent();
+        clickOnButton(facetsList, filterNav, filterIcon, page);
+    }
 </script>    

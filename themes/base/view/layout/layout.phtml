@@ -100,33 +100,45 @@ $userBar = $this->userBar();
     <?php echo $this->htmlElement('body'); ?>
     <?php echo $userBar; ?>
     <header>
-      <div class="container">
-        <div class="columns">
-          <div class="column is-3 left-nav">
-            <a class="navbar-item" href="<?php echo $site->url(); ?>" style="padding:1rem 0 0 0;">
-              <div class="logo-1">
-              <?php if ($this->themeSetting('logo')): ?>
-                  <img src="<?php echo $this->themeSettingAssetUrl('logo'); ?>" alt="<?php echo $escape($siteTitle); ?>" />
-                  <br>Alamire<br>Foundation
-                  <?php else: ?>
-                  <?php echo $escape($siteTitle); ?>
-              <?php endif; ?>
-              </div>              
-            </a>        
+      <section class="section header-section">
+        <div class="container">
+          <div class="columns">
+            <div class="column is-3 left-nav">
+              <a class="navbar-item" href="<?php echo $site->url(); ?>" style="padding:1rem 0 0 0;">
+                <div class="logo-1">
+                <?php if ($this->themeSetting('logo')): ?>
+                    <img src="<?php echo $this->themeSettingAssetUrl('logo'); ?>" alt="<?php echo $escape($siteTitle); ?>" />
+                    <br>Alamire<br>Foundation
+                    <?php else: ?>
+                    <?php echo $escape($siteTitle); ?>
+                <?php endif; ?>
+                </div>              
+              </a>        
+            </div>
+            <div class="column right-section-nav">
+              <div id="site-title-text">
+                <a href="<?php echo $site->url();?>">IDEM</a>
+                <div id="description">Integrated Database for Early music</div>
+              </div>
+              <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+                  <span aria-hidden="true"></span>
+                  <span aria-hidden="true"></span>
+                  <span aria-hidden="true"></span>
+              </a> 
+            </div>
           </div>
-          <div class="column">
-            <div id="site-title-text">
-              <a href="<?php echo $site->url();?>">IDEM</a>
-             <div id="description">Integrated Database for Early music</div>
-            </div>  
-          </div>
-        </div>
-      </div>      
+        </div>     
+      </div> 
     </header>
+    <div class="scroll-to-top-button">
+      <svg class="svg-inline--fa fa-angle-top fa-lg" data-prefix="fas" data-icon="angle-top" role="img" viewBox="0 0 256 512"  fill="none" xmlns="http://www.w3.org/2000/svg" data-fa-i2svg>
+        <path fill="#ffffff" d="M201.4 137.4c12.5-12.5 32.8-12.5 45.3 0l160 160c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L224 205.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l160-160z"/>
+      </svg>
+    </div>
     <section class="section">
       <div class="container">
-        <div class="columns">
-          <div class="column is-3 left-nav filter-nav">
+        <div class="columns is-desktop">
+          <div class="column is-3-desktop left-nav filter-nav">
           <?php
             echo $site->publicNav()->menu()->renderMenu(null, [
                 'maxDepth' => $this->themeSetting('nav_depth') - 1
@@ -192,6 +204,10 @@ $userBar = $this->userBar();
     });
     $(".terms-close").click(function() {
        $(".terms-modal").toggleClass("is-active");
+    });
+
+    $(".scroll-to-top-button").on("click", function() {
+        $("body, html").animate({ scrollTop: 0 }, 800);
     });
 
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

@@ -22,7 +22,7 @@ endif;
     ?>
   </div>
     <?php if (!$embedMedia && $itemMedia): ?>      
-      <div class="container thumbnails is-hidden-mobile" style="padding:2rem 0">
+      <div class="container thumbnails">
         <div class="has-text-centered">
           <?php foreach($itemMedia as $med):?>
             <?php $url = str_replace('http:', '', $med->thumbnailUrl('large'));?>
@@ -34,7 +34,7 @@ endif;
                 <a target="_blank" href="<?php echo $med->value('dcterms:description');?>"> 
               <?php endif;?>
             <?php endif;?>  
-            <img src="<?php echo $url;?>" style="max-width:70%;margin-bottom:1rem;"><br>
+            <img src="<?php echo $url;?>" ><br>
             <?php if($med->value("dcterms:description") && $auth):?>
               </a>
             <?php endif;?>  
@@ -228,9 +228,9 @@ endif;
         </div>          
     <?php endif;?>   
    
-    <div class="columns">  
+    <div class="columns metadata-column">  
       <div class="column is-one-fifth">        
-        <h4 class="has-text-weight-semibold is-6">Metadata</h4>
+        <h5 class="has-text-weight-semibold is-6">Metadata</h5>
       </div>
       <div class="column is-four-fifths">
         <div class="values">                      
@@ -599,7 +599,7 @@ endif;
 
     <div class="columns">  
       <div class="column is-one-fifth">
-        <h4 class="has-text-weight-semibold is-6">Metadata</h4>
+        <h5 class="has-text-weight-semibold is-6">Metadata</h5>
       </div>
       <div class="column is-three-fifths">
         <div class="values">                      
@@ -625,7 +625,7 @@ endif;
           
           <div class="columns">  
             <div class="column is-one-fifth">
-              <h4 class="has-text-weight-semibold is-6">Images</h4>
+              <h5 class="has-text-weight-semibold is-6">Images</h5>
             </div>
             <div class="column is-three-fifths">
               <div class="values">                      
@@ -645,7 +645,7 @@ endif;
           </div>
           <div class="columns">  
             <div class="column is-one-fifth">
-              <h4 class="has-text-weight-semibold is-6">IIIF Manifest</h4>
+              <h5 class="has-text-weight-semibold is-6">IIIF Manifest</h5>
             </div>
             <div class="column is-three-fifths">
               <div class="values">                      
@@ -715,7 +715,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
       $('span:last', this).fadeOut("slow");   
     });
 
-    $('.thumbnails').appendTo('.navigation');
+    $('.thumbnails').appendTo('.filter-nav');
     $(".Inventory").appendTo("#polyphony");
     $(".inventory-wrapper").insertBefore(".Bibliography");
     $(".production-unit-comp-wrapper").insertBefore(".Voices");
