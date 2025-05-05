@@ -18,8 +18,10 @@ $displayCount = !empty($options['display_count']);
 ?>
 
 <span class="<?= $active ? 'active' : 'inactive' ?>">
-    <a href="<?= $escapeHtmlAttr($url) ?>"><?= $escapeHtml(str_replace(";","; ",$label)) ?> <?php if ($displayCount): ?>
-    (<span class="count"><?= $count ?></span>)
-    <?php endif; ?></a>
+    <a href="<?= $escapeHtmlAttr($url) ?>" data-facet-link="<?= $escapeHtmlAttr($url) ?>" onclick="activeLink(event)"><?= $escapeHtml(str_replace(";","; ",$label)) ?> 
+        <?php if ($displayCount): ?>
+            (<span class="count"><?= $count ?></span>)
+        <?php endif; ?>
+    </a>
     
 </span>

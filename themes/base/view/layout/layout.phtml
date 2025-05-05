@@ -190,6 +190,7 @@ $userBar = $this->userBar();
         // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
         //$(".navbar-burger").toggleClass("is-active");
         $(".burger-menu").toggleClass("is-active");
+        $(".page").addClass("pageFixed");
     });
 
     $("#showSearch").click(function() {
@@ -201,6 +202,7 @@ $userBar = $this->userBar();
     });
     $(".burger-menu-close").click(function() {
        $(".burger-menu").removeClass("is-active");
+       $(".page").removeClass("pageFixed");
     });
     $(".terms-close").click(function() {
        $(".terms-modal").toggleClass("is-active");

@@ -74,7 +74,7 @@ endif;
 
 <?php if($auth):?>
     <?php if (empty($isPartial)): ?>
-    <div id="search-page" class="page">
+    <div id="search-page">
     <?php endif; ?>
 
     <div class="facet-filter-nav">
@@ -94,7 +94,7 @@ endif;
         <?php
         $vars->offsetSet('itemSet', $itemSet);
         $vars->offsetSet('resourceType', 'item_sets'); // TODO Check if really needed.
-        $this->htmlElement('body')->appendAttribute('class', 'search-page item-set resource browse');
+        $this->htmlElement('body')->appendAttribute('class', 'page search-page item-set resource browse');
         ?>
         <?= $this->pageTitle($itemSet->displayTitle(), 2) ?>
         <h3><?= $translate('Item set') ?></h3>
@@ -107,7 +107,7 @@ endif;
 
     <?php else: ?>
 
-        <?php $this->htmlElement('body')->appendAttribute('class', 'search-page resource browse'); ?>
+        <?php $this->htmlElement('body')->appendAttribute('class', 'page search-page resource browse'); ?>
 
             <h2 style="margin-bottom:0.5rem;"><?= $translate('Browse & search').' ('.$itemsCount.')'; ?></h2>
             <h3 style="font-weight:bold;"><?= $translate('Search') ?></h3>
@@ -187,7 +187,7 @@ endif;
 <?php endif;?>    
 <script>
     $( document ).ready(function() {
-        $('#form-facets').appendTo('.filter-nav');
+        $('.facets-group').appendTo('.filter-nav');
     });
 
     $('#form-search').find('.inputs').each(function (index) {
@@ -212,44 +212,44 @@ endif;
     }
 
     $(window).on('load', function() {
-    var openPopUp = localStorage.getItem('openPopUp');
-    var filterIcon = $(".filter-icon");
-    var closeIcon = $(".close-icon");
-    var page = $('.page');
-    var facetsList = $('.facets').parent();
+        var openPopUp = localStorage.getItem('openPopUp');
+        var filterIcon = $(".filter-icon");
+        var closeIcon = $(".close-icon");
+        var page = $('.page');
+        var facetsList = $('.facets').parent();
 
-    if (window.innerWidth < 1024) {
-        if (openPopUp === "true") {
-            var filterNav = $(".facet-filter-nav");
+        if (window.innerWidth < 1024) {
+            if (openPopUp === "true") {
+                var filterNav = $(".facet-filter-nav");
+                $(facetsList).addClass("open-facets-list");
+                $(filterNav).addClass("filter-nav-fixed");
+                $(filterIcon).addClass("active-item");
+                $(page).addClass("pageFixed");
+                localStorage.removeItem('openPopUp');
+            }
+        }
+
+        filterIcon.off("click", filterIconClickHandler);
+        closeIcon.off("click", closeIconClickHandler);
+
+        filterIcon.on("click", filterIconClickHandler);
+        closeIcon.on("click", closeIconClickHandler);
+    });
+
+    function clickOnButton(facetsList, filterNav, filterIcon, page) {
+        var filterOpen = $(facetsList).hasClass("open-facets-list");
+
+        if (!filterOpen) {
             $(facetsList).addClass("open-facets-list");
             $(filterNav).addClass("filter-nav-fixed");
             $(filterIcon).addClass("active-item");
             $(page).addClass("pageFixed");
-            localStorage.removeItem('openPopUp');
+        } else {
+            $(facetsList).removeClass("open-facets-list");
+            $(filterNav).removeClass("filter-nav-fixed");
+            $(filterIcon).removeClass("active-item");
+            $(page).removeClass("pageFixed");
         }
-    }
-
-    filterIcon.off("click", filterIconClickHandler);
-    closeIcon.off("click", closeIconClickHandler);
-
-    filterIcon.on("click", filterIconClickHandler);
-    closeIcon.on("click", closeIconClickHandler);
-    });
-
-    function clickOnButton(facetsList, filterNav, filterIcon, page) {
-    var filterOpen = $(facetsList).hasClass("open-facets-list");
-
-    if (!filterOpen) {
-        $(facetsList).addClass("open-facets-list");
-        $(filterNav).addClass("filter-nav-fixed");
-        $(filterIcon).addClass("active-item");
-        $(page).addClass("pageFixed");
-    } else {
-        $(facetsList).removeClass("open-facets-list");
-        $(filterNav).removeClass("filter-nav-fixed");
-        $(filterIcon).removeClass("active-item");
-        $(page).removeClass("pageFixed");
-    }
     }
 
     function filterIconClickHandler() {
