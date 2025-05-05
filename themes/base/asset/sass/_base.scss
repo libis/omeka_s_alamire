@@ -25,7 +25,7 @@ body{
   box-sizing: border-box;
 }
 
-select {
+select, input {
   --webkit-appearance: none;
 }
 
@@ -554,6 +554,7 @@ h5.title{
     border: 1px solid rgba(#898989,0.6);
     box-shadow: none;
     width: 100%;
+    background-color: transparent;
   }
 
   #q:focus-visible{
@@ -628,6 +629,7 @@ h5.title{
       border:none;
       border-bottom: 2px solid $text;
       cursor: pointer;
+      color: #000000;
     }
   }
 
