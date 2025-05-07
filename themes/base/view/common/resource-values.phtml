@@ -89,7 +89,7 @@ endif;
       <?php endif; ?>
       </h5>
     </div>
-    <div class="column is-four-fifths">
+    <div class="column is-four-fifths <?php echo $alt_class; ?>-items">
       <?php if(($propertyData['property']->term() == "alamire:relatedComposition") || $propertyData['property']->term() == "alamire:description" || $propertyData['property']->term() == "alamire:bibliographicCitation"):?>
         <div class="values text">
       <?php else:?>
@@ -319,9 +319,9 @@ endif;
               ksort($array);  
               foreach($array as $audio):
                 if(str_contains($audio->asHtml(),"spotify")):?>
-                  <button data-index="1" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-brands fa-spotify collapsible"></i></span><span>Spotify</span></button>                 
+                  <button data-index="1" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-solid fa-music"></i></span><span>Spotify</span></button>                 
                 <?php elseif(str_contains($audio->asHtml(),"apple")):?>
-                  <button data-index="2" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-brands fa-apple "></i></span><span>Apple Music</span></button>                
+                  <button data-index="2" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-solid fa-music"></i></span><span>Apple Music</span></button>                
                 <?php elseif(str_contains($audio->asHtml(),"deezer")):?>
                   <button data-index="3" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-solid fa-music"></i></i></span><span>Deezer</span></button>                
                 <?php elseif(str_contains($audio->asHtml(),"qobuz")):?>

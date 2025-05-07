@@ -91,7 +91,7 @@ h5.title{
   
   a {
     text-decoration: none;
-    color: #9B3704;
+    color: #A6361F;
   }
 
   #description {
@@ -162,7 +162,6 @@ h5.title{
   }
 
   .navigation{
-    padding-top: 1rem;
 
     li{
       padding-top: 0.5rem;
@@ -486,6 +485,7 @@ h5.title{
   text-align: center;
   white-space: nowrap;
   line-height: 1.5;
+  height: 3.8em;
 }
 
 .facets{
@@ -1142,6 +1142,14 @@ footer.footer{
     }
   }
 
+  .Audio-items {
+    .values {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+  }
+
   //search
   #form-search {
     .field:first-of-type {
@@ -1346,6 +1354,10 @@ footer.footer{
       height: auto;
       overflow-x: auto;
       padding: 0;
+
+      .search-facets-active {
+        display: none;
+      }
     }
   }
 
@@ -1366,7 +1378,7 @@ footer.footer{
   .result-list {
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    gap: 70px;
 
     .result-item {
       display: flex;
@@ -1399,6 +1411,7 @@ footer.footer{
             flex-direction: column;
             gap: 2px;
             margin-top: 0;
+            margin-bottom: 0;
 
             .column {
               padding-bottom: 0;
@@ -1410,5 +1423,25 @@ footer.footer{
     .result-item:last-child {
       margin-bottom: 1rem;
     }
+  }
+
+  //result page 
+  .permalink-data {
+    max-width: 100%;
+    display: flex;
+
+    a {
+      width: 90%;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+  }
+}
+
+@media (hover: none) {
+  a:hover { 
+    color: #A6361F; 
   }
 }

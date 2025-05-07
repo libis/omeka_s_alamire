@@ -67,15 +67,24 @@ if (!empty($itemSet)) {
 $options = $searchPage->setting('facet', []);
 unset($options['facets']);
 ?>
+
+<?php if ($displayActive && count($activeFacets)): ?>
+    <ul class="search-facets-active">
+        <?php foreach ($activeFacets as $name => $facetValues) foreach ($facetValues as $facetValue): ?>
+        <li class="<?= $name;?>"><?= $facetActive($name, ['value' => $facetValue, 'count' => null], $options) ?></li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>
+
 <div class="facets-group">
     <div class="facets">    
 
         <?php if ($displayActive && count($activeFacets)): ?>
-        <ul class="search-facets-active">
-            <?php foreach ($activeFacets as $name => $facetValues) foreach ($facetValues as $facetValue): ?>
-            <li class="<?= $name;?>"><?= $facetActive($name, ['value' => $facetValue, 'count' => null], $options) ?></li>
-            <?php endforeach; ?>
-        </ul>
+            <ul class="search-facets-active">
+                <?php foreach ($activeFacets as $name => $facetValues) foreach ($facetValues as $facetValue): ?>
+                <li class="<?= $name;?>"><?= $facetActive($name, ['value' => $facetValue, 'count' => null], $options) ?></li>
+                <?php endforeach; ?>
+            </ul>
         <?php endif; ?>
 
         <form id="form-facets">
