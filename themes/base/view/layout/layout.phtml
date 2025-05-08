@@ -179,6 +179,14 @@ $userBar = $this->userBar();
              ]);
            ?>
          </div>
+         <div class="logo-1">
+            <?php if ($this->themeSetting('logo')): ?>
+                <img src="<?php echo $this->themeSettingAssetUrl('logo'); ?>" alt="<?php echo $escape($siteTitle); ?>" />
+                <br>Alamire<br>Foundation
+                <?php else: ?>
+                <?php echo $escape($siteTitle); ?>
+            <?php endif; ?>
+          </div>    
          <button class="burger-menu-close modal-close is-large"></button>
       </div>   
   </body>

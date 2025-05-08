@@ -200,7 +200,9 @@ endif;
     $(".facet-active").on("click touchstart", function(e) {
         e.preventDefault();
         var href = $(this).attr("href");
-        localStorage.setItem('openPopUp', 'true');
+        if ($(this).closest('div').hasClass('facets')) {
+            localStorage.setItem('openPopUp', 'true');
+        }
         window.location.href = href;
     });
 
