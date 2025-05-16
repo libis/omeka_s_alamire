@@ -177,7 +177,7 @@ class Harvest extends AbstractJob
 
             /** @var \SimpleXMLElement $response */
             $response = \simplexml_load_file($url);
-            $timeout = 240;
+            $timeout = 350;
             $context = stream_context_create(['http' => ['timeout' => $timeout]]);
             $data = file_get_contents($url, false, $context);
             $response = simplexml_load_string($data);
