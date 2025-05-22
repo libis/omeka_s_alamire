@@ -551,10 +551,10 @@ endif;
                 ksort($appears,SORT_NATURAL);
               endif;?>
               <?php foreach($appears as $key=>$in):?>   
+                <div class="value resource items" lang="">
                 <?php if(!is_array($in)):?>
                   <?php echo $html;?>
-                <?php else:?>  
-                <div class="value resource items" lang="">
+                <?php else:?>                  
                   <?php if($auth && $in["link"]):?> 
                     <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
                   <?php endif;?> 
@@ -563,9 +563,9 @@ endif;
                     <?php echo $in["part"] ? "(".$in["part"].")" : "";?>
                   <?php if($auth && $in["link"]):?> 
                     </a>  
-                  <?php endif;?> 
-                </div>
+                  <?php endif;?>                 
                 <?php endif;?>
+                </div>
               <?php endforeach;?>  
               <?php foreach($ints_a as $key=>$int):?>                    
                 <div class="value resource items" lang="">
