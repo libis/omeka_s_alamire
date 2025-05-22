@@ -117,69 +117,7 @@ endif;
               <?php echo 'codex';?>   
             <?php else: ?>
                 <?php echo $value->asHtml();?>
-            <?php endif;?> 
-          <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscript'):?>
-            <?php 
-              if($values['alamire:relatedManuscript']['values']):
-                $cites = $values['alamire:relatedManuscript']['values'];
-                $sort_cites = array();
-                foreach($cites as $cite):
-                  if(str_contains($cite->asHtml(),"$$")):
-                    $cite = explode(" $$ ",$cite->asHtml());  
-                     
-                    if(isset($cite[5])):
-                      $sort_cites[trim($cite[0]).trim($cite[6])] = $cite;
-                    else:
-                      $sort_cites[] = $cite;
-                    endif;
-
-                  endif;  
-                endforeach;
-                
-                ksort($sort_cites);  
-                foreach($sort_cites as $cite): 
-                 
-                  $rels = $cite;
-                  
-                  $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$rels[0].'&item_set_id[]=&site_id=';
-                  parse_str($query,$query);
-    
-                  $rel = $items = $this->api()->searchOne('items',$query);
-                  $rel = $rel->getContent();
-                  if($rel):
-                    echo '<div style="margin-bottom:0.5rem;">';
-                    echo '<a href="'.$rel->url().'">'.$rels[0].'</a>';
-                    $label = "";
-                    //page
-                    if(trim($rels[2]) == "fol."){
-                      $label = trim($rels[3]);
-                      $label = str_replace("page:","p.",$label);
-                    }
-                    else{
-                      //fol
-                      $label = trim($rels[2]);
-                    }
-                    
-                    if($label && trim($rels[5])):
-                      //part
-                      $label = $label." (".trim($rels[5]).")";
-                    endif;  
-                    
-                    if(str_contains($rels[4],"http") && $auth):
-                      $link = str_replace(" link:","",$rels[4]);
-                      $link = str_replace("&amp;","&",$link);
-                      echo ' <span style="font-style:italic;border-bottom:1px solid #cc6733"><a target="_blank" href="'.$link.'">'.$label.'</a></span>';
-                    else:
-                      echo ' <span style="font-style:italic;">'.$label.'</span>';
-                    endif;  
-                    echo '</div>';
-                  else:
-                    //echo $value->asHtml();
-                  endif; 
-                endforeach;  
-              endif;
-              $values['alamire:relatedManuscript']['values']="";
-            ?>    
+            <?php endif;?>
           <?php elseif($propertyData['property']->term() == 'alamire:creator_display'):?>
             <?php 
               if($values['alamire:creator_display']['values']):
@@ -197,7 +135,7 @@ endif;
                 foreach($sort_cites as $cite):        
                   $comps = trim($cite);
                   $comps = explode(" (",$comps);
-                  if(!empty($comps[1])):
+                  if(!empty($comps[1]) && $comps[1] != ")"):
                       $type = $comps[1];
                       if($type == "credited)"):
                         $comp = $comps[0]." (".$comps[1];

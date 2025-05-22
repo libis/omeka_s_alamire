@@ -457,82 +457,156 @@ endif;
       </div>
     <?php endif;?>
 
+    <?php if($type == "Composition"):
+        $pus = array();$appears = array();
+        //handle related manuscipts
+        if($item->value("alamire:relatedManuscript")):         
+          foreach($item->value("alamire:relatedManuscript", ['all' => true]) as $ms):           
+            if(str_contains($ms->asHtml(),"$$")):
+              $ms = explode(" $$ ",$ms->asHtml());                  
+              if(isset($ms[5])):      
+                $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$ms[0].'&item_set_id[]=&site_id=';
+                parse_str($query,$query);
 
-
-    <?php if($type == "Composition" && $item->value("alamire:relatedProductionUnit")):?>    
-      <?php $pus = array();?>
-      <?php foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):?>
-        <?php $pu = $pu->valueResource();?>
-        <?php if($pu):?>              
-          <?php $pus[$pu->value("alamire:identifier").''] = $pu;?>
-        <?php endif;?>
-      <?php endforeach;?>  
-      <?php 
-        $ints_a = [];$expl='';
+                $label = "";
+                //page
+                if(trim($ms[2]) == "fol."){
+                  $label = trim($ms[3]);
+                  $label = str_replace("page:","p.",$label);
+                }else{
+                  //fol
+                  $label = trim($ms[2]);
+                }
+                    
+                if($label && trim($ms[5])):
+                  //part
+                  $label = $label." (".trim($ms[5]).")";
+                endif;                
+    
+                $ms_item = $this->api()->searchOne('items',$query);
+                $ms_item = $ms_item->getContent();
+                if($ms_item):
+                  $html = '<a href="'.$ms_item->url().'">'.$ms[0].'</a>'; 
+                else:
+                  $html = $ms[0];                    
+                endif;           
+                if(str_contains($ms[4],"http") && $auth):
+                    $link = str_replace(" link:","",$ms[4]);
+                    $link = str_replace("&amp;","&",$link);
+                    $html .= ' <span style="font-style:italic;border-bottom:1px solid #cc6733"><a target="_blank" href="'.$link.'">'.$label.'</a></span>';
+                else:
+                  $html .= ' <span style="font-style:italic;">'.$label.'</span>';
+                endif;          
+                $appears[trim($ms[0]).trim($ms[6])] = $html;      
+              else:
+                $appears[$ms] = $ms;  
+              endif;  
+            endif;  
+          endforeach;               
+        endif;  
+        //handle related production unit
+        if($item->value("alamire:relatedProductionUnit")):             
+          foreach($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):
+            $pu = $pu->valueResource();
+            if($pu):
+              $pus[$pu->value("alamire:identifier").''] = $pu;
+            endif;
+          endforeach;
+        endif;
+        //handle interstitial info
+        $ints_a = [];$ints_b = [];$expl='';
         $ints = $item->value("alamire:interstitialInfo", ['all' => true]);
         foreach($ints as $int):
           $expl = explode('$$',$int.'');
-          $ints_a[trim($expl[0])][trim($expl[1])] = [
-            "ed" => trim($expl[0]),
-            "part" =>  trim($expl[2]),
-            "fol" => trim($expl[3]),
-            "link" => trim($expl[4]),
-            'pu' => $pus[trim($expl[1])]
-          ];
+          //if has edition
+          if($expl[0]):
+            $ints_a[trim($expl[0])][trim($expl[1])] = [
+              "ed" => trim($expl[0]),
+              "part" =>  trim($expl[2]),
+              "fol" => trim($expl[3]),
+              "link" => trim($expl[4]),
+              'pu' => trim($expl[1])
+            ];
+          else:
+            $appears[trim($expl[1])] = [              
+              'title' => trim($expl[1]),
+              "fol" => trim($expl[3]),
+              "part" =>  trim($expl[2]),
+              "link" => trim($expl[4]),              
+            ];  
+          endif;
         endforeach;  
       ?>
 
-      <div class="columns production-unit-comp-wrapper">
-        <div class="column is-one-fifth">
-          <h4 class="has-text-weight-semibold is-6 ">Appears in</h4>
-        </div>
-        <div class="column is-four-fifths">
-          <div class="values">
-            <?php ksort($pus,SORT_NATURAL);?>
-            <?php $ed = "";$i=0;?>  
-            <?php foreach($ints_a as $key=>$int):?>    
-              <div class="value resource items" lang="">
-                <?php $key = str_replace("[","[RISM ",$key);?>
-                <?php echo $key;?>
-                <?php if($i==0):?>
-                  <a style="margin-left:5px;" href="#" class="expand"><i class='fa fa-chevron-up'></i></a> 
-                   <?php else:?>
-                    <a style="margin-left:5px;" href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>
-               
+      <?php if($ints_a || $appears):?>  
+        <div class="columns production-unit-comp-wrapper">
+          <div class="column is-one-fifth">
+            <h4 class="has-text-weight-semibold is-6 ">Appears in</h4>
+          </div>
+          <div class="column is-four-fifths">
+            <div class="values">
+              <?php ksort($pus,SORT_NATURAL);?>
+              <?php $ed = "";$i=0;?>
+              <?php if($appears):
+                ksort($appears,SORT_NATURAL);
+              endif;?>
+              <?php foreach($appears as $key=>$in):?>   
+                <?php if(!is_array($in)):?>
+                  <?php echo $html;?>
+                <?php else:?>  
+                <div class="value resource items" lang="">
+                  <?php if($auth && $in["link"]):?> 
+                    <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
+                  <?php endif;?> 
+                    <?php echo $in["title"].", ";?>
+                    <?php echo $in["fol"];?>
+                    <?php echo $in["part"] ? "(".$in["part"].")" : "";?>
+                  <?php if($auth && $in["link"]):?> 
+                    </a>  
+                  <?php endif;?> 
+                </div>
                 <?php endif;?>
-                <?php if($i==0):?>
-                  <div class="hidden-content" style="display: block";>     
-                <?php else:?>
-                  <div class="hidden-content" style="display: none";>     
-                <?php endif;?>
+              <?php endforeach;?>  
+              <?php foreach($ints_a as $key=>$int):?>                    
+                <div class="value resource items" lang="">
+                  <?php $key = str_replace("[","[RISM ",$key);?>                
+                  <?php echo $key;?>
+                  <?php if($i==0):?>
+                    <a style="margin-left:5px;" href="#" class="expand"><i class='fa fa-chevron-up'></i></a> 
+                    <div class="hidden-content" style="display: block";>  
+                  <?php else:?>
+                    <a style="margin-left:5px;" href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>               
+                    <div class="hidden-content" style="display: none";>     
+                  <?php endif;?>
+                  <?php ksort($int,SORT_NATURAL);?>
                   <?php foreach($int as $in):?>       
                       <div>      
-                        <?php if($in["pu"]):?>       
-                          <?php $pu = $in["pu"];?>
+                        <?php if($in["pu"] && isset($pus[$in["pu"]])):?>                          
+                          <?php $pu = $pus[$in["pu"]];?>
                           <a class="resource-link" href="<?php echo $site->url()."/item/".strtolower($pu->value("alamire:relatedPrintedSource").'');?>"><?php echo $pu->displayTitle();?></a>
-                          <?php if($auth):?> 
+                          
+                        
+                          <?php if($auth && $in["link"]):?> 
                             <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
-                              <?php echo $in["fol"];?>
-                              <?php if($in["part"]):?>
-                                <?php echo "(".$in["part"].")";?>
-                              <?php endif;?> 
-                            </a>
-                          <?php else:?>
+                          <?php endif;?> 
                             <?php echo $in["fol"];?>
-                            <?php if($in["part"]):?>
-                              <?php echo "(".$in["part"].")";?>
-                            <?php endif;?>
-                          <?php endif;?>    
+                            <?php echo $in["part"] ? "(".$in["part"].")" : "";?>
+                          <?php if($auth && $in["link"]):?> 
+                            </a>  
+                          <?php endif;?> 
+                        <?php else:?>
+                          <a class="resource-link"><?php echo $in["pu"];?></a>     
                         <?php endif;?> 
                       </div>               
                   <?php endforeach;?>  
+                  </div>
                 </div>
-              </div>
-              <?php $i++;?>
-            <?php endforeach;?>                
-          </div>
-        </div>                  
-      </div>
+                <?php $i++;?>
+              <?php endforeach;?>                
+            </div>
+          </div>                  
+        </div>
+      <?php endif;?>
     <?php endif;?>
       
     <?php 
