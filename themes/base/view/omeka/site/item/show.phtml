@@ -464,7 +464,9 @@ endif;
           foreach($item->value("alamire:relatedManuscript", ['all' => true]) as $ms):           
             if(str_contains($ms->asHtml(),"$$")):
               $ms = explode(" $$ ",$ms->asHtml());                  
-              if(isset($ms[5])):      
+             
+              if(isset($ms[5])):     
+                
                 $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$ms[0].'&item_set_id[]=&site_id=';
                 parse_str($query,$query);
 
@@ -497,7 +499,9 @@ endif;
                 else:
                   $html .= ' <span style="font-style:italic;">'.$label.'</span>';
                 endif;          
-                $appears[trim($ms[0]).trim($ms[6])] = $html;      
+                
+                $appears[trim($ms[0]).trim($ms[6])] = $html;   
+
               else:
                 $appears[$ms] = $ms;  
               endif;  
@@ -551,9 +555,10 @@ endif;
                 ksort($appears,SORT_NATURAL);
               endif;?>
               <?php foreach($appears as $key=>$in):?>   
+               
                 <div class="value resource items" lang="">
                 <?php if(!is_array($in)):?>
-                  <?php echo $html;?>
+                  <?php echo $in;?>
                 <?php else:?>                  
                   <?php if($auth && $in["link"]):?> 
                     <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
