@@ -500,7 +500,7 @@ endif;
                   $html .= ' <span style="font-style:italic;">'.$label.'</span>';
                 endif;          
                 
-                $appears[trim($ms[0]).trim($ms[6])] = $html;   
+                $appears[trim($ms[0]).trim($ms[5])] = $html;   
 
               else:
                 $appears[$ms] = $ms;  
@@ -575,7 +575,7 @@ endif;
               <?php foreach($ints_a as $key=>$int):?>                    
                 <div class="value resource items" lang="">
                   <?php $key = str_replace("[","[RISM ",$key);?>                
-                  <?php echo $key;?>
+                  <?php echo "<span style='font-weight:bold'>".$key."</span>";?>
                   <?php if($i==0):?>
                     <a style="margin-left:5px;" href="#" class="expand"><i class='fa fa-chevron-up'></i></a> 
                     <div class="hidden-content" style="display: block";>  
@@ -589,9 +589,10 @@ endif;
                         <?php if($in["pu"] && isset($pus[$in["pu"]])):?>                          
                           <?php $pu = $pus[$in["pu"]];?>
                           <a class="resource-link" href="<?php echo $site->url()."/item/".strtolower($pu->value("alamire:relatedPrintedSource").'');?>"><?php echo $pu->displayTitle();?></a>
-                          
-                        
-                          <?php if($auth && $in["link"]):?> 
+                        <?php else:?>
+                          <?php echo $in["pu"];?>     
+                        <?php endif;?> 
+                        <?php if($auth && $in["link"]):?> 
                             <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
                           <?php endif;?> 
                             <?php echo $in["fol"];?>
@@ -599,9 +600,6 @@ endif;
                           <?php if($auth && $in["link"]):?> 
                             </a>  
                           <?php endif;?> 
-                        <?php else:?>
-                          <a class="resource-link"><?php echo $in["pu"];?></a>     
-                        <?php endif;?> 
                       </div>               
                   <?php endforeach;?>  
                   </div>
