@@ -68,7 +68,7 @@ endif;
     $style="";$extra_class="";
     $alt_class="";
     if ($propertyData['alternate_label']):
-      if($propertyData['alternate_label'] == "Inventory" || $propertyData['alternate_label'] == "Audio" || $propertyData['alternate_label'] == "Bibliography"):
+      if($propertyData['alternate_label'] == "Inventory" || $propertyData['alternate_label'] == "Audio" || $propertyData['alternate_label'] == "Bibliography"  || $propertyData['alternate_label'] == "Archival record"):
         $extra_class="section-head";
         $style="padding-top:1rem;";
       endif;
@@ -80,11 +80,7 @@ endif;
   ?>       
   <div class="columns <?php echo $alt_class; ?>" style="<?php echo $style;?>">  
     <div class="column is-one-fifth">
-      <?php if ($propertyData['alternate_label']): ?>
-        <?php if($propertyData['alternate_label'] == "Archival record"):  
-          $extra_class="no-title";
-        endif;?>
-      <?php endif;?>  
+      
       <h5 class="has-text-weight-semibold is-6 <?php echo $extra_class;?>">
       <?php if ($propertyData['alternate_label']): ?>
       <?php echo $escape($propertyData['alternate_label']); ?>
