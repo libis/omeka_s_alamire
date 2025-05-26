@@ -22,6 +22,15 @@ endif;
   else:
     continue;
   endif;
+
+  if(isset($values["alamire:furtherBibliography"]) && isset($values["alamire:bibliographicCitation"]) && $property->property()->term() == "alamire:bibliographicCitation"):
+    //if both bibliographies are present add an extran subtitle (in comment)
+    $comment = "Bibliography";
+  elseif($property->property()->term() == "alamire:bibliographicCitation"):
+    //if not change select bibliography to bibliography
+    $propertyData['alternate_label'] = "Bibliography";
+    $comment = "";  
+  endif;
    
   if($propertyData['property']->term() == "alamire:thumbnail" || $propertyData['alternate_label'] == "Manuscript Label"  || $propertyData['alternate_label'] == "Chant Label"):
     continue;
@@ -183,6 +192,7 @@ endif;
             if($values['alamire:bibliographicCitation']['values']):
               $cites = $values['alamire:bibliographicCitation']['values'];
               $sort_cites = array();
+              
               foreach($cites as $cite):
                 $cite = $cite.'';
                 if(str_contains($cite,"$$")):
@@ -231,6 +241,60 @@ endif;
                   
             endif;
             $values['alamire:bibliographicCitation']['values'] = "";
+          ?>   
+          <?php elseif($propertyData['property']->term() == 'alamire:furtherBibliography'):
+            if($values['alamire:furtherBibliography']['values']):
+              $cites = $values['alamire:furtherBibliography']['values'];
+              $sort_cites = array();
+              
+              foreach($cites as $cite):
+                $cite = $cite.'';
+                if(str_contains($cite,"$$")):
+                  $cite = explode("$$",$cite);     
+                  if(!empty($cite[5])):
+                    $sort_cites[trim($cite[5])] = $cite;
+                  else:
+                    $sort_cites[] = $cite;
+                  endif;
+                else:
+                   //compos
+                   $cite = explode(" ",$cite);
+                   array_shift($cite);
+                   echo '<div style="margin-bottom:0.5rem;">'.implode(" ",$cite)."</div>";
+                endif;  
+              endforeach;
+              ksort($sort_cites);
+
+              foreach($sort_cites as $cite):               
+                //manu                          
+                if(!empty($cite[2]) && !empty($cite[0])):
+                  $cite[0] = str_replace("[","",$cite[0]);
+                  $cite[0] = str_replace("]","",$cite[0]);
+                  if(!empty(trim($cite[3]))):
+                    $label = '<a href="'.$cite[3].'">'.$cite[2].'</a>';
+                  else:
+                    $label = trim($cite[2]);
+                  endif;
+                  echo '<div style="margin-bottom:0.5rem;"><strong>'.trim($cite[0])."</strong> ".$label;
+                  if(!empty($cite[4])):
+                    echo $cite[4];
+                  endif;  
+                  echo "</div>";
+                elseif(!empty($cite[2]) && empty($cite[0])):
+                  if(!empty(trim($cite[3]))):
+                    $label = '<a href="'.$cite[3].'">'.trim($cite[2]).'</a>';
+                  else:
+                    $label = trim($cite[2]);
+                  endif; 
+                  //$label = trim($cite[2]);
+                  echo '<div style="margin-bottom:0.5rem;">'.$label.$cite[4]."</div>";
+                else:
+                  echo '<div style="margin-bottom:0.5rem;">'.trim($cite[0]).$cite[4]."</div>";
+                endif;
+              endforeach;  
+                  
+            endif;
+            $values['alamire:furtherBibliography']['values'] = "";
           ?>   
           <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscriptID'):
             $id = strtolower($value->asHtml());
