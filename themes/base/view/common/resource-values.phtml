@@ -1,6 +1,7 @@
 <?php
 $translate = $this->plugin('translate');
 $escape = $this->plugin('escapeHtml');
+$helper = $this->plugin('Custom');
 $labelInfo = $this->setting('property_label_information');
 $firstextra = true;
 
@@ -382,6 +383,122 @@ endif;
             echo '<a target="_blank" href="'.trim($url).'">'.trim($label).'</a>';
             ?>                   
           <?php elseif($propertyData['property']->term() == 'alamire:relatedComposition'):?>
+            <?php
+            //manuscript
+            if(str_contains($value->asHtml(),"link:") && $values['alamire:relatedComposition']['values']):
+              $rels = $values['alamire:relatedComposition']['values'];
+
+              //make array and sort the whole thing
+              $sorted_rels = array();
+              foreach($rels as $rel):
+                $irel = explode("$$",$rel);
+                if(!empty($irel[8])):
+                  $sorted_rels[trim($irel[8])] = $irel;
+                else:
+                  $sorted_rels[] = $irel;
+                endif;  
+              endforeach;  
+
+              ksort($sorted_rels);
+              $rels = $sorted_rels;
+
+              $items = [];
+              $tree = [];
+
+              // Build flat list
+              foreach ($rels as $rel) {
+                  $id = trim($rel[0]);
+                  $parentId = trim($rel[1]);
+
+                  $items[$id] = ['value' => $rel, 'children' => []];
+              }
+
+              // Assign children to parents
+              foreach ($items as $id => &$item) {
+                  $parentId = trim($item['value'][1]);
+                  if ($parentId && isset($items[$parentId])) {
+                      $items[$parentId]['children'][$id] = &$item;
+                  } else {
+                      // No parent = root
+                      $tree[$id] = &$item;
+                  }
+              }
+
+              // Assign children to parents
+              foreach ($items as $id => &$item) {
+                  $parentId = trim($item['value'][1]);
+                  if ($parentId && isset($items[$parentId])) {
+                      $items[$parentId]['children'][$id] = &$item;
+                  } else {
+                      // No parent = root
+                      $tree[$id] = &$item;
+                  }
+              }
+
+              echo "<table><tbody>";
+              $helper->renderTree($tree, $auth, $helper);
+              echo "</tbody></table>";
+              
+              $values['alamire:relatedComposition']['values'] = "";    
+            //composition  
+            elseif($values['alamire:relatedComposition']['values']):  
+              $rels = explode("##",$value->asHtml());
+              $firstrel = array_shift($rels);
+              
+              $first = explode("$$",$firstrel);
+              $first = explode(" ",$first[0]);
+              $firstcode = array_shift($first);
+
+              $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$firstcode.'&item_set_id[]=&site_id=';
+              parse_str($query,$query);
+
+              $first_r = $this->api()->searchOne('items',$query);
+              $first_r = $first_r->getContent();
+              
+
+              $firstrel = explode(" ",$firstrel);
+              array_shift($firstrel);
+              $firstrel = implode(" ",$firstrel);
+              $firstrel = explode(" $$ ",$firstrel);
+             
+              if(!empty($firstrel[1])):?>
+                <span style="color:#cc6633;"><?php echo $firstrel[1]." ";?></span>
+              <?php endif;
+
+              if($first_r):
+                echo $first_r->displayTitle();               
+              else:
+                echo trim(implode(" ",$first));
+              endif; 
+
+              if(!empty($firstrel[2])):
+                echo " (".$firstrel[2]."v)";
+              endif;
+
+              echo "<br>";
+
+              $rels = explode("||",$rels[0]);
+             
+              foreach($rels as $rel):
+                $rel = explode(" ",$rel);
+                array_shift($rel);
+                $rel = implode(" ",$rel);
+                $rel = explode(" $$ ",$rel);
+               
+                if(!empty($rel[0])):
+                  echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                  if(!empty($rel[1]) && !str_contains($rel[1],"$$")):
+                    echo '<span style="font-weight:bold;">'.$rel[1]."</span> ";
+                  endif;
+                  echo $rel[0];
+                  if(!empty($rel[2])):
+                    echo " (".$rel[2]."v)";
+                  endif;
+                  echo "<br>";
+                endif;
+              endforeach;  
+            endif;?>            
+          <?php elseif($propertyData['property']->term() == 'alamire:relatedCompoosition'):?>
             <?php 
             //manuscript
             if(str_contains($value->asHtml(),"link:") && $values['alamire:relatedComposition']['values']):
@@ -415,7 +532,7 @@ endif;
                   //fol
                   $label = trim($irel[5]);
                 }
-                if($irel[4] != "  " ){
+                if(trim($irel[4])){
                   $seq = "<span style='width:27px;margin-right:2px;display:inline-block;'>".trim($irel[4]).". </span>";
                 }
 
@@ -449,6 +566,8 @@ endif;
                                 $comp = "[".$comps[0]."]";
                             elseif($type == "contested)"):
                                 $comp = "?".$comps[0];
+                            else:
+                                $comp = $comps[0];    
                             endif;
                         else:      
                             $comp = $comps[0];
@@ -463,7 +582,6 @@ endif;
                     if($composer):
                       $composer = "<strong>".$composer."</strong>: ";
                     endif;  
-
 
                     echo  $seq.$composer.'<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
                     
@@ -517,6 +635,20 @@ endif;
                       echo $label.'<br>';
                     endif; 
                     $lvl4[] = $irel[0];   
+                  else:
+                    //first level is a child??
+                    if($i != 0):
+                      echo "</div></div><div class='content-holder'>";
+                    else:
+                      echo "<div class='content-holder'>";  
+                    endif; 
+                    //echo $irel[3]." ".$irel[4]."<br>";
+                    echo $irel[3];
+                    if(str_contains($irel[7],"http") && $auth):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a>';
+                    else:
+                      echo $label;
+                    endif; 
                   endif;  
                 endif;
                 $i++;
@@ -584,9 +716,8 @@ endif;
             endif;
             ?>    
             
-            <?php elseif($propertyData['property']->term() == 'alamire:objectHoldingInstitution'):?>
-              <a target="_blank" href="<?php echo $value->asHtml() ?>"><?php echo $value->asHtml() ?></a>
-            
+          <?php elseif($propertyData['property']->term() == 'alamire:objectHoldingInstitution'):?>
+            <a target="_blank" href="<?php echo $value->asHtml() ?>"><?php echo $value->asHtml() ?></a>            
                    
           <?php else:?>
             <div class="<?php echo implode(' ', $class); ?>" lang="<?php echo $escape($value->lang()); ?>">
