@@ -543,75 +543,91 @@ endif;
       ?>
 
       <?php if($ints_a || $appears):?>  
-        <div class="columns production-unit-comp-wrapper">
-          <div class="column is-one-fifth">
-            <h4 class="has-text-weight-semibold is-6 ">Appears in</h4>
-          </div>
-          <div class="column is-four-fifths">
-            <div class="values">
-              <?php ksort($pus,SORT_NATURAL);?>
-              <?php $ed = "";$i=0;?>
-              <?php if($appears):
-                ksort($appears,SORT_NATURAL);
-              endif;?>
-              <?php foreach($appears as $key=>$in):?>   
-               
-                <div class="value resource items" lang="">
-                <?php if(!is_array($in)):?>
-                  <?php echo $in;?>
-                <?php else:?>                  
-                  <?php if($auth && $in["link"]):?> 
-                    <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
-                  <?php endif;?> 
-                    <?php echo $in["title"].", ";?>
-                    <?php echo $in["fol"];?>
-                    <?php echo $in["part"] ? "(".$in["part"].")" : "";?>
-                  <?php if($auth && $in["link"]):?> 
-                    </a>  
-                  <?php endif;?>                 
-                <?php endif;?>
-                </div>
-              <?php endforeach;?>  
-              <?php foreach($ints_a as $key=>$int):?>                    
-                <div class="value resource items" lang="">
-                  <?php $key = str_replace("[","[RISM ",$key);?>                
-                  <?php echo "<span style='font-weight:bold'>".$key."</span>";?>
-                  <?php if($i==0):?>
-                    <a style="margin-left:5px;" href="#" class="expand"><i class='fa fa-chevron-up'></i></a> 
-                    <div class="hidden-content" style="display: block";>  
-                  <?php else:?>
-                    <a style="margin-left:5px;" href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>               
-                    <div class="hidden-content" style="display: none";>     
-                  <?php endif;?>
-                  <?php ksort($int,SORT_NATURAL);?>
-                  <?php foreach($int as $in):?>       
-                      <div>      
-                        <?php if($in["pu"] && isset($pus[$in["pu"]])):?>                          
-                          <?php $pu = $pus[$in["pu"]];?>
-                          <a class="resource-link" href="<?php echo $site->url()."/item/".strtolower($pu->value("alamire:relatedPrintedSource").'');?>"><?php echo $pu->displayTitle();?></a>
-                        <?php else:?>
-                          <?php echo $in["pu"];?>     
-                        <?php endif;?> 
-                        <?php if($auth && $in["link"]):?> 
-                            <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
-                          <?php endif;?> 
-                            <?php echo $in["fol"];?>
-                            <?php echo $in["part"] ? "(".$in["part"].")" : "";?>
-                          <?php if($auth && $in["link"]):?> 
-                            </a>  
-                          <?php endif;?> 
-                      </div>               
-                  <?php endforeach;?>  
-                  </div>
-                </div>
-                <?php $i++;?>
-              <?php endforeach;?>                
+        <div class="production-unit-comp-wrapper">
+        <?php if($appears):?>    
+          <div class="columns">
+            <div class="column is-one-fifth">
+              <h4 class="has-text-weight-semibold is-6 ">Appears in manuscripts</h4>
             </div>
-          </div>                  
-        </div>
-      <?php endif;?>
-    <?php endif;?>
-      
+            <div class="column is-four-fifths">
+              <div class="values">
+                <?php ksort($pus,SORT_NATURAL);?>
+                <?php $ed = "";$i=0;?>
+                <?php if($appears):
+                  ksort($appears,SORT_NATURAL);
+                endif;?>
+                <?php foreach($appears as $key=>$in):?>                
+                  <div class="value resource items" lang="">
+                  <?php if(!is_array($in)):?>
+                    <?php echo $in;?>
+                  <?php else:?>                  
+                    <?php if($auth && $in["link"]):?> 
+                      <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
+                    <?php endif;?> 
+                      <?php echo $in["title"].", ";?>
+                      <?php echo $in["fol"];?>
+                      <?php echo $in["part"] ? "(".$in["part"].")" : "";?>
+                    <?php if($auth && $in["link"]):?> 
+                      </a>  
+                    <?php endif;?>                 
+                  <?php endif;?>
+                  </div>
+                <?php endforeach;?>  
+              </div>
+            </div>  
+          </div>  
+        <?php endif;?>              
+        <?php if($ints_a):?>
+          <div class="columns">
+            <div class="column is-one-fifth">
+              <h4 class="has-text-weight-semibold is-6 ">Appears in editions</h4>
+            </div>
+            <div class="column is-four-fifths">
+              <div class="values">
+                <?php $i=0;?>
+                <?php foreach($ints_a as $key=>$int):?>                    
+                  <div class="value resource items" lang="">
+                    <?php $key = str_replace("[","[RISM ",$key);?>                
+                    <?php echo "<span style='font-weight:bold'>".$key."</span>";?>
+                    <?php if($i==0):?>
+                      <a style="margin-left:5px;" href="#" class="expand"><i class='fa fa-chevron-up'></i></a> 
+                      <div class="hidden-content" style="display: block";>  
+                    <?php else:?>
+                      <a style="margin-left:5px;" href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>               
+                      <div class="hidden-content" style="display: none";>     
+                    <?php endif;?>
+                    <?php ksort($int,SORT_NATURAL);?>
+                    <?php foreach($int as $in):?>       
+                        <div>      
+                          <?php if($in["pu"] && isset($pus[$in["pu"]])):?>                          
+                            <?php $pu = $pus[$in["pu"]];?>
+                            <a class="resource-link" href="<?php echo $site->url()."/item/".strtolower($pu->value("alamire:relatedPrintedSource").'');?>"><?php echo $pu->displayTitle();?></a>
+                          <?php else:?>
+                            <?php echo $in["pu"];?>     
+                          <?php endif;?> 
+                          <?php if($auth && $in["link"]):?> 
+                              <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
+                            <?php endif;?> 
+                              <?php echo $in["fol"];?>
+                              <?php echo $in["part"] ? "(".$in["part"].")" : "";?>
+                            <?php if($auth && $in["link"]):?> 
+                              </a>  
+                            <?php endif;?> 
+                        </div>               
+                    <?php endforeach;?>  
+                    </div>
+                  </div>
+                  <?php $i++;?>
+                <?php endforeach;?>         
+              </div>
+            </div>
+          </div>          
+        <?php endif;?>            
+      </div>
+      <?php endif;?>       
+    <?php endif;?>                 
+       
+                           
     <?php 
       //related manuscript (chants) query
       $query = "";          

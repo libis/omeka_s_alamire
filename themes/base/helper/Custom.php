@@ -71,7 +71,7 @@ class Custom extends AbstractHelper
                 $composer = implode("; ", $sort_cites);
 
                 if($composer):
-                    $composer = "<strong>".$composer."</strong>: ";
+                    $composer = "<strong>".$composer."</strong>";
                 endif;  
 
                 echo  "<td>".$seq.$composer.'</td><td><a style="font-weight:bold;" href="'.$item->url().'">'.$irel[3].'</a></td>';
