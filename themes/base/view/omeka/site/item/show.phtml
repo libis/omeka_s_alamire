@@ -547,7 +547,7 @@ endif;
         <?php if($appears):?>    
           <div class="columns">
             <div class="column is-one-fifth">
-              <h4 class="has-text-weight-semibold is-6 ">Appears in manuscripts</h4>
+              <h4 class="has-text-weight-semibold is-6 ">In manuscripts</h4>
             </div>
             <div class="column is-four-fifths">
               <div class="values">
@@ -580,7 +580,7 @@ endif;
         <?php if($ints_a):?>
           <div class="columns">
             <div class="column is-one-fifth">
-              <h4 class="has-text-weight-semibold is-6 ">Appears in editions</h4>
+              <h4 class="has-text-weight-semibold is-6 ">In editions</h4>
             </div>
             <div class="column is-four-fifths">
               <div class="values">
@@ -600,8 +600,12 @@ endif;
                     <?php foreach($int as $in):?>       
                         <div>      
                           <?php if($in["pu"] && isset($pus[$in["pu"]])):?>                          
-                            <?php $pu = $pus[$in["pu"]];?>
-                            <a class="resource-link" href="<?php echo $site->url()."/item/".strtolower($pu->value("alamire:relatedPrintedSource").'');?>"><?php echo $pu->displayTitle();?></a>
+                            <?php
+                             $pu = $pus[$in["pu"]];
+                             $url = $site->url()."/item/".strtolower($pu->value("alamire:relatedPrintedSource").'');
+                             $url = str_replace(" ","",$url);
+                            ?>
+                            <a class="resource-link" href="<?php echo $url;?>"><?php echo $pu->displayTitle();?></a>
                           <?php else:?>
                             <?php echo $in["pu"];?>     
                           <?php endif;?> 
