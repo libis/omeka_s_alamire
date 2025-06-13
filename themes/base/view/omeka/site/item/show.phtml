@@ -360,7 +360,7 @@ endif;
       </div>  
     <?php endif;?>  
 
-    <?php if($type == "Printed Source" && $item->value("alamire:relatedProductionUnit")):?>      
+    <?php if($item->value("alamire:relatedProductionUnit")):?>      
       <div class="inventory-wrapper production-unit-wrapper">
         <h4 class="has-text-weight-semibold is-6 section-head" style="margin-bottom:0.5rem;">Inventory</h4>
         <?php $pus = [];?>
@@ -373,7 +373,7 @@ endif;
         <?php ksort($pus);?>
           <?php foreach($pus as $pu):?>            
             <div class="production-unit" >        
-              <?php if($auth):?>   
+              <?php if($auth && $pu->value("alamire:fileID")):?>   
               <a target="_blank" href="<?php echo $pu->value("alamire:fileID");?>" style="font-style:italic;">
                 <?php echo $pu->displayTitle();?>
                 <?php echo "[".$pu->value("alamire:rismNr")."; ".$pu->value("alamire:part")."]";?>
@@ -384,8 +384,9 @@ endif;
                 <?php echo "[".$pu->value("alamire:rismNr")."; ".$pu->value("alamire:part")."]";?>
                 </span>
               <?php endif;?>
-
-              <a style="vertical-align:top;vertical-align:-moz-middle-with-baseline;" href="<?php echo $pu->value("alamire:rismUrl");?>"><span><img style="height:19px;margin:0 5px;" src="/themes/base/asset/img/rism.png"></span></a>
+              <?php if($pu->value("alamire:rismUrl")):?>  
+                <a style="vertical-align:top;vertical-align:-moz-middle-with-baseline;" href="<?php echo $pu->value("alamire:rismUrl");?>"><span><img style="height:19px;margin:0 5px;" src="/themes/base/asset/img/rism.png"></span></a>
+              <?php endif;?>
               <a href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>
            
               <div class="hidden-content" style="display:none">
@@ -395,9 +396,8 @@ endif;
                 <?php if($pu->value("alamire:relatedComposition")):?>
                   <div class="text" style="max-height:250px;margin-bottom:1rem;">
                   <table class="">
-                    <?php $s_comps = [];?>
+                    <?php $s_comps = [];$i=0;?>
                   <?php foreach($pu->value("alamire:relatedComposition", ['all' => true]) as $comp):
-                 
                       $comp = $comp->valueResource();
                       if($comp):
                         $ints = $comp->value("alamire:interstitialInfo", ['all' => true]);
@@ -405,7 +405,12 @@ endif;
                           $expl = explode('$$',$int.'');
                           $ints_a[trim($expl[1])] = ["fol" => trim($expl[3]), "link" => trim($expl[4])];
                         endforeach;
-                        $s_comps[$ints_a[$pu->displayTitle()]['fol']] = $comp; 
+                        if($ints_a[$pu->displayTitle()]['fol']){
+                          $s_comps[$ints_a[$pu->displayTitle()]['fol']] = $comp; 
+                        }else{
+                          $s_comps[$comp->value("alamire:structure").""] = $comp; 
+                        }
+                        $i++;
                       endif;  
                     endforeach;
                     ksort($s_comps,SORT_NATURAL);                      
@@ -418,8 +423,10 @@ endif;
                           <td>
                             <?php if($comp->value("alamire:structure")):?>
                               <?php $structure = explode(";",$comp->value("alamire:structure"));?>                              
-                              <?php if(sizeof($structure) > 1):?>
-                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $comp->value("alamire:title");?>
+                              <?php if(sizeof($structure) == 2):?>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $comp->value("alamire:title");?>
+                              <?php elseif(sizeof($structure) > 2):?>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $comp->value("alamire:title");?>  
                               <?php else:?>
                                 <a href="<?php echo $comp->url();?>"><?php echo $comp->value("alamire:title");?></a>   
                               <?php endif;?>
@@ -536,7 +543,8 @@ endif;
               'title' => trim($expl[1]),
               "fol" => trim($expl[3]),
               "part" =>  trim($expl[2]),
-              "link" => trim($expl[4]),              
+              "link" => trim($expl[4]),       
+              'pu' => trim($expl[1])       
             ];  
           endif;
         endforeach;  
@@ -560,16 +568,19 @@ endif;
                   <div class="value resource items" lang="">
                   <?php if(!is_array($in)):?>
                     <?php echo $in;?>
-                  <?php else:?>                  
-                    <?php if($auth && $in["link"]):?> 
-                      <a class="resource-link" target="_blank" href="<?php echo $in["link"];?>" style="font-style:italic;">
-                    <?php endif;?> 
-                      <?php echo $in["title"].", ";?>
-                      <?php echo $in["fol"];?>
+                  <?php else:?>   
+                     <?php if($in["pu"] && isset($pus[$in["pu"]])):?>                          
+                      <?php
+                        $pu = $pus[$in["pu"]];
+                        $url = $site->url()."/item/".strtolower($pu->value("alamire:relatedManuscript").'');
+                        $url = str_replace(" ","",$url);
+                      ?>
+                      <a class="resource-link" href="<?php echo $url;?>"><?php echo $pu->displayTitle();?></a>
+                      <?php echo $in["fol"] ? "<span style='font-style:italic;'>fol. ".$in["fol"]."</span>" : "";?>
                       <?php echo $in["part"] ? "(".$in["part"].")" : "";?>
-                    <?php if($auth && $in["link"]):?> 
-                      </a>  
-                    <?php endif;?>                 
+                    <?php else:?>
+                      <?php echo $in["pu"];?>     
+                    <?php endif;?>               
                   <?php endif;?>
                   </div>
                 <?php endforeach;?>  

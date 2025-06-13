@@ -86,15 +86,15 @@ class Custom extends AbstractHelper
             else:
                
                 //echo $irel[3]." ".$irel[4]."<br>";
-                echo "<td></td><td><span style='margin-left: " . ($depth * 1) . "rem;'>".$irel[3]."</span></td>";
+                echo "<td></td><td><span style='margin-left: " . ($depth * 1.2) . "rem;'>".$irel[3]."</span></td>";
                 echo "<td>";
                 if(str_contains($irel[7],"http") && $auth):
                     echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a>';
                 else:
-                echo $label; 
-                echo "</td>";               
-            endif; 
-        endif;      
+                echo $label;
+                echo "</td>";
+            endif;
+        endif;
     }
 
 }

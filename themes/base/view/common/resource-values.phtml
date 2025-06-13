@@ -425,7 +425,7 @@ endif;
               }
 
               // Assign children to parents
-              foreach ($items as $id => &$item) {
+              /*foreach ($items as $id => &$item) {
                   $parentId = trim($item['value'][1]);
                   if ($parentId && isset($items[$parentId])) {
                       $items[$parentId]['children'][$id] = &$item;
@@ -433,7 +433,7 @@ endif;
                       // No parent = root
                       $tree[$id] = &$item;
                   }
-              }
+              }*/
 
               echo "<table><tbody>";
               $helper->renderTree($tree, $auth, $helper);

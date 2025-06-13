@@ -628,8 +628,31 @@ class Harvest extends AbstractJob
                 }
             }    
 
+            //create links to production units in manuscripts and printed sources
+            if($localName == 'relatedProductionUnit'){
+                $i=0;
+                foreach ($dcMetadata->$localName as $pid) {
+                    parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=21&site_id=", $query);
+                    $result = $this->api->search("items",$query);
+                    $result = $result->getContent();
+                    $this->logger->info("related");
+                    if($result){
+                        $this->logger->info("result");
+                        $elementTexts['alamire:relatedProductionUnit'][$i] = [
+                            'property_id' => 438,
+                            'type' => 'resource',
+                            'is_public' => true,
+                            'value_resource_id' => $result[0]->id(),
+                            'value_resource_name' => 'items'
+                        ];
+                    }
+                    $i++;
+                }                    
+            }
+
             //add resources
             if(strpos($args["endpoint"], 'MPComposition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
+                //create links to compositions in production units (not in manuscripts!)
                 if($localName == 'relatedComposition'){
                     $i=0;
                     foreach ($dcMetadata->$localName as $pid) {
@@ -650,26 +673,7 @@ class Harvest extends AbstractJob
                         $i++;
                     }
                 }
-                if($localName == 'relatedProductionUnit'){
-                    $i=0;
-                    foreach ($dcMetadata->$localName as $pid) {
-                        parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=21&site_id=", $query);
-                        $result = $this->api->search("items",$query);
-                        $result = $result->getContent();
-                        $this->logger->info("related");
-                        if($result){
-                            $this->logger->info("result");
-                            $elementTexts['alamire:relatedProductionUnit'][$i] = [
-                                'property_id' => 438,
-                                'type' => 'resource',
-                                'is_public' => true,
-                                'value_resource_id' => $result[0]->id(),
-                                'value_resource_name' => 'items'
-                            ];
-                        }
-                        $i++;
-                    }                    
-                }
+                //create links to production units in compositions
                 if($localName == 'interstitialInfo'){
                     $i=0;
                     foreach ($dcMetadata->$localName as $pid) {
