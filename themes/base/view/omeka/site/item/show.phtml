@@ -360,7 +360,7 @@ endif;
       </div>  
     <?php endif;?>  
 
-    <?php if($item->value("alamire:relatedProductionUnit")):?>      
+    <?php if($item->value("alamire:relatedProductionUnit") && $type != "Composition"):?>      
       <div class="inventory-wrapper production-unit-wrapper">
         <h4 class="has-text-weight-semibold is-6 section-head" style="margin-bottom:0.5rem;">Inventory</h4>
         <?php $pus = [];?>

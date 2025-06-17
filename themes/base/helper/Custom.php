@@ -74,8 +74,8 @@ class Custom extends AbstractHelper
                     $composer = "<strong>".$composer."</strong>";
                 endif;  
 
-                echo  "<td>".$seq.$composer.'</td><td><a style="font-weight:bold;" href="'.$item->url().'">'.$irel[3].'</a></td>';
-                    
+                echo  "<td>".$seq.$composer.'</td><td><a style="font-weight:bold;" href="'.$item->url().'"><span style="margin-left: ' . ($depth * 1.2) . 'rem;">'.$irel[3].'</span></a></td>';
+
                 echo "<td>";
                 if(str_contains($irel[7],"http") && $auth):
                     echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a></td>';
