@@ -8,15 +8,34 @@ class Custom extends AbstractHelper
 {
     public function renderTree($tree, $auth, $helper, $depth = 0)
     {
-        foreach ($tree as $item) {
-            echo "<tr>";
+        foreach ($tree as $id => $item) {
+            $hasChildren = !empty($item['children']);
+            $isTopLevel = ($depth === 0);
+            $rowId = "row-$id";
+            $childTbodyId = "children-of-$id";
+            echo "<tr id='$rowId'>";
             $this->renderComposition($item['value'], $auth, $depth);
-            if (!empty($item['children'])) {
+            // Right-aligned toggle in last cell
+            echo "<td style='text-align: right;'>";
+            if ($isTopLevel && $hasChildren) {
+                echo "<button aria-expanded='false' alt='toggle' class='button is-small is-primary toggle-btn' data-target='$childTbodyId'>
+                <span class='icon is-small'>
+                <i class='fas fa-chevron-down'></i>
+                </span>
+                </button>";
+            }
+            echo "</td>";
+            if ( $isTopLevel) {
                 //echo '<a href="#" class="expand expand-icon"><i class="fa fa-chevron-down"></i></a>';
                 //echo "<div class='hidden-content' style='display:block;'>"; // You can toggle visibility logic
+                 echo "<tbody class='$childTbodyId' class='child-tbody' style='display:none'>";
+            }
                 $this->renderTree($item['children'], $auth, $helper, $depth + 1);
+            if ( $isTopLevel) {    
+                echo "</tbody>";
                 //echo "</div>";
             }
+            
             echo "</tr>";
         }
     }
