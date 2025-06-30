@@ -373,15 +373,24 @@ endif;
         <?php ksort($pus);?>
           <?php foreach($pus as $pu):?>            
             <div class="production-unit" >        
+              <?php if($pu->value("alamire:rismNr")):?>
+                <?php $rismNr = $pu->value("alamire:rismNr")."; "; ?>
+              <?php else:?>
+                <?php $rismNr = "";?>  
+              <?php endif;?>
               <?php if($auth && $pu->value("alamire:fileID")):?>   
               <a target="_blank" href="<?php echo $pu->value("alamire:fileID");?>" style="font-style:italic;">
                 <?php echo $pu->displayTitle();?>
-                <?php echo "[".$pu->value("alamire:rismNr")."; ".$pu->value("alamire:part")."]";?>
+                <?php if($rismNr || $pu->value("alamire:part")):?>
+                    <?php echo "[".$rismNr.$pu->value("alamire:part")."]";?>
+                <?php endif;?>
               </a>
               <?php else:?>
                 <span style="font-style:italic;">
                 <?php echo $pu->displayTitle();?>
-                <?php echo "[".$pu->value("alamire:rismNr")."; ".$pu->value("alamire:part")."]";?>
+                <?php if($rismNr || $pu->value("alamire:part")):?>
+                  <?php echo "[".$rismNr.$pu->value("alamire:part")."]";?>
+                <?php endif;?>
                 </span>
               <?php endif;?>
               <?php if($pu->value("alamire:rismUrl")):?>  
@@ -404,9 +413,19 @@ endif;
                         foreach($ints as $int):
                           $expl = explode('$$',$int.'');
                           $ints_a[trim($expl[1])] = ["fol" => trim($expl[3]), "link" => trim($expl[4])];
-                        endforeach;
+                        endforeach;                        
+
                         if($ints_a[$pu->displayTitle()]['fol']){
-                          $s_comps[$ints_a[$pu->displayTitle()]['fol']] = $comp; 
+                          //needed for sorting
+                          $structure = $comp->value("alamire:structure")."";
+                          $structure = explode(";",$structure);
+                          $structure = sizeof($structure);
+                          
+                          $sort_fol = $ints_a[$pu->displayTitle()]['fol'];
+                          $sort_fol = explode("-",$sort_fol);
+                          $sort_fol = $sort_fol[0];
+
+                          $s_comps[$sort_fol.$structure.$ints_a[$pu->displayTitle()]['fol']] = $comp; 
                         }else{
                           $s_comps[$comp->value("alamire:structure").""] = $comp; 
                         }
@@ -423,10 +442,8 @@ endif;
                           <td>
                             <?php if($comp->value("alamire:structure")):?>
                               <?php $structure = explode(";",$comp->value("alamire:structure"));?>                              
-                              <?php if(sizeof($structure) == 2):?>
-                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $comp->value("alamire:title");?>
-                              <?php elseif(sizeof($structure) > 2):?>
-                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $comp->value("alamire:title");?>  
+                              <?php if(sizeof($structure) > 1):?>
+                                <span style="margin-left:<?php echo (1.2*sizeof($structure))?>rem;"><?php echo $comp->value("alamire:title");?></span>
                               <?php else:?>
                                 <a href="<?php echo $comp->url();?>"><?php echo $comp->value("alamire:title");?></a>   
                               <?php endif;?>

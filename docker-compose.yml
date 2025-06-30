@@ -7,7 +7,7 @@ services:
       - "9003:80"
     volumes:
       - ./files/:/var/www/html/files/
-      - ./modules/:/var/www/html/modules/
+      #- ./modules/:/var/www/html/modules/
       - ./themes/:/var/www/html/themes/
       - ./config/:/var/www/html/config/
     restart: "no"
