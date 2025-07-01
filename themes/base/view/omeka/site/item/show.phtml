@@ -447,7 +447,7 @@ endif;
                               $sort_fol = explode("-", $sort_fol);
                               $sort_fol = $sort_fol[0];
 
-                              $s_comps[$sort_fol . $structure . $ints_a[$pu->displayTitle()]['fol']] = $comp;
+                              $s_comps[$sort_fol . $structure . $ints_a[$pu->displayTitle()]['fol'] . $i] = $comp;
                             } else {
                               $s_comps[$comp->value("alamire:structure") . ""] = $comp;
                             }
