@@ -163,8 +163,8 @@ endif;
             $text_id = trim($orginal[0]);
             $original = $orginal[1];
             ?>
-            <div class="columns pt-6">
-              <div class="column is-4">
+            <div class="columns">
+              <div class="column is-4" style="padding-top:0.5rem;">
                 <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">Transcription
                   <?php if ($item->value('alamire:relatedManuscript')):
                     $rel = $item->value('alamire:relatedManuscript')->asHtml();
@@ -176,7 +176,7 @@ endif;
                   <?php echo $original; ?>
                 </div>
               </div>
-              <div class="column is-6 translation-column">
+              <div class="column is-6 translation-column  pt-2" style="padding-top:0.5rem;">
                 <div class="tabs is-small">
                   <ul>
                     <?php foreach ($translations as $key => $trans): ?>
@@ -223,14 +223,10 @@ endif;
           <?php endforeach; ?>
 
            <?php if ($item->value('alamire:textNotes')): ?>       
-              <?php foreach ($item->value('alamire:textNotes', array("all" => true)) as $note): ?>
-                <div class="columns">
-                  <div class="column is-12">
-                    <div class="trans-text">
-                      <?php echo $note; ?>
-                    </div>
+              <?php foreach ($item->value('alamire:textNotes', array("all" => true)) as $note): ?>                
+                  <div class="trans-text"  style="padding-top:1rem;">
+                    <?php echo $note; ?>
                   </div>
-                </div>
               <?php endforeach; ?>
             <?php endif; ?>
         <?php endif; ?>
