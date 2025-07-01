@@ -145,18 +145,9 @@ endif;
 
         <?php endif; ?>
       </div>
-      <!--<div class="property">
-        <?php $itemSets = $item->itemSets(); ?>
-        <?php if (count($itemSets) > 0): ?>
-        <h4><?php echo $translate('Item sets'); ?></h4>
-        <?php foreach ($itemSets as $itemSet): ?>
-        <div class="value"><a href="<?php echo $escape($itemSet->url()); ?>"><?php echo $itemSet->displayTitle(); ?></a></div>
-        <?php endforeach; ?>
-        <?php endif; ?>
-    </div>-->
-
+    
       <?php if ($item->value('alamire:originalText')): ?>
-        <div class="container page" style="padding-top:1rem;">
+       
           <div class="columns">
             <div class="column is-12">
               <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Text with translation(s)</h4>
@@ -172,7 +163,7 @@ endif;
             $text_id = trim($orginal[0]);
             $original = $orginal[1];
             ?>
-            <div class="columns">
+            <div class="columns pt-6">
               <div class="column is-4">
                 <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">Transcription
                   <?php if ($item->value('alamire:relatedManuscript')):
@@ -231,6 +222,17 @@ endif;
             </div>
           <?php endforeach; ?>
 
+           <?php if ($item->value('alamire:textNotes')): ?>       
+              <?php foreach ($item->value('alamire:textNotes', array("all" => true)) as $note): ?>
+                <div class="columns">
+                  <div class="column is-12">
+                    <div class="trans-text">
+                      <?php echo $note; ?>
+                    </div>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($item->value('alamire:fileID') && $type == "Chant"): ?>
