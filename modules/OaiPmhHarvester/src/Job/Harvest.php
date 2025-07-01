@@ -635,9 +635,9 @@ class Harvest extends AbstractJob
                     parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=21&site_id=", $query);
                     $result = $this->api->search("items",$query);
                     $result = $result->getContent();
-                    $this->logger->info("related");
+                    //$this->logger->info("related");
                     if($result){
-                        $this->logger->info("result");
+                        //$this->logger->info("result");
                         $elementTexts['alamire:relatedProductionUnit'][$i] = [
                             'property_id' => 438,
                             'type' => 'resource',

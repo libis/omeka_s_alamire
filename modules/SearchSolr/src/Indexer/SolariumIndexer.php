@@ -217,10 +217,10 @@ class SolariumIndexer extends AbstractIndexer
         foreach ($resources as $resource) {
             $resourcesIds[] = $resourceNames[$resource->getResourceName()] . ' #' . $resource->getId();
         }
-        $this->getLogger()->info(new Message(
+        /*$this->getLogger()->info(new Message(
             'Indexing in Solr core "%1$s": %2$s', // @translate
             $this->solrCore->name(), implode(', ', $resourcesIds)
-        ));
+        ));*/
 
         foreach ($resources as $resource) {
             $this->addResource($resource);
