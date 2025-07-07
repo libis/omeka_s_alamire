@@ -168,7 +168,7 @@ endif;
                 <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
                   Transcription from:
                   <?php 
-                  if($item->value('alamire:alamire:relatedText')):
+                  if($item->value('alamire:relatedText')):
                     //print related text
                     $rel = $item->value('alamire:relatedText')->asHtml();
                     $rel = explode("$$", $rel);
@@ -893,7 +893,7 @@ endif;
       $('.thumbnails').appendTo('.filter-nav');
       $(".Inventory").appendTo("#polyphony");
       $(".inventory-wrapper").insertBefore(".Bibliography");
-      $(".production-unit-comp-wrapper").insertBefore(".Voices");
+      $(".production-unit-comp-wrapper").insertBefore(".Category");
 
       $('.collapsible').click(function() {
         var index = $(this).data('index');

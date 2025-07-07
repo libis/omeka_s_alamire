@@ -856,11 +856,7 @@ table{
     background: white;
   }
 
-  tr:last-child{
-    td{    
-      border-bottom: none;
-    }
-  }
+  
 
   .header-row{
     background-color: rgba($primary,0.2);
@@ -868,6 +864,14 @@ table{
 
   td, th{
     padding:0.4rem;
+  }
+}
+
+.Inventory{
+  display:block !important;
+  .column{
+    width:100%;
+    display:block;
   }
 }
 

@@ -117,12 +117,12 @@ endif;
           ?>
 
           <?php if($propertyData['property']->term() == 'alamire:holdingInstitution'):?>  
-            <?php echo $value->asHtml();?>
+              <div style="margin-bottom:0.5rem;"><?php echo $value->asHtml();?></div>
           <?php elseif($propertyData['property']->term() == 'alamire:formatGeneral'):?>   
             <?php if($value->asHtml() == "codex (other)"):?>   
-              <?php echo 'codex';?>   
+              <div style="margin-bottom:0.5rem;"><?php echo 'codex';?></div>   
             <?php else: ?>
-                <?php echo $value->asHtml();?>
+              <div style="margin-bottom:0.5rem;"><?php echo $value->asHtml();?></div>
             <?php endif;?>
           <?php elseif($propertyData['property']->term() == 'alamire:creator_display'):?>
             <?php 
@@ -185,6 +185,8 @@ endif;
                 echo '<div style="margin-bottom:0.5rem;"><a target="_blank" href="'.$archive[2].'">Renaissance Archive of the School of Music (University of Illinois at Urbana-Champaign)</a></div>';                    
               endif;  
             ?>  
+          <?php elseif($propertyData['property']->term() == 'alamire:description'):?>  
+            <div style="margin-bottom:0.5rem;"><?php echo $value;?></div>
           <?php elseif($propertyData['property']->term() == 'alamire:bibliographicCitation'):
             if($values['alamire:bibliographicCitation']['values']):
               $cites = $values['alamire:bibliographicCitation']['values'];
