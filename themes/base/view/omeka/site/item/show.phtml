@@ -165,11 +165,19 @@ endif;
             ?>
             <div class="columns">
               <div class="column is-4" style="padding-top:0.5rem;">
-                <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">Transcription
-                  <?php if ($item->value('alamire:relatedManuscript')):
+                <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
+                  Transcription from:
+                  <?php 
+                  if($item->value('alamire:alamire:relatedText')):
+                    //print related text
+                    $rel = $item->value('alamire:relatedText')->asHtml();
+                    $rel = explode("$$", $rel);
+                    echo " " . trim($rel[1]);
+                  elseif ($item->value('alamire:relatedManuscript')):
+                    //or the manuscript name
                     $rel = $item->value('alamire:relatedManuscript')->asHtml();
                     $rel = explode("$$", $rel);
-                    echo " from: " . $rel[0];
+                    echo " " . $rel[0];
                   endif; ?>
                 </h3>
                 <div class="trans-text">
