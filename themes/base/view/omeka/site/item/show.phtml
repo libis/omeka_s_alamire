@@ -155,7 +155,10 @@ endif;
           </div>
           <?php
           $originals = $item->value('alamire:originalText', array("all" => true));
+          $orig_provided = $item->value('alamire:originalProvidedBy', array("all" => true));
+          $orig_author = $item->value('alamire:originalAuthor', array("all" => true));
           $translations = $item->value('alamire:translation', array("all" => true));
+          $y=0;
           ?>
           <?php foreach ($originals as $index => $original): ?>
             <?php
@@ -166,7 +169,6 @@ endif;
             <div class="columns">
               <div class="column is-4" style="padding-top:0.5rem;">
                 <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
-                  Transcription from:
                   <?php 
                   if($item->value('alamire:relatedText')):
                     //print related text
@@ -182,7 +184,15 @@ endif;
                 </h3>
                 <div class="trans-text">
                   <?php echo $original; ?>
+                  
                 </div>
+                <br><br>
+                  <?php if (isset($orig_author[$y])): ?>
+                    <?php echo "Author: " . $orig_author[$y]; ?><br>
+                  <?php endif; ?>
+                  <?php if (isset($orig_provided[$y])): ?>
+                    <?php echo "Provided by: " . $orig_provided[$y]; ?>
+                  <?php endif; ?>
               </div>
               <div class="column is-6 translation-column  pt-2" style="padding-top:0.5rem;">
                 <div class="tabs is-small">
@@ -228,6 +238,7 @@ endif;
                 <?php endforeach; ?>
               </div>
             </div>
+            <?php $y++; ?>
           <?php endforeach; ?>
 
            <?php if ($item->value('alamire:textNotes')): ?>       
