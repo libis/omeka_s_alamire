@@ -289,7 +289,7 @@ class Harvest extends AbstractJob
                 $this->createItems($toInsert);
             }*/
             gc_collect_cycles();
-            $this->logger->info("mem: ".memory_get_usage());
+            //$this->logger->info("mem: ".memory_get_usage());
 
             
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken <> ''
@@ -666,7 +666,7 @@ class Harvest extends AbstractJob
             //add resources
             if(strpos($args["endpoint"], 'MPComposition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
                 //create links to compositions in production units (not in manuscripts!)
-                if($localName == 'relatedComposition'){
+                /*if($localName == 'relatedComposition'){
                     $i=0;
                     foreach ($dcMetadata->$localName as $pid) {
                         parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=3&site_id=", $query);
@@ -684,7 +684,7 @@ class Harvest extends AbstractJob
                         }
                         $i++;
                     }
-                }
+                }*/
                 //create links to production units in compositions
                 if($localName == 'interstitialInfo'){
                     $i=0;

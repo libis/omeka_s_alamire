@@ -441,79 +441,59 @@ endif;
                   <div class="metadata">
                     <?php echo $pu->displayValues(); ?>
                   </div>
-                  <?php if ($pu->value("alamire:relatedComposition")): ?>
+                  <?php if ($pu->value("alamire:relatedCompositionFull")): ?>
                     <div class="text" style="max-height:250px;margin-bottom:1rem;">
                       <table class="">
                         <?php $s_comps = [];
                         $i = 0; ?>
-                        <?php foreach ($pu->value("alamire:relatedComposition", ['all' => true]) as $comp):
-                          $comp = $comp->valueResource();
-                          if ($comp):
-                            $ints = $comp->value("alamire:interstitialInfo", ['all' => true]);
-                            foreach ($ints as $int):
-                              $expl = explode('$$', $int . '');
-                              $ints_a[trim($expl[1])] = ["fol" => trim($expl[3]), "link" => trim($expl[4])];
-                            endforeach;
-
-                            if ($ints_a[$pu->displayTitle()]['fol']) {
-                              //needed for sorting
-                              $structure = $comp->value("alamire:structure") . "";
-                              $structure = explode(";", $structure);
-                              $structure = sizeof($structure);
-
-                              $sort_fol = $ints_a[$pu->displayTitle()]['fol'];
-                              $sort_fol = explode("-", $sort_fol);
-                              $sort_fol = $sort_fol[0];
-
-                              $s_comps[$sort_fol . $structure . $ints_a[$pu->displayTitle()]['fol'] . $i] = $comp;
-                            } else {
-                              $s_comps[$comp->value("alamire:structure") . ""] = $comp;
-                            }
-                            $i++;
-                          endif;
-                        endforeach;
-                        //ksort($s_comps, SORT_NATURAL);
-                        $parent_id = "";
-                        ?>
-                        <?php foreach ($s_comps as $comp): ?>
-                          <?php $structure = explode(";", $comp->value("alamire:structure")); ?>
+                        <?php foreach ($pu->value("alamire:relatedCompositionFull", ['all' => true]) as $comp):
+                          $comp = explode("$$", $comp->asHtml());
+                          $comp = [
+                            "id" => trim($comp[0]),
+                            "structure" => trim($comp[1]),
+                            "title" => trim($comp[2]),
+                            "folio" => trim($comp[3]),
+                            "page" => trim($comp[4]),
+                            "link" => trim($comp[5]),
+                            "rank" => trim($comp[6])
+                          ];
+                          ?>
+                          <?php $structure = explode(";", $comp['structure']); ?>
                           <?php if ($comp): ?>
                             <?php if (sizeof($structure) == 1):?>
-                              <?php $parent_id = $comp->id();?>
-                               <tr id="<?php echo $parent_id; ?>">
+                              
+                              <?php 
+                                $parent_id = $comp["id"];
+                                parse_str('property[0][joiner]=and&property[0][property][]=216&property[0][type]=eq&property[0][text]='.$parent_id.'&resource_template_id[]=3&sort_by=created&sort_order=desc&datetime[0][joiner]=and&datetime[0][field]=created&datetime[0][type]=gte&datetime[0][value]=&is_public=&has_media=&has_original=&has_thumbnails=', $query);
+                                $comp_record = $this->api()->searchOne('items',$query);
+                                $comp_record = $comp_record->getContent();
+                              ?>
+                              <tr id="<?php echo $parent_id; ?>">
                             <?php elseif (sizeof($structure) > 1): ?>
                                <tr class="child-of-<?php echo $parent_id; ?>" style="display:none">
                             <?php endif;?>
-                            
-                              <td><?php echo $comp->value("alamire:creator"); ?></td>
+
                               <td>
-                                <?php if ($comp->value("alamire:structure")): ?>                                  
-                                  <?php if (sizeof($structure) > 1): ?>
-                                    <span style="margin-left:<?php echo (1.2 * sizeof($structure)) ?>rem;"><?php echo $comp->value("alamire:title"); ?></span>
-                                  <?php else: ?>
-                                    <a href="<?php echo $comp->url(); ?>"><?php echo $comp->value("alamire:title"); ?></a>
-                                  <?php endif; ?>
+                                <?php if($comp_record && sizeof($structure) == 1): ?>
+                                    <?php echo $comp_record->value("alamire:creator"); ?>
                                 <?php endif; ?>
                               </td>
                               <td>
-                                <?php
-                                $ints_a = [];
-                                $expl = '';
-                                $ints = $comp->value("alamire:interstitialInfo", ['all' => true]);
-
-                                foreach ($ints as $int):
-                                  $expl = explode('$$', $int . '');
-                                  $ints_a[trim($expl[1])] = ["fol" => trim($expl[3]), "link" => trim($expl[4])];
-                                endforeach;
-                                if (isset($ints_a[$pu->displayTitle()])):
-                                  $fol = $ints_a[$pu->displayTitle()]['fol'];
-                                  $link = $ints_a[$pu->displayTitle()]['link'];
-                                ?>
-                                  <?php if ($auth): ?>
-                                    <a href="<?php echo $link; ?>"><?= $fol; ?></a>
+                                <?php if ($comp["structure"]): ?>
+                                  <?php if (sizeof($structure) > 1): ?>
+                                    <span style="margin-left:<?php echo (1.2 * sizeof($structure)) ?>rem;"><?php echo $comp["title"]; ?></span>
+                                  <?php elseif($comp_record): ?>
+                                    <a href="<?php echo $comp_record->url(); ?>"><?php echo $comp["title"]; ?></a>
                                   <?php else: ?>
-                                    <?= $fol; ?>
+                                    <?php echo $comp["title"]; ?>  
                                   <?php endif; ?>
+                                <?php endif; ?>
+                              </td>
+                              <td>          
+                                <?php if ($auth && $comp["folio"] != "fol."): ?>
+                                  <a href="<?php echo $comp["link"]; ?>"><?php echo $comp["folio"] ?></a>
+                                <?php elseif($comp["folio"] != "fol."): ?>
+                                  <?php echo $comp["folio"] ?>
                                 <?php endif; ?>
                               </td>
                               <td style="text-align: right;">
