@@ -402,6 +402,7 @@ endif;
           <div class="inventory-wrapper production-unit-wrapper">
             <h4 class="has-text-weight-semibold is-6 section-head" style="margin-bottom:0.5rem;">Inventory</h4>
             <?php $pus = []; ?>
+           
             <?php foreach ($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu): ?>
               <?php $pu = $pu->valueResource(); ?>
               <?php if ($pu): ?>
@@ -471,7 +472,7 @@ endif;
                             $i++;
                           endif;
                         endforeach;
-                        ksort($s_comps, SORT_NATURAL);
+                        //ksort($s_comps, SORT_NATURAL);
                         $parent_id = "";
                         ?>
                         <?php foreach ($s_comps as $comp): ?>
@@ -591,6 +592,7 @@ endif;
             endforeach;
           endif;
           //handle related production unit
+         
           if ($item->value("alamire:relatedProductionUnit")):
             foreach ($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):
               $pu = $pu->valueResource();
