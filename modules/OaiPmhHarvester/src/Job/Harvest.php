@@ -262,11 +262,16 @@ class Harvest extends AbstractJob
                     }
                 }
                 $pre_record = $this->{$method}($record, $args['item_set_id'],$args);
-				
-                if($pre_record['alamire:identifier'][0]['@value']):
-                    $id_exists = $this->itemExists($pre_record, $pre_record['alamire:identifier'][0]['@value'],$args['resource_type']);
-                    
-                endif; 
+				$id_exists = false;
+                if (!$pre_record) {
+                    //$this->logger->info('Record skipped.');
+                    continue;
+                }
+
+                if ($pre_record['alamire:identifier'][0]['@value']):
+                    $id_exists = $this->itemExists($pre_record, $pre_record['alamire:identifier'][0]['@value'], $args['resource_type']);
+
+                endif;
 
                 if(!$id_exists && ($pre_record['alamire:identifier'][0]['@value'])){
                   try{
@@ -593,6 +598,14 @@ class Harvest extends AbstractJob
                 //$this->logger->info($dcMetadata->$localName);
                 $elementTexts["alamire:$localName"] = $this->extractValues($dcMetadata, $propertyId);
             }
+
+            if($localName == 'parent'){
+                foreach ($dcMetadata->$localName as $parent) {
+                    if($parent.''):
+                        return "";
+                    endif;    
+                }
+            }
             //add media if Beeld or Collectie
             if($localName == 'original'){
                 //$this->logger->info("media - 1");                
@@ -659,7 +672,6 @@ class Harvest extends AbstractJob
                         parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=3&site_id=", $query);
                         $result = $this->api->search("items",$query);
                         $result = $result->getContent();
-                        $this->logger->info("related");
                         if($result){
                             $this->logger->info("result");
                             $elementTexts['alamire:relatedComposition'][$i] = [
@@ -682,7 +694,6 @@ class Harvest extends AbstractJob
                         parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=21&site_id=", $query);
                         $result = $this->api->search("items",$query);
                         $result = $result->getContent();
-                        $this->logger->info("related");
                         if($result){
                             $this->logger->info("result");
                             $elementTexts['alamire:relatedProductionUnit'][$i] = [
