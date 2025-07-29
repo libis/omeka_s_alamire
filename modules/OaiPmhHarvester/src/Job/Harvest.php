@@ -459,104 +459,6 @@ class Harvest extends AbstractJob
         $meta['o:item_set'] = ['o:id' => $itemSetId];
         return $meta;
     }
-
-    private function _cwToJson(SimpleXMLElement $record, $itemSetId,$args)
-    {
-        //$this->logger->info("1");
-        $dcMetadata = $record
-            ->metadata
-            ->children('')
-            ->children('cw',true);
- 
-
-        $elementTexts = [];$media = [];$imgc = 0;
-        foreach ($this->dcProperties as $propertyId => $localName) {
-            
-            if (isset($dcMetadata->$localName)) {                
-                $elementTexts["cw:$localName"] = $this->extractValues($dcMetadata, $propertyId);
-            }
-
-            //set collection type    
-            if($localName == 'collectionType'){
-              $template_id = 0;
-              foreach ($dcMetadata->$localName as $template_label) {
-                    if($template_label == "Collection focus"){
-                        $template_id = 6;
-                    }
-                    if($template_label == "Institution collection"){
-                        $template_id = 9;
-                    }
-                    if($template_label == "Sub-collection"){
-                        $template_id = 18;
-                    }
-                    if($template_label == "Organisation"){
-                        $template_id = 12;
-                    }
-                    if($template_label == "Publication"){
-                        $template_id = 15;
-                    }
-                }
-            }
-            //add media if Beeld or Collectie
-            if($localName == 'colIllustrationFile'){                
-                foreach ($dcMetadata->$localName as $imageUrl) {
-                    $string = $imageUrl.'';
-                    preg_match('/<img(.*)src(.*)=(.*)"(.*)"/U', $string, $result);
-                    $foo = array_pop($result);
-                    $imageUrl =  $foo;
-                    //$this->logger->info($imageUrl);
-                    $media[$imgc]= [
-                      'o:ingester' => 'url',
-                      'o:source' => $imageUrl.'',
-                      'ingest_url' => $imageUrl.'',
-                      'dcterms:title' => [
-                          [
-                              'type' => 'literal',
-                              '@language' => '',
-                              '@value' => $localName.'',
-                              'property_id' => 1,
-                          ],
-                      ],
-                  ];
-                  $imgc++;
-                }
-            }
-
-            if($localName == 'logoBestand'){
-                foreach ($dcMetadata->$localName as $imageUrl) {
-                    $imageUrl = explode("$$",$imageUrl.'');
-                    $imageUrl = $imageUrl[0];
-                    $media[$imgc]= [
-                      'o:ingester' => 'url',
-                      'o:source' => $imageUrl.'',
-                      'ingest_url' => $imageUrl.'',
-                      'dcterms:title' => [
-                          [
-                              'type' => 'literal',
-                              '@language' => '',
-                              '@value' => $localName.'',
-                              'property_id' => 1,
-                          ],
-                      ],
-                  ];
-                  $imgc++;
-                }
-            }
-        }
-        $meta = $elementTexts;
-        if($template_id):
-            $meta['o:resource_template'] = ["o:id" => $template_id];
-        endif;
-        $imgs = array();
-        foreach($media as $img):
-            $imgs[] = $img;            
-        endforeach;
-        if($imgs):
-            $meta['o:media'] = $imgs;
-        endif;
-        
-        return $meta;
-    }
 	
 	private function _alamireToJson(SimpleXMLElement $record,$itemSetId,$args)
     {
@@ -578,6 +480,14 @@ class Harvest extends AbstractJob
             if (isset($dcMetadata->$localName)) {
                 //$this->logger->info($dcMetadata->$localName);
                 $elementTexts["alamire:$localName"] = $this->extractValues($dcMetadata, $propertyId);
+            }
+
+            if($localName == 'parent'){
+                foreach ($dcMetadata->$localName as $parent) {
+                    if($parent.''):
+                        return "";
+                    endif;    
+                }
             }
             //add media if Beeld or Collectie
             if($localName == 'original'){
@@ -624,7 +534,7 @@ class Harvest extends AbstractJob
         endif;
 		if(strpos($args["endpoint"], 'Manuscript') !== false):
 			$meta['o:resource_template'] = ["o:id" => "2"];
-		elseif(strpos($args["endpoint"], 'Composition') !== false):
+		elseif(strpos($args["endpoint"], 'omposition') !== false):
 			$meta['o:resource_template'] = ["o:id" => "3"];			
 		endif;
 
