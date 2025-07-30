@@ -76,6 +76,40 @@ class SearchRequestToResponse extends AbstractPlugin
 
         $searchFormSettings = $searchConfigSettings['form'] ?? [];
 
+        $this->searchEngine = $searchConfig->engine();
+        $searchAdapter = $this->searchEngine ? $this->searchEngine->adapter() : null;
+        if ($searchAdapter) {
+            $availableFields = $searchAdapter->setSearchEngine($this->searchEngine)->getAvailableFields();
+            // Include the specific fields to simplify querying with main form.
+            $searchFormSettings['available_fields'] = $availableFields;
+            $specialFieldsToInputFields = [
+                'resource_type' => 'resource_type',
+                'is_public' => 'is_public',
+                'owner/o:id' => 'owner',
+                'site/o:id' => 'site',
+                'resource_class/o:id' => 'class',
+                'resource_template/o:id' => 'template',
+                'item_set/o:id' => 'item_set',
+            ];
+            foreach ($availableFields as $field) {
+                if (!empty($field['from'])
+                    && isset($specialFieldsToInputFields[$field['from']])
+                    && empty($availableFields[$specialFieldsToInputFields[$field['from']]])
+                ) {
+                    $searchFormSettings['available_fields'][$specialFieldsToInputFields[$field['from']]] = [
+                        'name' => $specialFieldsToInputFields[$field['from']],
+                        'to' => $field['name'],
+                    ];
+                }
+            }
+        } else {
+            $searchFormSettings['available_fields'] = [];
+        }
+
+        // Solr doesn't allow unavailable args anymore (invalid or unknown).
+        $searchFormSettings['only_available_fields'] = $searchAdapter
+            && $searchAdapter instanceof \SearchSolr\Adapter\SolariumAdapter;
+
         // TODO Copy the option for per page in the search config form (keeping the default).
         // TODO Add a max per_page.
         if ($site) {
@@ -87,17 +121,21 @@ class SearchRequestToResponse extends AbstractPlugin
             $settings = $plugins->get('settings')();
             $perPage = (int) $settings->get('pagination_per_page', Paginator::PER_PAGE);
         }
-
-        // Fix to be removed.
-        $searchFormSettings['resource_fields'] = $searchConfigSettings['resource_fields'] ?? [];
         $searchFormSettings['search']['per_page'] = $perPage ?: Paginator::PER_PAGE;
 
         /** @var \AdvancedSearch\Query $query */
         $query = $formAdapter->toQuery($request, $searchFormSettings);
 
+        // Append hidden query if any (filter, date range filter, filter query).
+        $hiddenFilters = $searchConfigSettings['search']['hidden_query_filters'] ?? [];
+        if ($hiddenFilters) {
+            // TODO Convert a generic hidden query filters into a specific one?
+            // $hiddenFilters = $formAdapter->toQuery($hiddenFilters, $searchFormSettings);
+            $query->setHiddenQueryFilters($hiddenFilters);
+        }
+
         // Add global parameters.
 
-        $this->searchEngine = $searchConfig->engine();
         $engineSettings = $this->searchEngine->settings();
 
         $user = $plugins->get('identity')();
@@ -121,7 +159,7 @@ class SearchRequestToResponse extends AbstractPlugin
         // Check resources.
         $resourceTypes = $query->getResources();
         if ($resourceTypes) {
-            $resourceTypes = array_intersect($engineSettings['resources']) + $engineSettings['resources'];
+            $resourceTypes = array_intersect($resourceTypes, $engineSettings['resources']) ?: $engineSettings['resources'];
             $query->setResources($resourceTypes);
         } else {
             $query->setResources($engineSettings['resources']);
@@ -146,18 +184,28 @@ class SearchRequestToResponse extends AbstractPlugin
 
         $hasFacets = !empty($searchConfigSettings['facet']['facets']);
         if ($hasFacets) {
-            // Set the settings.
+            // Set the settings for facets.
+            // TODO Store facets with the right keys in config form and all keys directly to avoid to rebuild it each time.
             // TODO Set all the settings of the form one time (move process into Query, and other keys).
-            $query->addFacetFields(array_keys($searchConfigSettings['facet']['facets']));
-            if (!empty($searchConfigSettings['facet']['limit'])) {
-                $query->setFacetLimit((int) $searchConfigSettings['facet']['limit']);
+            $facetLimit = empty($searchConfigSettings['facet']['limit']) ? 0 : (int) $searchConfigSettings['facet']['limit'];
+            $facetOrder = empty($searchConfigSettings['facet']['order']) ? '' : (string) $searchConfigSettings['facet']['order'];
+            $facetLanguages = empty($searchConfigSettings['facet']['languages']) ? [] : $searchConfigSettings['facet']['languages'];
+            // @deprecated Will be removed in a future version.
+            $query->setFacetLimit($facetLimit);
+            $query->setFacetOrder($facetOrder);
+            $query->setFacetLanguages($facetLanguages);
+            // $query->addFacetFields(array_keys($searchConfigSettings['facet']['facets']));
+            $facets = [];
+            foreach ($searchConfigSettings['facet']['facets'] as $facetField => $options) {
+                $facet = $options;
+                $facet['field'] = $facetField;
+                $facet['type'] = empty($options['type']) ? 'Checkbox' : $options['type'];
+                $facet['limit'] = $facetLimit;
+                $facet['order'] = $facetOrder;
+                $facet['languages'] = $facetLanguages;
+                $facets[$facetField] = $facet;
             }
-            if (!empty($searchConfigSettings['facet']['order'])) {
-                $query->setFacetOrder($searchConfigSettings['facet']['order']);
-            }
-            if (!empty($searchConfigSettings['facet']['languages'])) {
-                $query->setFacetLanguages($searchConfigSettings['facet']['languages']);
-            }
+            $query->setFacets($facets);
         }
 
         $eventManager = $services->get('Application')->getEventManager();
@@ -236,7 +284,7 @@ class SearchRequestToResponse extends AbstractPlugin
                 // @see \Omeka\Api\Adapter\AbstractEntityAdapter::search().
                 'sort_by' => null,
                 'sort_order' => null,
-                // Used by Search.
+                // Used by Advanced Search.
                 'resource_type' => null,
                 'sort' => null,
             ]
@@ -279,7 +327,7 @@ class SearchRequestToResponse extends AbstractPlugin
         if (empty($engineAdapter)) {
             return [];
         }
-        $availableSortFields = $engineAdapter->getAvailableSortFields($this->searchEngine);
+        $availableSortFields = $engineAdapter->setSearchEngine($this->searchEngine)->getAvailableSortFields();
         return array_intersect_key($sortFieldsSettings, $availableSortFields);
     }
 }

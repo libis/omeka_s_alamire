@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016-2017
- * Copyright Daniel Berthereau 2018-2021
+ * Copyright Daniel Berthereau 2018-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -137,11 +137,12 @@ class SolrCoreRepresentation extends AbstractEntityRepresentation
                 'host' => null,
                 'port' => null,
                 'path' => '/',
-                // Core and collection have same meaning on a standard solr.
-                'collection' => null,
+                // "core" and "collection" have same meaning on a standard solr,
+                // even if "collection" is designed for SolrCloud.
                 'core' => null,
                 // For Solr Cloud.
                 // 'leader' => false,
+                'collection' => null,
                 // Can be set separately via getEndpoint()->setAuthentication().
                 'username' => null,
                 'password' => null,
@@ -352,44 +353,135 @@ class SolrCoreRepresentation extends AbstractEntityRepresentation
     }
 
     /**
-     * Get the solr mappings by id.
+     * Get the solr / omeka mappings by id.
      *
      * @return \SearchSolr\Api\Representation\SolrMapRepresentation[]
      */
-    public function maps()
+    public function maps(): array
     {
-        $maps = [];
-        $mapAdapter = $this->getAdapter('solr_maps');
-        /** @var \SearchSolr\Entity\SolrMap $mapEntity */
-        foreach ($this->resource->getMaps() as $mapEntity) {
-            $maps[$mapEntity->getId()] = $mapAdapter->getRepresentation($mapEntity);
+        static $maps;
+
+        if (is_null($maps)) {
+            $maps = [];
+            $mapAdapter = $this->getAdapter('solr_maps');
+            /** @var \SearchSolr\Entity\SolrMap $mapEntity */
+            foreach ($this->resource->getMaps() as $mapEntity) {
+                $maps[$mapEntity->getId()] = $mapAdapter->getRepresentation($mapEntity);
+            }
         }
+
         return $maps;
     }
 
     /**
-     * Get the solr mappings by resource type.
+     * Get solr / omeka mappings by id ordered by field name and structurally.
+     *
+     *  The structure is: generic, then resource, then specific resource type.
+     *
+     * @return \SearchSolr\Api\Representation\SolrMapRepresentation[]
+     */
+    public function mapsOrderedByStructure(): array
+    {
+        static $maps;
+
+        if (is_null($maps)) {
+            $maps = $this->mapsByResourceName();
+            foreach ($maps as &$mapss) {
+                usort($mapss, function ($a, $b) {
+                    return $a->fieldName() <=> $b->fieldName();
+                });
+            }
+            if ($maps) {
+                $maps = array_merge(...array_values($maps));
+            }
+        }
+
+        return $maps;
+    }
+
+    /**
+     * Get the solr / omeka mappings by resource type.
      *
      * @param string $resourceName
      * @return \SearchSolr\Api\Representation\SolrMapRepresentation[]
      */
-    public function mapsByResourceName($resourceName = null)
+    public function mapsByResourceName($resourceName = null): array
     {
-        static $maps = [];
+        static $maps;
 
-        $id = $this->id();
-        if (!isset($maps[$id])) {
-            $maps[$id] = [];
+        if (is_null($maps)) {
+            $maps = [
+                'generic' => [],
+                'resources' => [],
+            ];
             $mapAdapter = $this->getAdapter('solr_maps');
             /** @var \SearchSolr\Entity\SolrMap $mapEntity */
             foreach ($this->resource->getMaps() as $mapEntity) {
-                $maps[$id][$mapEntity->getResourceName()][] = $mapAdapter->getRepresentation($mapEntity);
+                $maps[$mapEntity->getResourceName()][] = $mapAdapter->getRepresentation($mapEntity);
             }
+            $maps = array_filter($maps);
         }
 
-        return $resourceName
-            ? $maps[$id][$resourceName] ?? []
-            : $maps[$id];
+        if (!$resourceName) {
+            return $maps;
+        }
+
+        if ($resourceName === 'generic') {
+            return $maps['generic'] ?? [];
+        }
+
+        if (!in_array($resourceName, ['items', 'item_sets', 'media'])) {
+            return array_merge(
+                $maps['generic'] ?? [],
+                $maps[$resourceName] ?? []
+            );
+        }
+
+        return array_merge(
+            $maps['generic'] ?? [],
+            $maps['resources'] ?? [],
+            $maps[$resourceName] ?? []
+        );
+    }
+
+    /**
+     * Get the solr maps by field name and optionnaly by resource name.
+     *
+     * @return \SearchSolr\Api\Representation\SolrMapRepresentation[]
+     */
+    public function mapsByFieldName(string $fieldName, $resourceName = null): array
+    {
+        $result = [];
+        $maps = $resourceName
+            ? $this->mapsByResourceName($resourceName)
+            : $this->maps();
+        foreach ($maps as $map) {
+            if ($map->fieldName() === $fieldName) {
+                $result[] = $map;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Get the solr maps by source and optionnaly by resource name.
+     *
+     * Warning: multiple maps can have the same source for various usage.
+     *
+     * @return \SearchSolr\Api\Representation\SolrMapRepresentation[]
+     */
+    public function mapsBySource(string $source, $resourceName = null): array
+    {
+        $result = [];
+        $maps = $resourceName
+            ? $this->mapsByResourceName($resourceName)
+            : $this->maps();
+        foreach ($maps as $map) {
+            if ($map->source() === $source) {
+                $result[] = $map;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -397,12 +489,13 @@ class SolrCoreRepresentation extends AbstractEntityRepresentation
      *
      * @return \AdvancedSearch\Api\Representation\SearchEngineRepresentation[]
      */
-    public function searchEngines()
+    public function searchEngines(): array
     {
         // TODO Use entity manager to simplify search of indexes from core.
         $result = [];
         /** @var \AdvancedSearch\Api\Representation\SearchEngineRepresentation[] $searchEngines */
-        $searchEngines = $this->getServiceLocator()->get('Omeka\ApiManager')->search('search_engines', ['adapter' => 'solarium'])->getContent();
+        $searchEngines = $this->getServiceLocator()->get('Omeka\ApiManager')
+            ->search('search_engines', ['adapter' => 'solarium'])->getContent();
         $id = $this->id();
         foreach ($searchEngines as $searchEngine) {
             if ($searchEngine->settingAdapter('solr_core_id') == $id) {
@@ -417,7 +510,7 @@ class SolrCoreRepresentation extends AbstractEntityRepresentation
      *
      * @return \AdvancedSearch\Api\Representation\SearchConfigRepresentation[]
      */
-    public function searchConfigs()
+    public function searchConfigs(): array
     {
         // TODO Use entity manager to simplify search of pages from core.
         $result = [];
@@ -429,5 +522,30 @@ class SolrCoreRepresentation extends AbstractEntityRepresentation
             }
         }
         return $result;
+    }
+
+    /**
+     * Check if all required maps are managed by the core.
+     */
+    public function missingRequiredMaps(): ?array
+    {
+        // Check if the specified fields are available.
+        $fields = [
+            'resource_name' => true,
+            'is_public' => true,
+            'owner/o:id' => true,
+            'site/o:id' => true,
+            // 'search_index' => false,
+        ];
+
+        $unavailableFields = [];
+        foreach ($fields as $source => $isRequired) {
+            $maps = $this->mapsBySource($source, 'resources');
+            if (!count($maps)) {
+                $unavailableFields[] = $source;
+            }
+        }
+
+        return $unavailableFields ?: null;
     }
 }

@@ -2,7 +2,9 @@
 
 namespace AdvancedSearch\View\Helper;
 
+use AdvancedSearch\Adapter\AdapterInterface;
 use AdvancedSearch\Api\Representation\SearchConfigRepresentation;
+use AdvancedSearch\Api\Representation\SearchEngineRepresentation;
 use Laminas\Form\Form;
 use Laminas\View\Helper\AbstractHelper;
 
@@ -13,6 +15,8 @@ class SearchForm extends AbstractHelper
 {
     /**
      * The default partial view script.
+     *
+     * With the default form, this is search/search-form-main.
      */
     const PARTIAL_NAME = 'search/search-form';
 
@@ -37,7 +41,7 @@ class SearchForm extends AbstractHelper
      * @param bool $skipFormAction Don't set form action, so use the current page.
      * @return \AdvancedSearch\View\Helper\SearchForm
      */
-    public function __invoke(SearchConfigRepresentation $searchConfig = null, $partial = null, $skipFormAction = false): self
+    public function __invoke(?SearchConfigRepresentation $searchConfig = null, $partial = null, $skipFormAction = false): self
     {
         $this->initSearchForm($searchConfig, $partial, $skipFormAction);
         return $this;
@@ -50,7 +54,7 @@ class SearchForm extends AbstractHelper
      * @param string $partial Specific partial for the search form.
      * @param bool $skipFormAction Don't set form action, so use the current page.
      */
-    protected function initSearchForm(SearchConfigRepresentation $searchConfig = null, $partial = null, $skipFormAction = false): void
+    protected function initSearchForm(?SearchConfigRepresentation $searchConfig = null, $partial = null, $skipFormAction = false): void
     {
         $plugins = $this->getView()->getHelperPluginManager();
         $isAdmin = $plugins->get('status')->isAdminRequest();
@@ -99,13 +103,30 @@ class SearchForm extends AbstractHelper
     }
 
     /**
-     * Get the specified search config or the default one.
-     *
-     * @return \AdvancedSearch\Api\Representation\SearchConfigRepresentation|null
+     * Get the specified search config.
      */
     public function getSearchConfig(): ?SearchConfigRepresentation
     {
         return $this->searchConfig;
+    }
+
+    /**
+     * Get the specified search engine.
+     */
+    public function getSearchEngine(): ?SearchEngineRepresentation
+    {
+        return $this->searchConfig
+            ? $this->searchConfig->engine()
+            : null;
+    }
+
+    /**
+     * Get the specified search adapter.
+     */
+    public function getSearchAdapter(): ?AdapterInterface
+    {
+        $searchEngine = $this->getSearchEngine();
+        return $searchEngine ? $searchEngine->adapter() : null;
     }
 
     /**
@@ -131,7 +152,11 @@ class SearchForm extends AbstractHelper
     public function __toString(): string
     {
         return $this->partial
-            ? $this->getView()->partial($this->partial, ['form' => $this->form])
+            ? $this->getView()->partial($this->partial, [
+                'form' => $this->form,
+                'searchConfig' => $this->searchConfig,
+                'searchPage' => $this->searchConfig,
+            ])
             : '';
     }
 }

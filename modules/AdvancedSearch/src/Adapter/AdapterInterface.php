@@ -38,6 +38,16 @@ interface AdapterInterface
     public function setServiceLocator(ServiceLocatorInterface $serviceLocator): AdapterInterface;
 
     /**
+     * Set the search engine for this adapter.
+     */
+    public function setSearchEngine(SearchEngineRepresentation $searchEngine): AdapterInterface;
+
+    /**
+     * Get the search engine of this adapter.
+     */
+    public function getSearchEngine(): ?SearchEngineRepresentation;
+
+    /**
      * Get the name of the adapter.
      */
     public function getLabel(): string;
@@ -62,27 +72,38 @@ interface AdapterInterface
      *
      * The available fields are used for filters.
      *
-     * @param SearchEngineRepresentation $engine
      * @return array Associative array with field name as key and an array with
-     * field name and field label as value.
+     * field name and field label and optionnaly field source (from) and field
+     * destination (to) as value, in particular for main omeka metadata, for
+     * example item_set/o:id / item_set_id.
      */
-    public function getAvailableFields(SearchEngineRepresentation $engine): array;
+    public function getAvailableFields(): array;
 
     /**
      * Get the available sort fields.
      *
-     * @param SearchEngineRepresentation $engine
      * @return array Associative array with sort name as key and an array with
      * sort name and sort label as value.
      */
-    public function getAvailableSortFields(SearchEngineRepresentation $engine): array;
+    public function getAvailableSortFields(): array;
 
     /**
      * Get the available facet fields.
      *
-     * @param SearchEngineRepresentation $engine
      * @return array Associative array with facet name as key and an array with
      * facet name and facet label as value.
      */
-    public function getAvailableFacetFields(SearchEngineRepresentation $engine): array;
+    public function getAvailableFacetFields(): array;
+
+    /**
+     * Get available fields usable in a laminas form element "select".
+     *
+     * Options may be grouped.
+     *
+     * @see https://docs.laminas.dev/laminas-form/v3/element/select/#basic-usage
+     *
+     * @return array Associative array with field name as key and label as value,
+     * or grouped according to Laminas select.
+     */
+    public function getAvailableFieldsForSelect(): array;
 }

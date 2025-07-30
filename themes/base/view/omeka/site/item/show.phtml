@@ -1,392 +1,1016 @@
 <?php
+
 use Omeka\Entity\User;
+
 $translate = $this->plugin('translate');
 $escape = $this->plugin('escapeHtml');
 $this->htmlElement('body')->appendAttribute('class', 'item resource show');
 $embedMedia = $this->siteSetting('item_media_embed', false);
 $itemMedia = $item->media();
 $template = $item->resourceTemplate();
-if($template):
-    $type = $template->label();
+if ($template):
+  $type = $template->label();
 else:
-    $type = "";
+  $type = "";
 endif;
 ?>
-  <div class="container">
-    <h2 class="title is-2 is-family-secondary"><?php echo $item->displayTitle(); ?></h2>    
-    <?php
-      $auth = false;
-      if($this->identity()):          
-        $auth = true;  
-      endif;        
-    ?>
-  </div>
-    <?php if (!$embedMedia && $itemMedia): ?>      
-      <div class="container thumbnails is-hidden-mobile" style="padding:2rem 0">
-        <div class="has-text-centered">
-          <?php foreach($itemMedia as $med):?>
-            <?php $url = str_replace('http:', '', $med->thumbnailUrl('large'));?>
-            <?php if($med->value("dcterms:description") && $auth):?>
-              <?php if(str_contains($med->value('alamire:description').'',"representation")):?>
-                <?php $repr = str_replace("lib.is/","data.idemdatabase.org/",$med->value('dcterms:description'));?>
-                <a target="_blank" href="<?php echo $repr;?>">
-              <?php else:?>
-                <a target="_blank" href="<?php echo $med->value('dcterms:description');?>"> 
-              <?php endif;?>
-            <?php endif;?>  
-            <img src="<?php echo $url;?>" style="max-width:70%;margin-bottom:1rem;"><br>
-            <?php if($med->value("dcterms:description") && $auth):?>
-              </a>
-            <?php endif;?>  
-          <?php endforeach;?>
-        </div>
-      </div>
-    <?php endif; ?>
-    <?php if($item->value('alamire:hasVersion') && $auth):?>
-      <div class="icon-text" style="padding-top:2rem">
-      <?php if(str_contains($item->value('alamire:hasVersion').'',"representation")):?>
-        <?php $resolv = str_replace("http://resolver.libis.be/","https://data.idemdatabase.org/",$item->value('alamire:hasVersion'));?>
-        <a target="_blank" href="<?php echo str_replace("representation","manifest",$resolv);?>?manifest=<?php echo str_replace("representation","manifest",$resolv);?>">
-        <!--<img style="height:15px;margin-right:5px;" src="/themes/base/asset/img/iiif.png">-->
-        <svg style="height:15px;margin-right:5px;" class="MuiSvgIcon-root mirador79" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg width="100%" height="100%" viewBox="0 0 350 312" xmlns="http://www.w3.org/2000/svg"><path d="M349.914,153.001c-7.226,2.462 -14.526,4.735 -21.608,7.558c-1.292,0.515 -2.384,3.264 -2.397,4.99c-0.158,19.829 -0.086,39.659 -0.085,59.489c0.001,19.33 -0.045,38.66 0.023,57.99c0.01,2.729 -0.365,4.639 -3.374,5.734c-20.773,7.564 -41.488,15.288 -62.229,22.942c-0.274,0.102 -0.64,-0.043 -1.375,-0.111c-0.149,-1.154 -0.45,-2.396 -0.45,-3.639c0.016,-72.654 0.053,-145.308 0.098,-217.962c0.025,-40.429 27.685,-76.061 66.956,-85.815c8,-1.987 16.288,-2.814 24.442,-4.177c0,20.333 0,40.667 0,61c-2.107,-0.355 -4.21,-0.746 -6.323,-1.062c-8.942,-1.335 -16.88,3.769 -17.504,12.61c-0.766,10.846 -0.183,21.787 -0.183,33.631c8.451,-2.879 16.23,-5.529 24.01,-8.18c-0.001,18.335 -0.001,36.669 -0.001,55.002Z" style="fill: rgb(233, 36, 40);"></path><path d="M158.345,106.616c0.095,2.047 0.222,3.505 0.222,4.962c0.006,56.487 -0.047,112.975 0.094,169.461c0.01,4.037 -1.195,5.712 -5.008,7.072c-18.773,6.697 -37.406,13.788 -56.104,20.701c-1.672,0.618 -3.446,0.961 -5.603,1.549c0,-15.906 0.068,-31.381 -0.013,-46.854c-0.22,-42.298 -0.448,-84.595 -0.846,-126.891c-0.039,-4.124 1.115,-5.928 5.188,-7.368c19.113,-6.76 38.054,-14.008 57.064,-21.062c1.501,-0.557 3.057,-0.963 5.006,-1.57Z" style="fill: rgb(233, 36, 40);"></path><path d="M72.704,310.583c-21.884,-8.075 -43.084,-15.836 -64.189,-23.845c-1.203,-0.457 -2.324,-2.935 -2.331,-4.478c-0.133,-30.819 -0.096,-61.641 -0.095,-92.461c0.002,-27.481 0,-54.964 0,-83.259c7.621,2.723 14.854,5.241 22.039,7.889c13.548,4.992 27.043,10.129 40.621,15.037c2.829,1.022 4.258,2.165 4.251,5.547c-0.119,57.476 -0.092,114.952 -0.104,172.429c0,0.81 -0.096,1.621 -0.192,3.141Z" style="fill: rgb(15, 124, 168);"></path><path d="M242.875,310.627c-10.717,-3.889 -20.829,-7.533 -30.923,-11.227c-10.59,-3.875 -21.133,-7.88 -31.761,-11.644c-2.84,-1.006 -4.221,-2.192 -4.214,-5.565c0.114,-57.781 0.078,-115.563 0.084,-173.345c0,-0.487 0.111,-0.975 0.261,-2.192c8.077,2.919 15.972,5.699 23.812,8.624c12.915,4.817 25.729,9.919 38.735,14.473c3.397,1.189 4.157,2.731 4.15,6.016c-0.118,54.617 -0.118,109.234 -0.145,163.853c0,3.312 0.001,6.625 0.001,11.007Z" style="fill: rgb(15, 124, 168);"></path><path d="M111.35,104.374c-15.571,-0.313 -25.599,-10.227 -25.676,-25.962c-0.062,-12.442 4.396,-23.427 11.943,-33.128c9.449,-12.147 21.068,-20.831 36.801,-23.46c17.646,-2.948 31.024,10.385 30.038,28.301c-1.324,24.035 -23.423,48.431 -44.776,52.94c-2.746,0.58 -5.552,0.879 -8.33,1.309Z" style="fill: rgb(233, 36, 40);"></path><path d="M170.345,48.635c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.113,-29.833 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path><path d="M0.019,48.81c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.112,-29.832 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path></svg></svg>
-        </a>
-      <?php else:?>  
-        <svg style="height:15px;margin-right:5px;" class="MuiSvgIcon-root mirador79" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg width="100%" height="100%" viewBox="0 0 350 312" xmlns="http://www.w3.org/2000/svg"><path d="M349.914,153.001c-7.226,2.462 -14.526,4.735 -21.608,7.558c-1.292,0.515 -2.384,3.264 -2.397,4.99c-0.158,19.829 -0.086,39.659 -0.085,59.489c0.001,19.33 -0.045,38.66 0.023,57.99c0.01,2.729 -0.365,4.639 -3.374,5.734c-20.773,7.564 -41.488,15.288 -62.229,22.942c-0.274,0.102 -0.64,-0.043 -1.375,-0.111c-0.149,-1.154 -0.45,-2.396 -0.45,-3.639c0.016,-72.654 0.053,-145.308 0.098,-217.962c0.025,-40.429 27.685,-76.061 66.956,-85.815c8,-1.987 16.288,-2.814 24.442,-4.177c0,20.333 0,40.667 0,61c-2.107,-0.355 -4.21,-0.746 -6.323,-1.062c-8.942,-1.335 -16.88,3.769 -17.504,12.61c-0.766,10.846 -0.183,21.787 -0.183,33.631c8.451,-2.879 16.23,-5.529 24.01,-8.18c-0.001,18.335 -0.001,36.669 -0.001,55.002Z" style="fill: rgb(233, 36, 40);"></path><path d="M158.345,106.616c0.095,2.047 0.222,3.505 0.222,4.962c0.006,56.487 -0.047,112.975 0.094,169.461c0.01,4.037 -1.195,5.712 -5.008,7.072c-18.773,6.697 -37.406,13.788 -56.104,20.701c-1.672,0.618 -3.446,0.961 -5.603,1.549c0,-15.906 0.068,-31.381 -0.013,-46.854c-0.22,-42.298 -0.448,-84.595 -0.846,-126.891c-0.039,-4.124 1.115,-5.928 5.188,-7.368c19.113,-6.76 38.054,-14.008 57.064,-21.062c1.501,-0.557 3.057,-0.963 5.006,-1.57Z" style="fill: rgb(233, 36, 40);"></path><path d="M72.704,310.583c-21.884,-8.075 -43.084,-15.836 -64.189,-23.845c-1.203,-0.457 -2.324,-2.935 -2.331,-4.478c-0.133,-30.819 -0.096,-61.641 -0.095,-92.461c0.002,-27.481 0,-54.964 0,-83.259c7.621,2.723 14.854,5.241 22.039,7.889c13.548,4.992 27.043,10.129 40.621,15.037c2.829,1.022 4.258,2.165 4.251,5.547c-0.119,57.476 -0.092,114.952 -0.104,172.429c0,0.81 -0.096,1.621 -0.192,3.141Z" style="fill: rgb(15, 124, 168);"></path><path d="M242.875,310.627c-10.717,-3.889 -20.829,-7.533 -30.923,-11.227c-10.59,-3.875 -21.133,-7.88 -31.761,-11.644c-2.84,-1.006 -4.221,-2.192 -4.214,-5.565c0.114,-57.781 0.078,-115.563 0.084,-173.345c0,-0.487 0.111,-0.975 0.261,-2.192c8.077,2.919 15.972,5.699 23.812,8.624c12.915,4.817 25.729,9.919 38.735,14.473c3.397,1.189 4.157,2.731 4.15,6.016c-0.118,54.617 -0.118,109.234 -0.145,163.853c0,3.312 0.001,6.625 0.001,11.007Z" style="fill: rgb(15, 124, 168);"></path><path d="M111.35,104.374c-15.571,-0.313 -25.599,-10.227 -25.676,-25.962c-0.062,-12.442 4.396,-23.427 11.943,-33.128c9.449,-12.147 21.068,-20.831 36.801,-23.46c17.646,-2.948 31.024,10.385 30.038,28.301c-1.324,24.035 -23.423,48.431 -44.776,52.94c-2.746,0.58 -5.552,0.879 -8.33,1.309Z" style="fill: rgb(233, 36, 40);"></path><path d="M170.345,48.635c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.113,-29.833 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path><path d="M0.019,48.81c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.112,-29.832 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path></svg></svg>
-        
-      <?php endif;?>  
-        <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo str_replace("http://resolver.libis.be/","https://data.idemdatabase.org/",$item->value('alamire:hasVersion'));?>">
-          <span>VIEW MANUSCRIPT</span></a>
-      </div>
-
-    <?php endif;?>  
-    
- 
-
-  <div class="container metadata-container">
-  <?php if(!$auth && $item->value('alamire:hasVersion')):?>
-      <p style="margin-bottom:2rem;">
-          <a class="button is-primary is-small" href="<?php echo $site->url().'/guest/login?redirect='.$item->url();?>">            
-            <span class="icon is-small">
-            <i class="fas fa-user"></i>
-            </span>
-            <span>Log in to access the images</span>
-          </a>
-      </p>
-    <?php endif;?>  
-    <!--<h3><?php echo $translate('Item'); ?></h3>-->
-    <?php $this->trigger('view.show.before'); ?>
-    <?php if ($embedMedia && $itemMedia): ?>
-        <div class="media-embeds">
-        <?php 
-        foreach ($itemMedia as $media):
-            echo $media->render();
-        endforeach;
-        ?>
-        </div>
-    <?php endif; ?>
-    <?php echo $item->displayValues(); ?>
-    <div class="property">
-        <?php $itemSets = $item->itemSets(); ?>
-        <?php if (count($itemSets) > 0): ?>
-        <h4><?php echo $translate('Item sets'); ?></h4>
-        <?php foreach ($itemSets as $itemSet): ?>
-        <div class="value"><a href="<?php echo $escape($itemSet->url()); ?>"><?php echo $itemSet->displayTitle(); ?></a></div>
-        <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-    
-    <?php if($item->value('alamire:originalText')):?>
-      <div class="container page" style="padding-top:1rem;">
-      <div class="columns">        
-        <div class="column is-12">
-          <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Text with translation(s)</h4>
-    </div>
-    </div>
-      <?php 
-        $originals = $item->value('alamire:originalText',array("all" => true));
-        $translations = $item->value('alamire:translation',array("all" => true));
-      ?>
-      <?php foreach($originals as $index=>$original):?>
-      <div class="columns is-2">        
-        <div class="column is-4">
-          <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">Transcription
-            <?php if($item->value('alamire:relatedManuscript')):
-              $rel = $item->value('alamire:relatedManuscript')->asHtml();
-              $rel = explode("$$",$rel);
-              echo " from: ".$rel[0];
-            endif;?>  
-          </h3>
-          <?php echo $original;?>
-        </div>
-        <div class="column is-6">
-          <div class="tabs is-small">
-            <ul>  
-              <?php foreach($translations as $key=>$trans):?>
-                  <?php $trans = explode("$$",$trans);?>
-                  <li class="tab <?php echo $trans[0];?>"><a href="#<?php echo trim($trans[0])."-".$key;?>"><?php echo $trans[0];?></a></li>
-              <?php endforeach;?>         
-            </ul>
-          </div>
-          <?php foreach($translations as $key=>$trans):?>
-            <?php $trans = explode("$$",$trans);?>
-            <div id="<?php echo trim($trans[0])."-".$key;?>" class="tab-pane translation <?php echo $trans[0];?>">
-            <?php echo $trans[2];?><br><br>
-            <?php echo "Translator: ".$trans[1];?><br>
-            <?php echo "Provided by: ".$trans[3];?>
-            </div>
-          <?php endforeach;?>         
-        </div>
-      </div> 
-      <?php endforeach;?>
-      <!--<?php if($item->value('alamire:textAuthor')):?>   
-        <div class="columns is-2">  
-          <div class="column is-one-fifth">            
-            <h4 class="has-text-weight-semibold is-6">Original author</h4>
-          </div>
-          <div class="column is-four-fifths">
-            <div class="values">                      
-              <div class="value" lang="">
-                <?php echo $item->value('alamire:textAuthor');?>
-              </div>
-            </div>
-          </div>
-        </div>
-      <?php endif;?>     -->
-
-      <!--
-      <?php if($item->value('alamire:textAuthor')):?>   
-        <div class="columns is-2">  
-          <div class="column is-one-fifth">            
-            <h4 class="has-text-weight-semibold is-6">Alternate language versions</h4>
-          </div>
-          <div class="column is-four-fifths">
-            <div class="values">                      
-              <div class="value" lang="">
-                <?php echo $item->value('alamire:textAuthor');?>
-              </div>
-            </div>
-          </div>
-        </div>
-      <?php endif;?> 
-      
-
-      <?php if($item->value('alamire:textNotes')):?>   
-        <h3 class="title is-6">Notes</h3>       
-        <div class="content" lang="">
-           <?php echo $item->value('alamire:textNotes');?>
-        </div>
-      <?php endif;?> 
-
-      
-      <?php //if($item->value('alamire:textComments')):?>   
-        <h3 class="title is-6">Comments</h3>       
-        <div class="content" lang="">
-           <?php echo $item->value('alamire:textComments');?>
-        </div>
-      <?php //endif;?> 
-      
-
-      <?php if($item->value('alamire:textVariants')):?>   
-        <h3 class="title is-6">Text variations</h3>       
-        <div class="content" lang="">
-           <?php echo $item->value('alamire:textVariants');?>
-        </div>
-      <?php endif;?> 
-
-      <?php if($item->value('alamire:textVariantsRemarks')):?>   
-        <h3 class="title is-6">Text variant remarks</h3>       
-        <div class="content" lang="">
-           <?php echo $item->value('alamire:textVariantsRemarks');?>
-        </div>
-      <?php endif;?> 
-      -->
-
-
-    <?php endif;?>  
-    <?php if($type == "Composition"):?>
-          <div class="columns is-12"> 
-            <div class="column">
-              <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Copyright</h4>
-            </div>
-          </div>          
-        <?php endif;?>
-    <div class="columns is-2">  
-      <div class="column is-one-fifth">        
-        <h4 class="has-text-weight-semibold is-6">Metadata</h4>
-      </div>
-      <div class="column is-four-fifths">
-        <div class="values">                      
-          <div class="value" lang="">
-            Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 License
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="columns is-12"> 
-      <div class="column">
-        <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Permalinks</h4>
-      </div>
-    </div>
-
-    <div class="columns is-2">  
-      <div class="column is-one-fifth">
-        <h4 class="has-text-weight-semibold is-6">Metadata</h4>
-      </div>
-      <div class="column is-three-fifths">
-        <div class="values">                      
-          <div class="value" lang="">
-              <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid");?>" class="button is-small is-outlined is-primary">
-                <span>https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid");?></span>                
-              </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
-              <span style="display:none">https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid");?></span>
-              <span style="margin:0;" class="icon is-small">
-                <i class="fas fa-clipboard"></i>
-                <span class="tooltiptext">Copied</span>
-              </span>
-            </button>
-          </div>
-   
-        </div>
-      </div>
-    </div>    
-
-    <?php if($auth):?>
-      <?php if($item->value('alamire:hasVersion')):?>
-        <?php if(str_contains($item->value('alamire:hasVersion').'',"representation")):?>
-          <?php $resolv = str_replace("http://resolver.libis.be/","https://data.idemdatabase.org/",$item->value('alamire:hasVersion'));?>
-          
-          <div class="columns is-2">  
-            <div class="column is-one-fifth">
-              <h4 class="has-text-weight-semibold is-6">Images</h4>
-            </div>
-            <div class="column is-three-fifths">
-              <div class="values">                      
-                <div class="value" lang="">
-                <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="<?php echo $resolv;?>" class="button is-small is-outlined is-primary">
-                <span><?php echo $resolv;?></span>                
-                </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
-                    <span style="display:none"><?php echo $resolv;?></span>
-                    <span style="margin:0;" class="icon is-small">
-                      <i class="fas fa-clipboard"></i>
-                      <span class="tooltiptext">Copied</span>
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="columns is-2">  
-            <div class="column is-one-fifth">
-              <h4 class="has-text-weight-semibold is-6">IIIF Manifest</h4>
-            </div>
-            <div class="column is-three-fifths">
-              <div class="values">                      
-                <div class="value" lang="">
-                <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="<?php echo str_replace("representation","manifest",$resolv);?>" class="button is-small is-outlined is-primary">
-                <span><?php echo str_replace("representation","manifest",$resolv);?></span>                
-                </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
-                    <span style="display:none"><?php echo str_replace("representation","manifest",$resolv);?></span>
-                    <span style="margin:0;" class="icon is-small">
-                      <i class="fas fa-clipboard"></i>
-                      <span class="tooltiptext">Copied</span>
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        <?php endif;?>
-      <?php endif;?>
-    <?php else:?>      
-      <p>
-          <a class="button is-primary is-small" href="<?php echo $site->url().'/guest/login?redirect='.$item->url();?>">            
-            <span class="icon is-small">
-            <i class="fas fa-user"></i>
-            </span>
-            <span>Log in to access the images</span>
-          </a>
-      </p>
-    <?php endif;?>  
-    </div>
-    </div>
-  </div>
-
-<?php
-$page = $this->params()->fromQuery('page', 1);
-$property = $this->params()->fromQuery('property');
-$subjectValues = $item->displaySubjectValues($page, 25, $property);
-?>
-<?php if ($subjectValues): ?>
-<div id="item-linked">
-    <h3><?php echo $translate('Linked resources'); ?></h3>
-    <?php echo $subjectValues; ?>
+<div class="container">
+  <h2 class="title is-2 is-family-secondary"><?php echo $item->displayTitle(); ?></h2>
+  <?php
+  $auth = false;
+  if ($this->identity()):
+    $auth = true;
+  endif;
+  ?>
 </div>
+<?php if (!$embedMedia && $itemMedia): ?>
+  <div class="container thumbnails">
+    <div class="has-text-centered">
+      <?php foreach ($itemMedia as $med): ?>
+        <?php $url = str_replace('http:', '', $med->thumbnailUrl('large')); ?>
+        <?php if ($med->value("dcterms:description") && $auth): ?>
+          <?php if (str_contains($med->value('alamire:description') . '', "representation")): ?>
+            <?php $repr = str_replace("lib.is/", "data.idemdatabase.org/", $med->value('dcterms:description')); ?>
+            <a target="_blank" href="<?php echo $repr; ?>">
+            <?php else: ?>
+              <a target="_blank" href="<?php echo $med->value('dcterms:description'); ?>">
+              <?php endif; ?>
+            <?php endif; ?>
+            <img src="<?php echo $url; ?>">
+            <?php if ($med->value("dcterms:description") && $auth): ?>
+              </a>
+            <?php endif; ?>
+          <?php endforeach; ?>
+    </div>
+  </div>
+<?php endif; ?>
+<?php if ($item->value('alamire:hasVersion') && $auth): ?>
+  <div class="icon-text" style="padding-top:2rem">
+    <?php if (str_contains($item->value('alamire:hasVersion') . '', "representation")): ?>
+      <?php $resolv = str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); ?>
+      <a target="_blank" href="<?php echo str_replace("representation", "manifest", $resolv); ?>?manifest=<?php echo str_replace("representation", "manifest", $resolv); ?>">
+        <!--<img style="height:15px;margin-right:5px;" src="/themes/base/asset/img/iiif.png">-->
+        <svg style="height:15px;margin-right:5px;" class="MuiSvgIcon-root mirador79" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg width="100%" height="100%" viewBox="0 0 350 312" xmlns="http://www.w3.org/2000/svg">
+            <path d="M349.914,153.001c-7.226,2.462 -14.526,4.735 -21.608,7.558c-1.292,0.515 -2.384,3.264 -2.397,4.99c-0.158,19.829 -0.086,39.659 -0.085,59.489c0.001,19.33 -0.045,38.66 0.023,57.99c0.01,2.729 -0.365,4.639 -3.374,5.734c-20.773,7.564 -41.488,15.288 -62.229,22.942c-0.274,0.102 -0.64,-0.043 -1.375,-0.111c-0.149,-1.154 -0.45,-2.396 -0.45,-3.639c0.016,-72.654 0.053,-145.308 0.098,-217.962c0.025,-40.429 27.685,-76.061 66.956,-85.815c8,-1.987 16.288,-2.814 24.442,-4.177c0,20.333 0,40.667 0,61c-2.107,-0.355 -4.21,-0.746 -6.323,-1.062c-8.942,-1.335 -16.88,3.769 -17.504,12.61c-0.766,10.846 -0.183,21.787 -0.183,33.631c8.451,-2.879 16.23,-5.529 24.01,-8.18c-0.001,18.335 -0.001,36.669 -0.001,55.002Z" style="fill: rgb(233, 36, 40);"></path>
+            <path d="M158.345,106.616c0.095,2.047 0.222,3.505 0.222,4.962c0.006,56.487 -0.047,112.975 0.094,169.461c0.01,4.037 -1.195,5.712 -5.008,7.072c-18.773,6.697 -37.406,13.788 -56.104,20.701c-1.672,0.618 -3.446,0.961 -5.603,1.549c0,-15.906 0.068,-31.381 -0.013,-46.854c-0.22,-42.298 -0.448,-84.595 -0.846,-126.891c-0.039,-4.124 1.115,-5.928 5.188,-7.368c19.113,-6.76 38.054,-14.008 57.064,-21.062c1.501,-0.557 3.057,-0.963 5.006,-1.57Z" style="fill: rgb(233, 36, 40);"></path>
+            <path d="M72.704,310.583c-21.884,-8.075 -43.084,-15.836 -64.189,-23.845c-1.203,-0.457 -2.324,-2.935 -2.331,-4.478c-0.133,-30.819 -0.096,-61.641 -0.095,-92.461c0.002,-27.481 0,-54.964 0,-83.259c7.621,2.723 14.854,5.241 22.039,7.889c13.548,4.992 27.043,10.129 40.621,15.037c2.829,1.022 4.258,2.165 4.251,5.547c-0.119,57.476 -0.092,114.952 -0.104,172.429c0,0.81 -0.096,1.621 -0.192,3.141Z" style="fill: rgb(15, 124, 168);"></path>
+            <path d="M242.875,310.627c-10.717,-3.889 -20.829,-7.533 -30.923,-11.227c-10.59,-3.875 -21.133,-7.88 -31.761,-11.644c-2.84,-1.006 -4.221,-2.192 -4.214,-5.565c0.114,-57.781 0.078,-115.563 0.084,-173.345c0,-0.487 0.111,-0.975 0.261,-2.192c8.077,2.919 15.972,5.699 23.812,8.624c12.915,4.817 25.729,9.919 38.735,14.473c3.397,1.189 4.157,2.731 4.15,6.016c-0.118,54.617 -0.118,109.234 -0.145,163.853c0,3.312 0.001,6.625 0.001,11.007Z" style="fill: rgb(15, 124, 168);"></path>
+            <path d="M111.35,104.374c-15.571,-0.313 -25.599,-10.227 -25.676,-25.962c-0.062,-12.442 4.396,-23.427 11.943,-33.128c9.449,-12.147 21.068,-20.831 36.801,-23.46c17.646,-2.948 31.024,10.385 30.038,28.301c-1.324,24.035 -23.423,48.431 -44.776,52.94c-2.746,0.58 -5.552,0.879 -8.33,1.309Z" style="fill: rgb(233, 36, 40);"></path>
+            <path d="M170.345,48.635c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.113,-29.833 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path>
+            <path d="M0.019,48.81c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.112,-29.832 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path>
+          </svg></svg>
+      </a>
+    <?php else: ?>
+      <svg style="height:15px;margin-right:5px;" class="MuiSvgIcon-root mirador79" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg width="100%" height="100%" viewBox="0 0 350 312" xmlns="http://www.w3.org/2000/svg">
+          <path d="M349.914,153.001c-7.226,2.462 -14.526,4.735 -21.608,7.558c-1.292,0.515 -2.384,3.264 -2.397,4.99c-0.158,19.829 -0.086,39.659 -0.085,59.489c0.001,19.33 -0.045,38.66 0.023,57.99c0.01,2.729 -0.365,4.639 -3.374,5.734c-20.773,7.564 -41.488,15.288 -62.229,22.942c-0.274,0.102 -0.64,-0.043 -1.375,-0.111c-0.149,-1.154 -0.45,-2.396 -0.45,-3.639c0.016,-72.654 0.053,-145.308 0.098,-217.962c0.025,-40.429 27.685,-76.061 66.956,-85.815c8,-1.987 16.288,-2.814 24.442,-4.177c0,20.333 0,40.667 0,61c-2.107,-0.355 -4.21,-0.746 -6.323,-1.062c-8.942,-1.335 -16.88,3.769 -17.504,12.61c-0.766,10.846 -0.183,21.787 -0.183,33.631c8.451,-2.879 16.23,-5.529 24.01,-8.18c-0.001,18.335 -0.001,36.669 -0.001,55.002Z" style="fill: rgb(233, 36, 40);"></path>
+          <path d="M158.345,106.616c0.095,2.047 0.222,3.505 0.222,4.962c0.006,56.487 -0.047,112.975 0.094,169.461c0.01,4.037 -1.195,5.712 -5.008,7.072c-18.773,6.697 -37.406,13.788 -56.104,20.701c-1.672,0.618 -3.446,0.961 -5.603,1.549c0,-15.906 0.068,-31.381 -0.013,-46.854c-0.22,-42.298 -0.448,-84.595 -0.846,-126.891c-0.039,-4.124 1.115,-5.928 5.188,-7.368c19.113,-6.76 38.054,-14.008 57.064,-21.062c1.501,-0.557 3.057,-0.963 5.006,-1.57Z" style="fill: rgb(233, 36, 40);"></path>
+          <path d="M72.704,310.583c-21.884,-8.075 -43.084,-15.836 -64.189,-23.845c-1.203,-0.457 -2.324,-2.935 -2.331,-4.478c-0.133,-30.819 -0.096,-61.641 -0.095,-92.461c0.002,-27.481 0,-54.964 0,-83.259c7.621,2.723 14.854,5.241 22.039,7.889c13.548,4.992 27.043,10.129 40.621,15.037c2.829,1.022 4.258,2.165 4.251,5.547c-0.119,57.476 -0.092,114.952 -0.104,172.429c0,0.81 -0.096,1.621 -0.192,3.141Z" style="fill: rgb(15, 124, 168);"></path>
+          <path d="M242.875,310.627c-10.717,-3.889 -20.829,-7.533 -30.923,-11.227c-10.59,-3.875 -21.133,-7.88 -31.761,-11.644c-2.84,-1.006 -4.221,-2.192 -4.214,-5.565c0.114,-57.781 0.078,-115.563 0.084,-173.345c0,-0.487 0.111,-0.975 0.261,-2.192c8.077,2.919 15.972,5.699 23.812,8.624c12.915,4.817 25.729,9.919 38.735,14.473c3.397,1.189 4.157,2.731 4.15,6.016c-0.118,54.617 -0.118,109.234 -0.145,163.853c0,3.312 0.001,6.625 0.001,11.007Z" style="fill: rgb(15, 124, 168);"></path>
+          <path d="M111.35,104.374c-15.571,-0.313 -25.599,-10.227 -25.676,-25.962c-0.062,-12.442 4.396,-23.427 11.943,-33.128c9.449,-12.147 21.068,-20.831 36.801,-23.46c17.646,-2.948 31.024,10.385 30.038,28.301c-1.324,24.035 -23.423,48.431 -44.776,52.94c-2.746,0.58 -5.552,0.879 -8.33,1.309Z" style="fill: rgb(233, 36, 40);"></path>
+          <path d="M170.345,48.635c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.113,-29.833 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path>
+          <path d="M0.019,48.81c-0.675,-20.953 16.457,-32.623 38.345,-24.484c22.334,8.304 36.075,24.972 39.608,48.417c3.056,20.271 -8.947,33.757 -29.851,30.963c-24.911,-3.33 -48.112,-29.832 -48.102,-54.896Z" style="fill: rgb(15, 124, 168);"></path>
+        </svg></svg>
+
+    <?php endif; ?>
+    <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); ?>">
+      <span>VIEW SOURCE</span></a>
+  </div>
 <?php endif; ?>
 
-<?php $this->trigger('view.show.after'); ?>
-<script>
-  $(document).ready(function(){
-    
-    $( ".expand" ).each(function( index, element ) {
-      if( jQuery(this).next(".hidden-content").is(':empty')){
-        jQuery(this).remove();
-      }
-      
-    });
-    jQuery(".expand").click(function() {
-        jQuery(this).next(".hidden-content", this).toggle();
-        $(this).html(function(i, text){
-            return text === '<i class="fa fa-chevron-down" aria-hidden="true"></i>' ? "<i class='fa fa-chevron-up'></i>" : "<i class='fa fa-chevron-down'></i>";
-        })
-        return false;   
-    });
 
-    jQuery(".extra-button").click(function(e) {
+
+<div class="container metadata-container">
+  <div class="columns">
+    <?php if ($type == "Chant"): ?>
+      <div class="column is-7">
+      <?php else: ?>
+        <div class="column is-12">
+        <?php endif; ?>
+        <?php if (!$auth && $item->value('alamire:hasVersion')): ?>
+          <p style="margin-bottom:2rem;">
+            <a class="button is-primary is-small" href="<?php echo $site->url() . '/guest/login?redirect=' . $item->url(); ?>">
+              <span class="icon is-small">
+                <i class="fas fa-user"></i>
+              </span>
+              <span>Log in to access the images</span>
+            </a>
+          </p>
+        <?php endif; ?>
+        <?php $this->trigger('view.show.before'); ?>
+        <?php if ($embedMedia && $itemMedia): ?>
+          <div class="media-embeds">
+            <?php
+            foreach ($itemMedia as $media):
+              echo $media->render();
+            endforeach;
+            ?>
+          </div>
+        <?php endif; ?>
+        <?php if (!$item->value('alamire:creator_display') && $type == "Composition"): ?>
+          <div class="columns">
+            <div class="column is-12">
+              <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Identification</h4>
+            </div>
+          </div>
+        <?php endif; ?>
+        <?php echo $item->displayValues(); ?>
+        </div>
+        <?php if ($type == "Chant"): ?>
+          <div class="column is-5">
+            <h4 class="has-text-weight-semibold is-6 section-head">Folio: <?php echo $item->value('alamire:folio'); ?></h4>
+            <?php
+            //folio query
+            $query = "";
+            //local 380     
+            parse_str("property[0][joiner]=and&property[0][property]=alamire:folio&property[0][type]=eq&property[0][text]=" . $item->value('alamire:folio') . "&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_by=mmfc%3AsiblingOrder&sort_order=asc&submit=Search", $query);
+            $chants = $this->api()->search('items', $query);
+            $chants = $chants->getContent();
+            $sort_chants = array();
+            foreach ($chants as $chant):
+              $sort_chants[$chant->value("alamire:position") . "0"] = $chant;
+            endforeach;
+            ksort($sort_chants);
+            $chants = $sort_chants;
+            ?>
+            <table>
+              <?php foreach ($chants as $key => $chant): ?>
+                <tr>
+                  <td><strong><?php echo $chant->value("alamire:position"); ?></strong></td>
+                  <td><a target="_blank" href="<?php echo $chant->url(); ?>"><?php echo $chant->displayTitle(); ?></a></td>
+                  <td><?php echo str_replace("ci-", "", $chant->value("alamire:cantusID")); ?></td>
+                </tr>
+              <?php endforeach; ?>
+            </table>
+          </div>
+
+        <?php endif; ?>
+      </div>
+    
+      <?php if ($item->value('alamire:originalText')): ?>
+       
+          <div class="columns">
+            <div class="column is-12">
+              <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Text with translation(s)</h4>
+            </div>
+          </div>
+          <?php
+          $originals = $item->value('alamire:originalText', array("all" => true));
+          $orig_provided = $item->value('alamire:originalProvidedBy', array("all" => true));
+          $orig_author = $item->value('alamire:originalAuthor', array("all" => true));
+          $translations = $item->value('alamire:translation', array("all" => true));
+          $y=0;
+          ?>
+          <?php foreach ($originals as $index => $original): ?>
+            <?php
+            $orginal = explode("$$", $original);
+            $text_id = trim($orginal[0]);
+            $original = $orginal[1];
+            ?>
+            <div class="columns">
+              <div class="column is-4" style="padding-top:0.5rem;">
+                <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
+                  <?php 
+                  if($item->value('alamire:relatedText')):
+                    //print related text
+                    $rel = $item->value('alamire:relatedText')->asHtml();
+                    $rel = explode("$$", $rel);
+                    echo " " . trim($rel[1]);
+                  elseif ($item->value('alamire:relatedManuscript')):
+                    //or the manuscript name
+                    $rel = $item->value('alamire:relatedManuscript')->asHtml();
+                    $rel = explode("$$", $rel);
+                    echo " " . $rel[0];
+                  endif; ?>
+                </h3>
+                <div class="trans-text">
+                  <?php echo $original; ?>
+                  
+                </div>
+                <br><br>
+                  <?php if (isset($orig_author[$y])): ?>
+                    <?php echo "Author: " . $orig_author[$y]; ?><br>
+                  <?php endif; ?>
+                  <?php if (isset($orig_provided[$y])): ?>
+                    <?php echo "Provided by: " . $orig_provided[$y]; ?>
+                  <?php endif; ?>
+              </div>
+              <div class="column is-6 translation-column  pt-2" style="padding-top:0.5rem;">
+                <div class="tabs is-small">
+                  <ul>
+                    <?php foreach ($translations as $key => $trans): ?>
+                      <?php $trans1 = explode("$$", $trans); ?>
+                      <?php $trans_id = trim(array_shift($trans1)); ?>
+                      <?php $trans = implode("$$", $trans1); ?>
+                      <?php if ($trans_id == $text_id): ?>
+                        <?php $transs = explode("||", $trans); ?>
+                        <?php foreach ($transs as $trans): ?>
+                          <?php $trans = explode("$$", $trans); ?>
+                          <li class="tab <?php echo $trans[0]; ?>"><a href="#<?php echo trim($trans[0]) . "-" . $key; ?>"><?php echo $trans[0]; ?></a></li>
+                        <?php endforeach; ?>
+                      <?php endif; ?>
+                    <?php endforeach; ?>
+                  </ul>
+                </div>
+                <?php foreach ($translations as $key => $trans): ?>
+                  <?php $trans1 = explode("$$", $trans); ?>
+                  <?php $trans_id = trim(array_shift($trans1)); ?>
+                  <?php $trans = implode("$$", $trans1); ?>
+
+                  <?php if (trim($trans_id) == $text_id): ?>
+                    <?php $transs = explode("||", $trans); ?>
+
+                    <?php foreach ($transs as $trans): ?>
+                      <?php $trans = explode("$$", $trans); ?>
+                      <div id="<?php echo trim($trans[0]) . "-" . $key; ?>" class="tab-pane translation <?php echo $trans[0]; ?>">
+                        <div class="trans-text">
+                          <?php echo $trans[2]; ?>
+                        </div>
+                        <br><br>
+                        <?php if (strlen(trim($trans[1])) != 0): ?>
+                          <?php echo "Translator: " . $trans[1]; ?><br>
+                        <?php endif; ?>
+                        <?php if (strlen(trim($trans[3])) != 0): ?>
+                          <?php echo "Provided by: " . $trans[3]; ?>
+                        <?php endif; ?>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php endif; ?>
+                <?php endforeach; ?>
+              </div>
+            </div>
+            <?php $y++; ?>
+          <?php endforeach; ?>
+
+           <?php if ($item->value('alamire:textNotes')): ?>       
+              <?php foreach ($item->value('alamire:textNotes', array("all" => true)) as $note): ?>                
+                  <div class="trans-text"  style="padding-top:1rem;">
+                    <?php echo $note; ?>
+                  </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($item->value('alamire:fileID') && $type == "Chant"): ?>
+          <?php $file_link = str_replace("data.idemdatabase.org", "lib.is", $item->value('alamire:fileID') . ''); ?>
+          <iframe style="width:100%;min-height:900px;margin:0.5rem 0 2.5rem 0;" src="<?php echo $file_link; ?>"></iframe>
+        <?php endif; ?>
+
+        <?php if ($type == "Composition" || $type == "Chant"): ?>
+          <div class="columns">
+            <div class="column is-12">
+              <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Copyright</h4>
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <div class="columns metadata-column">
+          <div class="column is-one-fifth">
+            <h5 class="has-text-weight-semibold is-6">Metadata</h5>
+          </div>
+          <div class="column is-four-fifths">
+            <div class="values">
+              <div class="value" lang="">
+                Licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 License
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <?php
+        //related manuscript (chants) query
+        $query = "";
+        //local 377, prod 378
+        parse_str("property[0][joiner]=and&property[0][property]=alamire:relatedManuscriptID&property[0][type]=eq&property[0][text]=" . $item->value('alamire:identifier') . "&resource_class_id[]=&resource_template_id[]=15&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search", $query);
+        $chants = $this->api()->search('items', $query);
+        $chants = $chants->getContent();
+
+        if ($chants):
+          $sort_chants = array();
+          $feasts = array();
+          $genres = array();
+          foreach ($chants as $chant):
+            $sort_chants[$chant->value("alamire:folio") . '-' . $chant->value("alamire:position")] = $chant;
+            $feasts[$chant->value("alamire:feast") . ''] = $chant->value("alamire:feast") . '';
+            $genres[$chant->value("alamire:genre") . ''] = $chant->value("alamire:genre") . '';
+          endforeach;
+          ksort($sort_chants);
+          ksort($feasts);
+          ksort($genres);
+          $chants = $sort_chants;
+        ?>
+          <div class="columns">
+            <div class="column is-12">
+              <div class="inventory-wrapper" style="margin-bottom:1rem;">
+                <h4 class="has-text-weight-semibold is-6 section-head">Inventory</h4>
+
+                <?php if ($item->value("alamire:relatedComposition") && $chants): ?>
+                  <div class="tabs">
+                    <ul>
+                      <?php if ($item->value("alamire:relatedComposition")): ?>
+                        <li class="tab"><a href="#polyphony">Polyphony</a></li>
+                      <?php endif; ?>
+                      <?php if ($chants): ?>
+                        <li class="tab"><a href="#chants">Chants</a></li>
+                      <?php endif; ?>
+                    </ul>
+                  </div>
+                <?php endif; ?>
+                <?php if ($item->value("alamire:relatedComposition")): ?>
+                  <div id="polyphony" class="tab-pane animated">
+                    <?php //echo $item->displayValues(); 
+                    ?>
+                  </div>
+                <?php endif; ?>
+                <?php if ($chants): ?>
+                  <div id="chants" class="tab-pane animated">
+                    <nav class="level" style="margin-bottom:6px;">
+                      <!-- Left side -->
+                      <div class="level-left">
+                        <div class="level-item">
+                          <p class="control has-icons-left" style="margin-right:5px;">
+                            <input class="input is-small" style="border-radius:0;" id="incipitFilter" type="text" placeholder="Search..">
+                            <span class="icon is-small is-left">
+                              <i class="fas fa-search"></i>
+                            </span>
+                          </p>
+
+                        </div>
+                      </div>
+
+                      <!-- Right side -->
+                      <div class="level-right">
+                        <div class="select">
+                          <select id="feastFilter">
+                            <option value="" disabled selected>Filter by feast</option>
+                            <option value="">All</option>
+                            <?php foreach ($feasts as $feast): ?>
+                              <option value="<?php echo $feast; ?>"><?php echo $feast; ?></option>
+                            <?php endforeach; ?>
+                          </select>
+                        </div>
+                        <div class="select">
+                          <select id="genreFilter">
+                            <option value="" disabled selected>Filter by genre</option>
+                            <option value="">All</option>
+                            <?php foreach ($genres as $genre): ?>
+                              <option value="<?php echo $genre; ?>"><?php echo $genre ? $genre : "none"; ?></option>
+                            <?php endforeach; ?>
+                          </select>
+                        </div>
+                        <button style="text-decoration:none" id="allFilter" class="button is-text is-small"><span>Reset</span><span class="icon is-small"><i class="fas fa-times"></i></span></button>
+                      </div>
+                    </nav>
+                    <table id="chantstable">
+                      <tr class="header-row">
+                        <th>Page/Folio</th>
+                        <th>Incipit</th>
+                        <th>Feast</th>
+                        <th>Office</th>
+                        <th>Genre</th>
+                        <th>Position</th>
+                        <th>Cantus ID</th>
+                      </tr>
+                      <?php $oldkey = ""; ?>
+                      <?php foreach ($chants as $key => $chant): ?>
+                        <tr class="data" data-incipit="<?php echo $chant->value("alamire:incipit") ?>" data-feast="<?php echo $chant->value("alamire:feast") ?>" data-genre="<?php echo $chant->value("alamire:genre") ?>">
+                          <td style="text-align:center;">
+                            <?php if (!str_contains($oldkey, $chant->value("alamire:folio"))): ?>
+                              <?php echo $chant->value("alamire:folio"); ?>
+                            <?php else: ?>
+                              <span class="hidden-folio"><?php echo $chant->value("alamire:folio"); ?></span>
+                            <?php endif; ?>
+                          </td>
+                          <td><a target="_blank" href="<?php echo $chant->url(); ?>"><?php echo $chant->value("alamire:incipit"); ?></td>
+                          <td><?php echo $chant->value("alamire:feast"); ?></td>
+                          <td><?php echo $chant->value("alamire:office"); ?></td>
+                          <td><?php echo $chant->value("alamire:genre"); ?></td>
+                          <td style="text-align:center;"><?php echo $chant->value("alamire:posText"); ?></td>
+                          <td><?php echo str_replace("ci-", "", $chant->value("alamire:cantusID")); ?></td>
+                        </tr>
+                        <?php $oldkey = $key; ?>
+                      <?php endforeach; ?>
+                    </table>
+                  </div>
+                <?php endif; ?>
+
+              </div>
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($item->value("alamire:relatedProductionUnit") && $type != "Composition"): ?>
+          <div class="inventory-wrapper production-unit-wrapper">
+            <h4 class="has-text-weight-semibold is-6 section-head" style="margin-bottom:0.5rem;">Inventory</h4>
+            <?php $pus = []; ?>
+           
+            <?php foreach ($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu): ?>
+              <?php $pu = $pu->valueResource(); ?>
+              <?php if ($pu): ?>
+                <?php $pus[$pu->value("alamire:sequence") . ''] = $pu; ?>
+              <?php endif; ?>
+            <?php endforeach; ?>
+            <?php ksort($pus); ?>
+            <?php foreach ($pus as $pu): ?>
+              <div class="production-unit">
+                <?php if ($pu->value("alamire:rismNr")): ?>
+                  <?php $rismNr = $pu->value("alamire:rismNr") . "; "; ?>
+                <?php else: ?>
+                  <?php $rismNr = ""; ?>
+                <?php endif; ?>
+                <?php if ($auth && $pu->value("alamire:fileID")): ?>
+                  <a target="_blank" href="<?php echo $pu->value("alamire:fileID"); ?>" style="font-style:italic;">
+                    <?php echo $pu->displayTitle(); ?>
+                    <?php if ($rismNr || $pu->value("alamire:part")): ?>
+                      <?php echo "[" . $rismNr . $pu->value("alamire:part") . "]"; ?>
+                    <?php endif; ?>
+                  </a>
+                <?php else: ?>
+                  <span style="font-style:italic;">
+                    <?php echo $pu->displayTitle(); ?>
+                    <?php if ($rismNr || $pu->value("alamire:part")): ?>
+                      <?php echo "[" . $rismNr . $pu->value("alamire:part") . "]"; ?>
+                    <?php endif; ?>
+                  </span>
+                <?php endif; ?>
+                <?php if ($pu->value("alamire:rismUrl")): ?>
+                  <a style="vertical-align:top;vertical-align:-moz-middle-with-baseline;" href="<?php echo $pu->value("alamire:rismUrl"); ?>"><span><img style="height:19px;margin:0 5px;" src="/themes/base/asset/img/rism.png"></span></a>
+                <?php endif; ?>
+                <a href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>
+
+                <div class="hidden-content" style="display:none">
+                  <div class="metadata">
+                    <?php echo $pu->displayValues(); ?>
+                  </div>
+                  <?php if ($pu->value("alamire:relatedCompositionFull")): ?>
+                    <div class="text" style="max-height:250px;margin-bottom:1rem;">
+                      <table class="">
+                        <?php $s_comps = [];
+                        $i = 0; ?>
+                        <?php foreach ($pu->value("alamire:relatedCompositionFull", ['all' => true]) as $comp):
+                          $comp = explode("$$", $comp->asHtml());
+                          $comp = [
+                            "id" => trim($comp[0]),
+                            "structure" => trim($comp[1]),
+                            "title" => trim($comp[2]),
+                            "folio" => trim($comp[3]),
+                            "page" => trim($comp[4]),
+                            "link" => trim($comp[5]),
+                            "rank" => trim($comp[6])
+                          ];
+                          ?>
+                          <?php $structure = explode(";", $comp['structure']); ?>
+                          <?php if ($comp): ?>
+                            <?php if (sizeof($structure) == 1):?>
+                              
+                              <?php 
+                                $parent_id = $comp["id"];
+                                parse_str('property[0][joiner]=and&property[0][property][]=216&property[0][type]=eq&property[0][text]='.$parent_id.'&resource_template_id[]=3&sort_by=created&sort_order=desc&datetime[0][joiner]=and&datetime[0][field]=created&datetime[0][type]=gte&datetime[0][value]=&is_public=&has_media=&has_original=&has_thumbnails=', $query);
+                                $comp_record = $this->api()->searchOne('items',$query);
+                                $comp_record = $comp_record->getContent();
+                              ?>
+                              <tr id="<?php echo $parent_id; ?>">
+                            <?php elseif (sizeof($structure) > 1): ?>
+                               <tr class="child-of-<?php echo $parent_id; ?>" style="display:none">
+                            <?php endif;?>
+
+                              <td>
+                                <?php if($comp_record && sizeof($structure) == 1): ?>
+                                    <?php echo $comp_record->value("alamire:creator"); ?>
+                                <?php endif; ?>
+                              </td>
+                              <td>
+                                <?php if ($comp["structure"]): ?>
+                                  <?php if (sizeof($structure) > 1): ?>
+                                    <span style="margin-left:<?php echo (1.2 * sizeof($structure)) ?>rem;"><?php echo $comp["title"]; ?></span>
+                                  <?php elseif($comp_record): ?>
+                                    <a href="<?php echo $comp_record->url(); ?>"><?php echo $comp["title"]; ?></a>
+                                  <?php else: ?>
+                                    <?php echo $comp["title"]; ?>  
+                                  <?php endif; ?>
+                                <?php endif; ?>
+                              </td>
+                              <td>          
+                                <?php if ($auth && $comp["folio"] != "fol."): ?>
+                                  <a href="<?php echo $comp["link"]; ?>"><?php echo $comp["folio"] ?></a>
+                                <?php elseif($comp["folio"] != "fol."): ?>
+                                  <?php echo $comp["folio"] ?>
+                                <?php endif; ?>
+                              </td>
+                              <td style="text-align: right;">
+                              <?php if (sizeof($structure) == 1):?>
+                                
+                                  <button aria-expanded='false' alt='toggle' class='button is-small is-primary toggle-btn' data-target='child-of-<?php echo $parent_id ; ?>'>
+                                  <span class='icon is-small'>
+                                  <i class='fas fa-chevron-down'></i>
+                                  </span>
+                                  </button>
+                                
+                              <?php endif;?>  
+                              </td>
+                            </tr>
+                          <?php endif; ?>
+                        <?php endforeach; ?>
+                      </table>
+                    </div>
+                  <?php endif; ?>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($type == "Composition"):
+          $pus = array();
+          $appears = array();
+          //handle related manuscipts
+          if ($item->value("alamire:relatedManuscript")):
+            foreach ($item->value("alamire:relatedManuscript", ['all' => true]) as $ms):
+              if (str_contains($ms->asHtml(), "$$")):
+                $ms = explode(" $$ ", $ms->asHtml());
+
+                if (isset($ms[5])):
+
+                  $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=' . $ms[0] . '&item_set_id[]=&site_id=';
+                  parse_str($query, $query);
+
+                  $label = "";
+                  //page
+                  if (trim($ms[2]) == "fol.") {
+                    $label = trim($ms[3]);
+                    $label = str_replace("page:", "p.", $label);
+                  } else {
+                    //fol
+                    $label = trim($ms[2]);
+                  }
+
+                  if ($label && trim($ms[5])):
+                  //part
+                  //$label = $label." (".trim($ms[5]).")";
+                  endif;
+
+                  $ms_item = $this->api()->searchOne('items', $query);
+                  $ms_item = $ms_item->getContent();
+                  if ($ms_item):
+                    $html = '<a href="' . $ms_item->url() . '">' . $ms[0] . '</a>';
+                  else:
+                    $html = $ms[0];
+                  endif;
+                  if (str_contains($ms[4], "http") && $auth):
+                    $link = str_replace(" link:", "", $ms[4]);
+                    $link = str_replace("&amp;", "&", $link);
+                    $html .= ' <span style="font-style:italic;border-bottom:1px solid #cc6733"><a target="_blank" href="' . $link . '">' . $label . '</a></span>';
+                  else:
+                    $html .= ' <span style="font-style:italic;">' . $label . '</span>';
+                  endif;
+
+                  $appears[trim($ms[0]) . trim($ms[5])] = $html;
+
+                else:
+                  $appears[$ms] = $ms;
+                endif;
+              endif;
+            endforeach;
+          endif;
+          //handle related production unit
+         
+          if ($item->value("alamire:relatedProductionUnit")):
+            foreach ($item->value("alamire:relatedProductionUnit", ['all' => true]) as $pu):
+              $pu = $pu->valueResource();
+              if ($pu):
+                $pus[$pu->value("alamire:identifier") . ''] = $pu;
+              endif;
+            endforeach;
+          endif;
+          //handle interstitial info
+          $ints_a = [];
+          $ints_b = [];
+          $expl = '';
+          $ints = $item->value("alamire:interstitialInfo", ['all' => true]);
+          foreach ($ints as $int):
+            $expl = explode('$$', $int . '');
+            //if has edition
+            if ($expl[0]):
+              $ints_a[trim($expl[0])][trim($expl[1])] = [
+                "ed" => trim($expl[0]),
+                "part" =>  trim($expl[2]),
+                "fol" => trim($expl[3]),
+                "link" => trim($expl[4]),
+                'pu' => trim($expl[1])
+              ];
+            else:
+              $appears[trim($expl[1])] = [
+                'title' => trim($expl[1]),
+                "fol" => trim($expl[3]),
+                "part" =>  trim($expl[2]),
+                "link" => trim($expl[4]),
+                'pu' => trim($expl[1])
+              ];
+            endif;
+          endforeach;
+        ?>
+
+          <?php if ($ints_a || $appears): ?>
+            <div class="production-unit-comp-wrapper">
+              <?php if ($appears): ?>
+                <div class="columns">
+                  <div class="column is-one-fifth">
+                    <h4 class="has-text-weight-semibold is-6 ">In manuscripts</h4>
+                  </div>
+                  <div class="column is-four-fifths">
+                    <div class="values">
+                      <?php ksort($pus, SORT_NATURAL); ?>
+                      <?php $ed = "";
+                      $i = 0; ?>
+                      <?php if ($appears):
+                        ksort($appears, SORT_NATURAL);
+                      endif; ?>
+                      <?php foreach ($appears as $key => $in): ?>
+                        <div class="value resource items" lang="">
+                          <?php if (!is_array($in)): ?>
+                            <?php echo $in; ?>
+                          <?php else: ?>
+                            <?php if ($in["pu"] && isset($pus[$in["pu"]])): ?>
+                              <?php
+                              $pu = $pus[$in["pu"]];
+                              $url = $site->url() . "/item/" . strtolower($pu->value("alamire:relatedManuscript") . '');
+                              $url = str_replace(" ", "", $url);
+                              ?>
+                              <a class="resource-link" href="<?php echo $url; ?>"><?php echo $pu->displayTitle(); ?></a>
+                              <?php echo $in["fol"] ? "<span style='font-style:italic;'>fol. " . $in["fol"] . "</span>" : ""; ?>
+                              <?php echo $in["part"] ? "(" . $in["part"] . ")" : ""; ?>
+                            <?php else: ?>
+                              <?php echo $in["pu"]; ?>
+                            <?php endif; ?>
+                          <?php endif; ?>
+                        </div>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                </div>
+              <?php endif; ?>
+              <?php if ($ints_a): ?>
+                <div class="columns">
+                  <div class="column is-one-fifth">
+                    <h4 class="has-text-weight-semibold is-6 ">In editions</h4>
+                  </div>
+                  <div class="column is-four-fifths">
+                    <div class="values">
+                      <?php $i = 0; ?>
+                      <?php foreach ($ints_a as $key => $int): ?>
+                        <div class="value resource items" lang="">
+                          <?php $key = str_replace("[", "[RISM ", $key); ?>
+                          <?php echo "<span style='font-weight:bold'>" . $key . "</span>"; ?>
+                          <?php if ($i == 0): ?>
+                            <a style="margin-left:5px;" href="#" class="expand"><i class='fa fa-chevron-up'></i></a>
+                            <div class="hidden-content" style="display: block" ;>
+                            <?php else: ?>
+                              <a style="margin-left:5px;" href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>
+                              <div class="hidden-content" style="display: none" ;>
+                              <?php endif; ?>
+                              <?php ksort($int, SORT_NATURAL); ?>
+                              <?php foreach ($int as $in): ?>
+                                <div>
+                                  <?php if ($in["pu"] && isset($pus[$in["pu"]])): ?>
+                                    <?php
+                                    $pu = $pus[$in["pu"]];
+                                    $url = $site->url() . "/item/" . strtolower($pu->value("alamire:relatedPrintedSource") . '');
+                                    $url = str_replace(" ", "", $url);
+                                    ?>
+                                    <a class="resource-link" href="<?php echo $url; ?>"><?php echo $pu->displayTitle(); ?></a>
+                                  <?php else: ?>
+                                    <?php echo $in["pu"]; ?>
+                                  <?php endif; ?>
+                                  <?php if ($auth && $in["link"]): ?>
+                                    <a class="resource-link" target="_blank" href="<?php echo $in["link"]; ?>" style="font-style:italic;">
+                                    <?php endif; ?>
+                                    <?php echo $in["fol"]; ?>
+                                    <?php echo $in["part"] ? "(" . $in["part"] . ")" : ""; ?>
+                                    <?php if ($auth && $in["link"]): ?>
+                                    </a>
+                                  <?php endif; ?>
+                                </div>
+                              <?php endforeach; ?>
+                              </div>
+                            </div>
+                            <?php $i++; ?>
+                          <?php endforeach; ?>
+                        </div>
+                    </div>
+                  </div>
+                <?php endif; ?>
+                </div>
+              <?php endif; ?>
+            <?php endif; ?>
+
+
+            <?php
+            //related manuscript (chants) query
+            $query = "";
+            //local 385, prod 402
+            parse_str("property[0][joiner]=and&property[0][property]=alamire:cantusID&property[0][type]=eq&property[0][text]=" . $item->value('alamire:cantusID') . "&resource_class_id[]=&item_set_id[]=&site_id=&owner_id&sort_order=asc&submit=Search", $query);
+            $chants = $this->api()->search('items', $query);
+            $chants = $chants->getContent();
+            ?>
+            <?php if ($type == "Chant" && sizeof($chants) > 1): ?>
+              <div class="columns">
+                <div class="column  is-12">
+                  <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Concordances in the Cantus Index network</h4>
+
+                  <div class="inventory-wrapper">
+
+                    <?php if ($chants): ?>
+                      <div id="chants" class="">
+                        <table>
+                          <tr class="header-row">
+                            <th>Siglum</th>
+                            <th>Page/Folio</th>
+                            <th>Seq</th>
+                            <th>Incipit</th>
+                            <th>Office</th>
+                            <th>Genre</th>
+                            <th>Pos</th>
+                            <th>Feast</th>
+                            <th>Mode</th>
+                            <th>Image</th>
+                            <th>DB</th>
+                          </tr>
+                          <?php $oldkey = ""; ?>
+                          <?php foreach ($chants as $key => $chant): ?>
+                            <tr class="data" data-incipit="<?php echo $chant->value("alamire:incipit") ?>" data-feast="<?php echo $chant->value("alamire:feast") ?>" data-genre="<?php echo $chant->value("alamire:genre") ?>">
+                              <td><?php echo $chant->value("alamire:relatedManuscriptID"); ?></td>
+                              <td style="text-align:center;">
+                                <?php echo $chant->value("alamire:folio"); ?>
+                              </td>
+                              <td><?php echo $chant->value("alamire:position"); ?></td>
+                              <td><a target="_blank" href="<?php echo $chant->url(); ?>"><?php echo $chant->value("alamire:incipit"); ?></td>
+                              <td><?php echo $chant->value("alamire:office"); ?></td>
+                              <td><?php echo $chant->value("alamire:genre"); ?></td>
+                              <td style="text-align:center;"><?php echo $chant->value("alamire:posText"); ?></td>
+                              <td><?php echo $chant->value("alamire:feast"); ?></td>
+                              <td><?php echo $chant->value("alamire:mode"); ?></td>
+                            </tr>
+                            <?php $oldkey = $key; ?>
+                          <?php endforeach; ?>
+                        </table>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              </div>
+            <?php endif; ?>
+
+            <div class="columns">
+              <div class="column  is-12">
+                <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Permalinks</h4>
+              </div>
+            </div>
+
+            <div class="columns">
+              <div class="column is-one-fifth">
+                <h5 class="has-text-weight-semibold is-6">Metadata</h5>
+              </div>
+              <div class="column is-three-fifths">
+                <div class="values">
+                  <div class="value permalink-data" lang="">
+                    <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid"); ?>" class="button is-small is-outlined is-primary">
+                      <span>https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid"); ?></span>
+                    </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
+                      <span style="display:none">https://data.idemdatabase.org/item/<?php echo $item->value("alamire:pid"); ?></span>
+                      <span style="margin:0;" class="icon is-small">
+                        <i class="fas fa-clipboard"></i>
+                        <span class="tooltiptext">Copied</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <?php if ($auth): ?>
+              <?php if ($item->value('alamire:hasVersion')): ?>
+                <?php if (str_contains($item->value('alamire:hasVersion') . '', "representation")): ?>
+                  <?php $resolv = str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); ?>
+
+                  <div class="columns">
+                    <div class="column is-one-fifth">
+                      <h5 class="has-text-weight-semibold is-6">Images</h5>
+                    </div>
+                    <div class="column is-three-fifths">
+                      <div class="values">
+                        <div class="value permalink-data" lang="">
+                          <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="<?php echo $resolv; ?>" class="button is-small is-outlined is-primary">
+                            <span><?php echo $resolv; ?></span>
+                          </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
+                            <span style="display:none"><?php echo $resolv; ?></span>
+                            <span style="margin:0;" class="icon is-small">
+                              <i class="fas fa-clipboard"></i>
+                              <span class="tooltiptext">Copied</span>
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="columns">
+                    <div class="column is-one-fifth">
+                      <h5 class="has-text-weight-semibold is-6">IIIF Manifest</h5>
+                    </div>
+                    <div class="column is-three-fifths">
+                      <div class="values">
+                        <div class="value permalink-data" lang="">
+                          <a style="border-right:none;border-radius: 2px 0px 0px 2px;" href="<?php echo str_replace("representation", "manifest", $resolv); ?>" class="button is-small is-outlined is-primary">
+                            <span><?php echo str_replace("representation", "manifest", $resolv); ?></span>
+                          </a><button style="border-left:none;border-radius: 0 2px 2px 0px;padding-left: 0.8em;padding-right: 0.7em;" class="button is-small is-primary copy">
+                            <span style="display:none"><?php echo str_replace("representation", "manifest", $resolv); ?></span>
+                            <span style="margin:0;" class="icon is-small">
+                              <i class="fas fa-clipboard"></i>
+                              <span class="tooltiptext">Copied</span>
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <?php endif; ?>
+              <?php endif; ?>
+            <?php else: ?>
+              <p>
+                <a class="button is-primary is-small" href="<?php echo $site->url() . '/guest/login?redirect=' . $item->url(); ?>">
+                  <span class="icon is-small">
+                    <i class="fas fa-user"></i>
+                  </span>
+                  <span>Log in to access the images</span>
+                </a>
+              </p>
+            <?php endif; ?>
+            </div>
+        </div>
+  </div>
+
+  <?php
+  $page = $this->params()->fromQuery('page', 1);
+  $property = $this->params()->fromQuery('property');
+  $subjectValues = $item->displaySubjectValues($page, 25, $property);
+  ?>
+
+  <?php $this->trigger('view.show.after'); ?>
+  <script>
+    $(document).ready(function() {
+
+      $(".expand").each(function(index, element) {
+        if (jQuery(this).next(".hidden-content").is(':empty')) {
+          jQuery(this).remove();
+        }
+      });
+
+      jQuery(".expand").click(function() {
+        jQuery(this).next(".hidden-content", this).toggle();
+        $(this).html(function(i, text) {
+          return text === '<i class="fa fa-chevron-down" aria-hidden="true"></i>' ? "<i class='fa fa-chevron-up'></i>" : "<i class='fa fa-chevron-down'></i>";
+        })
+        return false;
+      });
+
+      jQuery(".extra-button").click(function(e) {
         e.preventDefault();
         jQuery(".extra").toggle();
-    });
+      });
 
-    $('.text').each(function(){
-      if($(this).height() > 150){
-        $(this).readmore({ speed: 75, collapsedHeight: 150, moreLink: '<a class="more-link" href="#">Show more</a>', lessLink: '<a class="more-link" href="#">Show less</a>' });;
-      }      
-    });
+      $(".copy").click(function(e) {
+        var text = $('span:first', this).text();
+        navigator.clipboard.writeText(text);
+        $('span:last', this).fadeIn("slow");;
+        $('span:last', this).fadeOut("slow");
+      });
 
-    $(".copy").click(function(e){
-      var text = $('span:first', this).text();
-      navigator.clipboard.writeText(text);
-      $('span:last', this).fadeIn("slow");;   
-      $('span:last', this).fadeOut("slow");   
-    });
+      $('.thumbnails').appendTo('.filter-nav');
+      $(".Inventory").appendTo("#polyphony");
+      $(".inventory-wrapper").insertBefore(".Bibliography");
+      $(".production-unit-comp-wrapper").insertBefore(".Category");
 
-    $('.thumbnails').appendTo('.navigation');
-
-    $('.collapsible').click(function() {
-     var index = $(this).data('index');     
-      $('.player').each(function(i, obj) {
-          if($(this).data('index') == index){
+      $('.collapsible').click(function() {
+        var index = $(this).data('index');
+        $('.player').each(function(i, obj) {
+          if ($(this).data('index') == index) {
             $(this).toggle();
-          }else{
+          } else {
             $(this).hide();
           }
+        });
       });
-    }); 
 
-    $('li.tab:first').addClass('is-active');
-    $('.tab-pane:first').addClass('is-active');
+      $('li.tab:first-child').addClass('is-active');
+      $('div.tab-pane').addClass('is-active');
+      if ($('#polyphony').length) {
+        $('#chants').removeClass('is-active');
+      }
 
-   
+      $('.translation-column > .tab-pane ~ .tab-pane').removeClass('is-active');
 
-    $('li.tab').click(function(e) {
-      e.preventDefault();
-      var hash = $(this).children('a').eq(0).attr('href');
-      $('.tab-pane').removeClass('is-active');
-      $(hash).addClass('is-active');
-      $('li.tab').removeClass('is-active');
-      $(this).addClass('is-active');
-      return true;
+      $('li.tab').click(function(e) {
+        e.preventDefault();
+        var hash = $(this).children('a').eq(0).attr('href');
+        //$('.tab-pane ').removeClass('is-active');
+        $(hash).siblings().removeClass("is-active");
+        $(hash).addClass('is-active');
+        //$('li.tab').removeClass('is-active');
+        $(this).siblings().removeClass("is-active");
+        $(this).addClass('is-active');
+
+        return true;
+      });
+
+      //filter table
+      $("#incipitFilter").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        if (value) {
+          $('.hidden-folio').show();
+        } else {
+          $('.hidden-folio').hide();
+        }
+        $('#chants tr.data').hide();
+        $("#chants tr.data").filter(function() {
+          if ($(this).text().toLowerCase().indexOf(value) > -1) {
+            //contains text
+            $(this).show();
+
+            if ($('#genreFilter').val()) {
+              if ($(this).data('genre') != $('#genreFilter').val()) {
+                $(this).hide();
+              }
+            }
+
+            if ($('#feastFilter').val()) {
+              if ($(this).data('feast') != $('#feastFilter').val()) {
+                $(this).hide();
+              }
+            }
+          }
+        });
+      });
+
+      $('#feastFilter').on('change', function() {
+        //$('#chants tr.data[data-feast!="'+$(this).val()+'"]').hide();
+        filterFunction();
+      });
+
+      $('#genreFilter').on('change', function() {
+        //$('#chants tr.data[data-genre!="'+$(this).val()+'"]').hide();
+        filterFunction();
+      });
+
+      $('#allFilter').on('click', function() {
+        $('#chants tr.data').show();
+        $('#genreFilter option:first').prop('selected', true);
+        $('#feastFilter option:first').prop('selected', true);
+
+        $('.hidden-folio').hide();
+      });
+
+      function filterFunction() {
+        var value = $('#incipitFilter').val().toLowerCase();
+        $('#chants tr.data').hide();
+        $("#chants tr.data").filter(function() {
+          if ($(this).text().toLowerCase().indexOf(value) > -1) {
+            //contains text
+            $(this).show();
+            $('.hidden-folio').show();
+
+            if ($('#genreFilter').val()) {
+              if ($(this).data('genre') != $('#genreFilter').val()) {
+                $(this).hide();
+              }
+            }
+
+            if ($('#feastFilter').val()) {
+              if ($(this).data('feast') != $('#feastFilter').val()) {
+                $(this).hide();
+              }
+            }
+          }
+        });
+      }
+
+      $(document).ready(function() {
+        $('.toggle-btn').on('click', function() {
+          var targetId = $(this).data('target');
+          $('.' + targetId).toggle(); // toggles <tbody> visibility
+
+          // Toggle chevron icon
+          var icon = $(this).find('i');
+          icon.toggleClass('fa-chevron-down fa-chevron-up');
+
+          var expanded = $(this).attr('aria-expanded') === 'true';
+          $(this).attr('aria-expanded', !expanded);
+        });
+
+        $('.toggle-btn').each(function(){
+          var targetId = $(this).data('target');
+          if ($('.' + targetId).length === 0) {
+            $(this).hide(); // or use .remove() if you want it gone
+          }
+        });
+      });
+
     });
-    
-  });
-</script>
+  </script>

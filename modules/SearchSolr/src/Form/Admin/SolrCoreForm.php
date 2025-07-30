@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016
- * Copyright Daniel Berthereau 2020
+ * Copyright Daniel Berthereau 2020-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -150,71 +150,29 @@ class SolrCoreForm extends Form
                 'attributes' => [
                     'id' => 'bypass_certificate_check',
                 ],
-            ]);
+            ])
+            ->add([
+                'name' => 'http_request_type',
+                'type' => Element\Radio::class,
+                'options' => [
+                    'label' => 'Http request type', // @translate
+                    'info' => 'Choose if requests to Solr use "get" or "post".', // @translate
+                    'documentation' => 'https://solarium.readthedocs.io/en/latest/plugins/#postbigrequest-plugin',
+                    'value_options' => [
+                        'post' => 'Post (allow big queries and numerous facets)', // @translate
+                        'get' => 'Get (cacheable)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'required' => false,
+                    'value' => 'post',
+                ],
+            ])
+        ;
 
         $settingsFieldset->add($clientSettingsFieldset);
 
         $settingsFieldset
-            ->add([
-                'name' => 'is_public_field',
-                'type' => Element\Text::class,
-                'options' => [
-                    'label' => 'Is public field', // @translate
-                    'info' => 'Name of Solr field that will be set when a resource is public.
-It must be a single-valued, boolean-based field (*_b in default solr config).', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'is_public_field',
-                    'required' => true,
-                    'placeholder' => 'is_public_b',
-                    'value' => 'is_public_b',
-                ],
-            ])
-            ->add([
-                'name' => 'resource_name_field',
-                'type' => Element\Text::class,
-                'options' => [
-                    'label' => 'Resource name field', // @translate
-                    'info' => 'Name of Solr field that will contain the resource name (or resource type, e.g. "items", "item_sets"…).
-It must be a single-valued, string-based field (*_s in default solr config).', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'resource_name_field',
-                    'required' => true,
-                    'placeholder' => 'resource_name_s',
-                    'value' => 'resource_name_s',
-                ],
-            ])
-            ->add([
-                'name' => 'sites_field',
-                'type' => Element\Text::class,
-                'options' => [
-                    'label' => 'Site ids field', // @translate
-                    'info' => 'Name of Solr field that will contain the sites ids.
-It must be a multi-valued, integer-based field (*_is in default solr config).', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'sites_field',
-                    'required' => true,
-                    'placeholder' => 'site_id_is',
-                    'value' => 'site_id_is',
-                ],
-            ])
-            ->add([
-                'name' => 'index_field',
-                'type' => Element\Text::class,
-                'options' => [
-                    'label' => 'Engine field', // @translate
-                    'info' => 'Name of Solr field that will contain the advanced search engine name in order to support multiple indexes on the same core.
-This is an advanced feature that is not required in most of the cases.
-It must be a single-valued, string-based field, like "index_id".', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'index_field',
-                    'required' => false,
-                    'placeholder' => 'index_id',
-                ],
-            ])
             ->add([
                 'name' => 'support',
                 'type' => Element\Radio::class,
@@ -251,13 +209,13 @@ It must be a single-valued, string-based field, like "index_id".', // @translate
                 // 'type' => 'Omeka\Form\Element\LocaleSelect',
                 'type' => Element\Text::class,
                 'options' => [
-                    'label' => 'Resource languages codes for shared core', // @translate
-                    'info' => 'A third party may need to know the languages of a resource, even if it has no meaning in Omeka.', // @translate
+                    'label' => 'Resource languages 2-letters iso codes for shared core', // @translate
+                    'info' => 'A third party may need to know the languages of a resource, even if it has no meaning in Omeka. Use "und" for undetermined.', // @translate
                 ],
                 'attributes' => [
                     'id' => 'resource_languages',
                     'multiple' => true,
-                    // 'value' => 'und',
+                    'placeholder' => 'fr de sp und',
                 ],
             ])
             // TODO Replace the checkbox by a button.
@@ -289,14 +247,14 @@ It must be a single-valued, string-based field, like "index_id".', // @translate
                 'type' => Element\Text::class,
                 'options' => [
                     'label' => 'Minimum match (or/and)', // @translate
-                    'info' => 'Integer "1" means "OR", "100%" means "AND". Complex expressions are possible.
+                    'info' => 'Integer "1" means "OR", "100%" means "AND". Complex expressions are possible, like "3<80%".
 If empty, the config of the solr core (solrconfig.xml) will be used.', // @translate
-                    'documentation' => 'https://lucene.apache.org/solr/guide/8_5/the-dismax-query-parser.html#mm-minimum-should-match-parameter',
+                    'documentation' => 'https://solr.apache.org/guide/the-dismax-query-parser.html#mm-minimum-should-match-parameter',
                 ],
                 'attributes' => [
                     'required' => false,
                     'value' => '',
-                    'placeholder' => '50%',
+                    'placeholder' => '3<80%',
                 ],
             ])
             ->add([
@@ -306,13 +264,13 @@ If empty, the config of the solr core (solrconfig.xml) will be used.', // @trans
                     'label' => 'Tie breaker', // @translate
                     'info' => 'Increase score according to the number of matched fields.
 If empty, the config of the solr core (solrconfig.xml) will be used.', // @translate
-                    'documentation' => 'https://lucene.apache.org/solr/guide/8_5/the-dismax-query-parser.html#the-tie-tie-breaker-parameter',
+                    'documentation' => 'https://solr.apache.org/guide/the-dismax-query-parser.html#the-tie-tie-breaker-parameter',
                 ],
                 'attributes' => [
                     'id' => 'tie_breaker',
                     'required' => false,
                     'value' => '',
-                    'placeholder' => '0.10',
+                    'placeholder' => '0.15',
                     'inclusive' => true,
                     'min' => '0.0',
                     'max' => '1.0',

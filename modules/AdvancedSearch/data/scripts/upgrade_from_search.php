@@ -2,7 +2,6 @@
 
 namespace AdvancedSearch;
 
-use Omeka\Mvc\Controller\Plugin\Messenger;
 use Omeka\Stdlib\Message;
 
 /**
@@ -21,7 +20,7 @@ if (!$searchModule) {
     return;
 }
 
-$messenger = new Messenger();
+$messenger = $services->get('ControllerPluginManager')->get('messenger');
 
 $oldVersion = $searchModule->getIni('version');
 if (version_compare($oldVersion, '3.5.7', '<')) {
@@ -180,6 +179,17 @@ WHERE
 SQL;
 $connection->executeStatement($sql);
 
+$sql = <<<'SQL'
+REPLACE INTO `site` (`navigation`)
+SELECT
+    REPLACE(`site`.`navigation`,
+        "search_page_id",
+        "advancedsearch_config_id"
+    )
+FROM `site`
+SQL;
+$connection->executeStatement($sql);
+
 // Remove original data and module.
 
 $sql = <<<'SQL'
@@ -240,8 +250,7 @@ $inputs = [
 $sql = <<<'SQL'
 SELECT `id`, `settings` FROM `search_config`;
 SQL;
-$stmt = $connection->executeQuery($sql);
-$result = $stmt->fetchAll(\PDO::FETCH_KEY_PAIR) ?: [];
+$result = $connection->executeQuery($sql)->fetchAllKeyValue() ?: [];
 foreach ($result as $id => $searchConfigSettings) {
     $searchConfigSettings = json_decode($searchConfigSettings, true) ?: [];
     $searchConfigSettings['resource_fields'] = [
@@ -265,7 +274,7 @@ foreach ($result as $id => $searchConfigSettings) {
         case 'itemSet':
             if (!empty($inputs[strtolower($form['item_set_filter_type'] ?? '')])) {
                 $searchConfigSettings['form']['filters'][] = [
-                    'field' => $form['items_set_id_field'] ?? 'items_set_id_field',
+                    'field' => $form['item_set_id_field'] ?? 'item_set_id_field',
                     'label' => 'Collection',
                     'type' => $inputs[strtolower($form['item_set_filter_type'])] ?? 'Select',
                 ];

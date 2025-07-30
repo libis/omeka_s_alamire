@@ -56,6 +56,7 @@ composer install --no-dev
 - A running Apache Solr. Compatibility:
   - version 3.5.15 of this module has been tested with Solr 5 and Solr 6.
   - version 3.5.15.2 of this module has been tested with Solr 6 to Solr 8.
+  - version 3.5.32.3 of this module has been tested with Solr 8 and above.
 
 Quick start
 -----------
@@ -165,14 +166,19 @@ TODO
 ----
 
 - [ ] Create an automatic mode from the resource templates or from Dublin Core.
-- [ ] Create automatically multiple index by property (text, string, lower, latin).
+- [ ] Create automatically multiple index by property (text, string, lower, latin, for query, order, facets, etc.).
 - [ ] Use the search engine directly without search api.
 - [ ] Check lazy loading and use serialized php as response format for [performance](https://solarium.readthedocs.io/en/stable/solarium-concepts/).
-- [ ] Speed up indexation (in module Search too) via direct sql? BulkExport? Queue?
+- [x] Speed up indexation (in module Search too) via direct sql? BulkExport? Queue?
 - [ ] Replace class Schema and Field with solarium ones.
 - [ ] Rewrite and simplify querier to better handle solarium.
 - [ ] Improve management of value resources and uris, and other special types.
 - [ ] Add a separate indexer for medias and pages.
+- [ ] Add a redirect from item-set/browse to search page, like item-set/show.
+- [ ] Remove the fix for indexation of string "0", replaced by "00".
+- [ ] Include all new advanced filters mode for properties.
+- [ ] Manage indexation of item sets when module Item Set Tree is used.
+- [ ] Facet range: determine start/end/gap automatically or add option.
 
 
 Solr install <a id="solr-install"></a>
@@ -190,7 +196,7 @@ and Solr 7.7 and 8.8 (with Java [1.8] or higher). The last stable versions of So
 and Java (OpenJdk 11) are recommended.
 
 ```sh
-cd /opt
+cd /tmp
 # Check if java is installed with the good version.
 java -version
 # If not installed, install it (uncomment)
@@ -199,17 +205,23 @@ java -version
 #sudo dnf install java-11-openjdk-devel.x86_64
 # If the certificate is obsolete on Apache server, add --no-check-certificate.
 # To install another version, just change all next version numbers below.
-wget https://archive.apache.org/dist/lucene/solr/8.8.0/solr-8.8.0.tgz
+wget https://dlcdn.apache.org/solr/solr/9.0.0/solr-9.0.0.tgz
 # Extract the install script
-tar zxvf solr-8.8.0.tgz solr-8.8.0/bin/install_solr_service.sh --strip-components=2
+tar zxvf solr-9.0.0.tgz solr-9.0.0/bin/install_solr_service.sh --strip-components=2
 # Launch the install script (by default, Solr is installed in /opt; check other options if needed)
-sudo bash ./install_solr_service.sh solr-8.8.0.tgz
+sudo bash ./install_solr_service.sh solr-9.0.0.tgz
 # Add a symlink to simplify management (if not automatically created).
-#sudo ln -s /opt/solr-8.8.0 /opt/solr
+#sudo ln -s /opt/solr-9.0.0 /opt/solr
+# In some cases, there may be a issue on start due to missing log directory:
+#sudo mkdir /opt/solr/server/logs && sudo chown solr:adm /opt/solr/server/logs && sudo systemctl restart solr
 # Clean the sources.
-rm solr-8.8.0.tgz
+rm solr-9.0.0.tgz
 rm install_solr_service.sh
 ```
+
+If not protected by a firewall or a proxy, you will access to solr admin page at
+http://example.org:8983/solr. See below to create a ssh tunnel to access it when
+protected.
 
 ### Integration in the system
 
@@ -231,111 +243,108 @@ sudo su - solr -c "/opt/solr/bin/solr restart"
 ```
 
 **Warning**: Solr is a java application, so it is very slow to start, stop and
-restart. You may need to wait five minutes between two commands.
+restart. You may need to wait until five minutes between two commands.
+
+In case of an issue, you may stop the service or kill it. In that case, you need
+to kill java too.
 
 Solr is automatically launched and available in your browser at [http://localhost:8983].
 
-Solr is available via command line too at `/opt/solr/bin/solr`. You may want to
-add yourself to the solr group (`sudo usermod -aG solr myName`).
+Solr is available via command line too at `/opt/solr/bin/solr`. If solr created
+a group "solr", you may need to add yourself to it (`sudo usermod -aG solr myName`).
 
-If the service is not available after the install, you can create the file "/etc/systemd/system/solr.service",
-that may need to be adapted for the distribution, here for CentOs 8 (see the [solr service gist]):
-This is useless if the file "/etc/init.d/solr" is available and used.
+If the service is not available after the install, and ***only*** if the service
+is not available as init or service, you can create the file
+"/etc/systemd/system/solr.service", that may need to be adapted for the
+distribution, here for Debian 11 or CentOs 8 (see the [solr service gist]).
+
+It is usually useless if the file "/etc/init.d/solr" exists, since systemctl
+manages old services managed as init. Note that the default init doesn't manage
+restart on failure. The following service sets it at 30 seconds. Furthermore,
+the logs are simpler with systemd.
+
+**Warning**: If you choose to use this file, you should remove properly the file
+used for the solr service in /etc/init.d/ first.
+
+After creating the following file, run `sudo systemctl enable solr`, then `sudo systemctl daemon-reload`.
 
 ```ini
-# put this file in /etc/systemd/system/ as root
+# Save this file as /etc/systemd/system/solr.service as root
+
 # below paths assume solr installed in /opt/solr, SOLR_PID_DIR is /data
 # and that all configuration exists in /etc/default/solr.in.sh which is the case if previously installed as an init.d service
 # change port in pid file if differs
-# note that it is configured to auto restart solr if it fails (Restart=on-faliure) and that's the motivation indeed :)
+#
+# note that it is configured to auto restart solr if it fails (Restart=on-failure) and that's the motivation indeed :)
 # to switch from systemv (init.d) to systemd, do the following after creating this file:
 # sudo systemctl daemon-reload
 # sudo service solr stop # if already running
 # sudo systemctl enable solr
 # systemctl start solr
 # this was inspired by https://confluence.t5.fi/display/~stefan.roos/2015/04/01/Creating+systemd+unit+(service)+for+Apache+Solr
+
 [Unit]
-Description=Apache SOLR
+Description=Apache Solr
 ConditionPathExists=/opt/solr
-After=syslog.target network.target remote-fs.target nss-lookup.target systemd-journald-dev-log.socket
+Wants=network-online.target
+After=network-online.target
 Before=multi-user.target
 Conflicts=shutdown.target
 StartLimitIntervalSec=60
 
 [Service]
 User=solr
-LimitNOFILE=1048576
-LimitNPROC=1048576
-PIDFile=/var/solr/solr-8983.pid
-Environment=SOLR_INCLUDE=/etc/default/solr.in.sh
-Environment=RUNAS=solr
-Environment=SOLR_INSTALL_DIR=/opt/solr
+Group=solr
 
-Restart=on-failure
-RestartSec=5
-
+Type=forking
 ExecStart=/opt/solr/bin/solr start
+ExecReload=/opt/solr/bin/solr restart
 ExecStop=/opt/solr/bin/solr stop
 Restart=on-failure
+RestartSec=30
+
+# Optional config.
+LimitNOFILE=1048576
+LimitNPROC=1048576
+# PIDFile=/var/solr/solr-8983.pid
+# Environment=SOLR_INCLUDE=/etc/default/solr.in.sh
+# Environment=RUNAS=solr
+# Environment=SOLR_INSTALL_DIR=/opt/solr
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-### Protect access to Solr
+***Warning*** Avoid to start solr by the cli and by systemctl, else you will
+find issues, port already used, nodes lost, etc.
+To check if there is only one server running in standalone mode:
+
+```sh
+sudo /opt/solr/bin/solr status
+sudo systemctl status solr
+```
+
+Even if it seems that solr is stopped, wait a least 5 minutes between command
+start/restart/stop to let more time to java to stop really.
+
+### Protect access to Solr (Solr 8 and above)
+
+For documentation before Solr 8, see the readme of this module until version 3.5.31.3.
 
 You may need some more commands to protect install. Check the default port 8983.
-The simpler solution is to close this port with your firewall. Else, you may
-need to add a user control to the admin board. Search on your not-favorite
-search engine to add such a protection.
 
-#### Solr before version 8 (deprecated)
+The simplest solution is to close this port with your firewall and to use Apache
+as a reverse proxy to it, so only Apache should be protected.
 
-The simplest protection to the Solr admin board is password based. For that,
-three files should be updated.
+In any case, you need to use the default user or to add a user to access to the
+admin board. Search on your not-favorite search engine to add such a protection.
 
-* `/opt/solr/server/etc/jetty.xml`, before the ending tag `</Configure>`:
+As indicated in [Solr Basic Authentication], add the file `security.json`,
+with the user roles you want (here the user `omeka_admin` is added as `admin`).
+The directory where to place the file is usually `/opt/solr/server/solr`, but it
+may be `/var/solr/data/` in some cases. The good one ("solr home") is visible
+when you check the status : `/opt/solr/bin/solr status` (or sometime `systemctl status solr`).
 
-```xml
-<Call name="addBean">
-    <Arg>
-        <New class="org.eclipse.jetty.security.HashLoginService">
-            <Set name="name">Sec Realm</Set>
-            <Set name="config"><SystemProperty name="jetty.home" default="."/>/etc/realm.properties</Set>
-            <Set name="refreshInterval">0</Set>
-        </New>
-    </Arg>
-</Call>
-```
-
-* `/opt/solr/server/solr-webapp/webapp/WEB-INF/web.xml`, before the ending tag `</web-app>`:
-
-```xml
-<security-constraint>
-    <web-resource-collection>
-        <web-resource-name>Solr authenticated application</web-resource-name>
-        <url-pattern>/*</url-pattern>
-    </web-resource-collection>
-    <auth-constraint>
-        <role-name>core1-role</role-name>
-    </auth-constraint>
-</security-constraint>
-<login-config>
-    <auth-method>BASIC</auth-method>
-    <realm-name>Sec Realm</realm-name>
-</login-config>
-```
-
-* `/opt/solr/server/etc/realm.properties`, a list of users, passwords, and roles:
-
-```
-omeka_admin: xxx-pass-word-yyy, core1-role
-```
-
-#### Solr from version 8
-
-As indicated in [Solr Basic Authentication], add the file `/var/solr/data/security.json`,
-with the user roles you want (here the user `omeka_admin` is added as `admin`.
 Because the password is hashed (salt + sha256), it may be simpler to use the
 example,  then to update the admin, then to remove the example user (solr, with
 password "SolrRocks"):
@@ -370,13 +379,26 @@ password "SolrRocks"):
 Don't forget to change rights of this file, then to restart Solr and wait some
 minutes for java:
 
+***Warning***
+
 ```sh
-sudo chown solr:solr /var/solr/data/security.json && sudo chmod g+r,o-rw /var/solr/data/security.json
+sudo chown -R solr:solr /opt/solr/server/solr && sudo chmod -R g+r,o-rw /opt/solr/server/solr
+# If an issue occurs, it may be a previous java session not closed. Check it with:
+#sudo /opt/solr/bin/solr status
+# And try to stop it:
+#sudo /opt/solr/bin/solr stop
+# And if solr doesn't stop, you kill it via java:
+#pkill -KILL java
 sudo systemctl restart solr
 ```
 
 To add the hashed password, it is simpler to use the api endpoint, so add the
 specific admin user like that, and restart the server:
+
+**Important**: don't forget to remove the next lines from the shell or browser
+history, because they contain the password. Or add a space before the commmand
+line to skip it from the history. Anyway, the password should be added in the
+config of the module, so it is available in the database.
 
 ```sh
 curl --user solr:SolrRocks http://localhost:8983/api/cluster/security/authentication -H 'Content-type:application/json' -d '{"set-user": {"omeka_admin":"My Secret Pass Phrase"}}'
@@ -391,9 +413,6 @@ curl --user 'omeka_admin:My Secret Pass Phrase' http://localhost:8983/api/cluste
 sudo systemctl restart solr
 ```
 
-Important: don't forget to remove the previous lines from the shell or browser
-history.
-
 Of course, the user `omeka_admin` and the password should be set in the config
 of the core in the Solr page inside Omeka.
 
@@ -402,6 +421,7 @@ of the core in the Solr page inside Omeka.
 See [taking Solr to production].
 
 ```sh
+# You may need to set it as global or not (with `*` instead of `solr`).
 sudo touch /etc/security/limits.d/200-solr.conf
 sudo chmod o+w /etc/security/limits.d/200-solr.conf
 sudo echo "solr    hard    nofile  65000" >> /etc/security/limits.d/200-solr.conf
@@ -412,7 +432,7 @@ sudo chmod o-w /etc/security/limits.d/200-solr.conf
 sudo systemctl restart solr
 ```
 
-**Important**: It is recommended to protect Solr with a reverse proxy.
+**Important**: It is recommended to protect Solr with a reverse proxy (see below).
 
 ### Enable ssl (https) when not behind a proxy
 
@@ -444,7 +464,7 @@ too. In all cases, don't forget to open the port in the firewall, for example
 with firewall-d:
 
 ```sh
-sudo firewall-cmd --permanent --add-port=8443/tcp
+sudo firewall-cmd --permanent --add-port=8984/tcp
 sudo firewall-cmd --reload
 ```
 
@@ -455,7 +475,8 @@ before restart. Check status and logs if needed.
 
 ```sh
 sudo systemctl stop solr
-sudo find /var/solr/data -name 'write.lock' -type f -delete
+sudo find /opt/solr/server/solr -name 'write.lock' -type f -delete
+#sudo find /var/solr/data -name 'write.lock' -type f -delete
 sudo systemctl restart solr
 ```
 
@@ -475,9 +496,9 @@ security measures.
 
 ### Use Apache as a reverse proxy for Solr
 
-To configure a reverse proxy for Solr with Apache, create this file "/etc/apache2/sites-available/reverse_proxy.conf":
+To configure a reverse proxy for Solr with Apache, create this file "/etc/apache2/sites-available/solr.mydomain.conf":
 
-```xml
+```apache
 <VirtualHost *:8984>
     ServerName solr.mydomain.com
     ProxyPreserveHost on
@@ -495,9 +516,15 @@ Here, Solr should be available through port 8983 without ssl on the server, so
 the firewall should be configured to close this port and to open 8984. You can
 complete this virtual host with your ssl config.
 
+Then enable this new config:
+```sh
+sudo a2ensite solr.mydomain
+sudo systemctl reload apache2
+```
+
 ### Upgrade Solr
 
-Before upgrade, **you should backup the folder `/var/solr` and check the backup**
+Before upgrade, **you should backup the folder `/opt/solr/server/solr` or `/var/solr` and check the backup**
 in all cases, and in particular when the config is not the default one. For Solr
 itself, with the default install mode, the new version is installed beside the
 current one, so it is not required to backup the app itself, but you can backup
@@ -507,14 +534,14 @@ Note: Solr can only be upgraded one major version by one major version, so to
 upgrade from version 6 to 8, you first need to upgrade to version 7.
 
 ```sh
-cd /opt
+cd /tmp
 java -version
 #sudo apt install default-jre
-wget https://archive.apache.org/dist/lucene/solr/8.8.0/solr-8.8.0.tgz
-tar zxvf solr-8.8.0.tgz solr-8.8.0/bin/install_solr_service.sh --strip-components=2
+wget https://archive.apache.org/dist/lucene/solr/9.0.0/solr-9.0.0.tgz
+tar zxvf solr-9.0.0.tgz solr-9.0.0/bin/install_solr_service.sh --strip-components=2
 # The "-f" means "upgrade". The symlink /opt/solr is automatically updated.
-sudo bash ./install_solr_service.sh solr-8.8.0.tgz -f
-rm solr-8.8.0.tgz
+sudo bash ./install_solr_service.sh solr-9.0.0.tgz -f
+rm solr-9.0.0.tgz
 rm install_solr_service.sh
 # See below to upgrade the indexes.
 ```
@@ -535,15 +562,15 @@ sudo rm /etc/rc.d/init.d/solr
 sudo rm /etc/default/solr.in.sh
 sudo rm /etc/security/limits.d/200-solr.conf
 sudo rm -r /opt/solr
-sudo rm -r /opt/solr-8.8.0
+sudo rm -r /opt/solr-9.0.0
 # Only if you want to remove your indexes. WARNING: this will remove your configs too.
 # sudo rm -r /var/solr
 sudo deluser --remove-home solr
 sudo deluser --group solr
 ```
 
-The config and the data located in `/var/solr/data` by default can be removed
-too.
+The config and the data located in either in `/opt/solr/server/solr` or in
+`/var/solr/data` by default can be removed too.
 
 
 Solr management <a id="solr-management"></a>
@@ -554,6 +581,16 @@ line. Since version 8, it's often simpler to use the api endpoint, via a browser
 or via curl. In fact, the command is now a shortcut to the endpoint and the url
 is indicated in the results. Of course, it can be done via the ui too.
 
+To access to the ui when the Solr is protected, you can create a tunnel on your
+computer via ssh:
+
+```sh
+ssh -N -f user@myserver.org -L8983:myserver.org:8983
+```
+
+Then you can go to `http://localhost:8983` with your browser, that will be
+redirected to the real server.
+
 ### Create a config
 
 At least one index ("core", "collection", or "node")  should be created in Solr
@@ -561,10 +598,10 @@ to be used with Omeka. The simpler is to create one via the command line to
 avoid permissions issues.
 
 ```sh
-# Via command:
+# Via command ("old school"):
 sudo su - solr -c "/opt/solr/bin/solr create -c omeka -n data_driven_schema_configs"
 # Via api:
-curl --user omeka_admin:MySecretPassPhrase 'http://localhost:8983/solr/admin/cores?action=CREATE&name=omeka&instanceDir=omeka&schema=data_driven_schema_configs'
+curl --user 'omeka_admin:MySecretPassPhrase' 'http://localhost:8983/solr/admin/cores?action=CREATE&name=omeka&instanceDir=omeka&schema=data_driven_schema_configs'
 ```
 
 Here, the user `solr` launches the command `solr` to create the core `omeka`,
@@ -572,17 +609,76 @@ and it will use the default config schema `data_driven_schema_configs`. This
 schema simplifies the management of fields, because they are guessed from the
 data.
 
-You can check it via the web interface at [http://localhost:8983/solr/#/omeka].
 Here, the path to set in the config of the core in Omeka S is `solr/omeka`.
+
+You can check it via the web interface at [http://localhost:8983/solr/#/omeka].
+You can access to the localhost through a ssh tunnel, or use the domain you set
+in the config.
 
 The config files are saved in `/var/solr/data` by default.
 
-Possible issues:
+Possible issues (always **restart solr after trying next commands**):
+
 - The directory /var/solr is not belonging to solr, so run `sudo chown -R solr:solr /var/solr`.
-- There may be remaining files after a failed creation, so run first `sudo su - solr -c "/opt/solr/bin/solr delete -c omeka"`.
+- The resources may be missing, so copy them:
+  ```sh
+  sudo cp -r /opt/solr/server/solr/configsets/_default/conf /opt/solr/server/resources/
+  ```
+- There may be remaining files after a failed creation, so run first `sudo su - solr -c "/opt/solr/bin/solr delete -c omeka"`
+  or `curl --user 'omeka_admin:MySecretPassPhrase' 'http://localhost:8983/solr/admin/cores?action=UNLOAD&core=omeka&deleteIndex=true&deleteDataDir=true&deleteInstanceDir=true'`
 - There may be a rights issue, so backup and remove the file "security.json"
   from the data directory, then create the core with the command above, then
   restore the file "security.json".
+
+If nothing is working (you don't see the core inside the front-end), create the
+core yourself with these commands, here with a core named `omeka` (here when
+the solr home directory is /var/solr):
+
+```sh
+# Use /opt/solr/server/solr if it solr home.
+sudo cp -r /opt/solr/server/solr/configsets/_default /var/solr/data
+# The destination directory inside data is the name of the core.
+sudo mv /var/solr/data/_default /var/solr/data/omeka
+sudo touch /var/solr/data/omeka/core.properties
+sudo echo "#Written by CorePropertiesLocator" >> /var/solr/data/omeka/core.properties
+sudo echo "#Tue Nov 08 00:00:00 UTC 2021" >> /var/solr/data/omeka/core.properties
+sudo echo "name=omeka" >> /etc/security/limits.d/200-solr.conf
+sudo chmod ug+rw /var/solr/data/omeka/core.properties
+sudo chown -R solr:solr /var/solr
+sudo systemctl restart solr
+```
+
+The file `core.properties` above should contain the name of the core, that
+should be the name of the directory:
+
+```ini
+#Written by CorePropertiesLocator
+#Tue Nov 08 00:00:00 UTC 2021
+name=omeka
+```
+
+### Querying Solr
+
+You can check if the Solr core is working via the user interface or via such a
+command:
+
+```sh
+curl --user 'omeka_admin:MySecretPassPhrase' 'http://localhost:8983/solr/omeka/select?q=*:*&indent=on&wt=json'
+```
+
+### Fixing the issue when there is no result
+
+When there is no default field, Solr may not answer anything. To fix this issue,
+as indicated in [this issue on omeka.org], add the copy field `_text_` with source `*`.
+
+It can be done via the user interface (in the menu Schema). Or you can use this
+command, as indicated in the [reference guide to copy a field]:
+
+```sh
+curl --user 'omeka_admin:MySecretPassPhrase' -X POST --data-binary '{"add-copy-field":{"source":"*","dest":"_text_" }}' 'http://localhost:8983/solr/omeka/schema'
+```
+
+Of course, you need to reindex resources after modifying schema.
 
 ### Upgrade a config
 
@@ -618,7 +714,8 @@ it is possible to copy the old install to the new one. Don't forget to remove
 the write lock if needed before restarting:
 
 ```sh
-# From the new server (for a core named "omeka").
+# From the new server (for a core named "omeka"). Use solr home (/opt/solr/server/solr
+# or /var/solr/data according to your install).
 sudo systemctl stop solr
 rsync -va user@oldserver.com:/var/solr/data/omeka /var/solr/data
 rm /var/solr/data/omeka/data/index/write.lock
@@ -636,7 +733,8 @@ It’s always recommended to backup your files and your databases and to check
 your archives regularly so you can roll back if needed.
 
 Note: By default, the config of the server Solr is saved in `/opt/solr/server/etc`
-and in `/etc/default/solr.in.sh`; the config of the cores are saved in `/var/solr/data`.
+and in `/etc/default/solr.in.sh`; the config of the cores are saved in `/opt/solr/server/solr`
+or in `/var/solr/data`.
 
 
 Troubleshooting
@@ -681,7 +779,7 @@ Copyright
 See commits for full list of contributors.
 
 * Copyright BibLibre, 2016-2017 (see [BibLibre])
-* Copyright Daniel Berthereau, 2017-2021 (see [Daniel-KM])
+* Copyright Daniel Berthereau, 2017-2023 (see [Daniel-KM])
 * Copyright Paul Sarrassat, 2018
 
 This module is a full replacement of the module [Solr], a deprecated fork of the
@@ -697,27 +795,28 @@ currently managed with [Greenstone].
 [Solr by BibLibre]: https://github.com/biblibre/omeka-s-module-Solr
 [Advanced Search]: https://gitlab.com/Daniel-KM/Omeka-S-module-AdvancedSearch
 [Search by BibLibre]: https://github.com/biblibre/omeka-s-module-search
-[Apache Solr]: https://lucene.apache.org/solr/
+[Apache Solr]: https://solr.apache.org/
 [Solarium]: https://www.solarium-project.org/
 [full documentation]: https://solarium.readthedocs.io/en/stable/
 [Generic]: https://gitlab.com/Daniel-KM/Omeka-S-module-Generic
-[Installing a module]: http://dev.omeka.org/docs/s/user-manual/modules/#installing-modules
-[documentation]: https://lucene.apache.org/solr/guide/the-dismax-query-parser.html#q-alt-parameter
+[Installing a module]: https://omeka.org/s/docs/user-manual/modules/#installing-modules
+[documentation]: https://solr.apache.org/guide/the-dismax-query-parser.html#q-alt-parameter
 [this issue on omeka.org]: https://forum.omeka.org/t/search-field-doesnt-return-results-with-solr/11650/12
 [Solr PHP extension]: https://pecl.php.net/package/solr
 [below]: #manage-solr
 [below for Debian]: #solr-install
 [below "Solr management"]: #solr-management
-[1.8]: https://lucene.apache.org/solr/7_2_1/SYSTEM_REQUIREMENTS.html
-[1.7 u55]: https://lucene.apache.org/solr/5_5_5/SYSTEM_REQUIREMENTS.html
+[1.8]: https://solr.apache.org/docs/7_2_1/SYSTEM_REQUIREMENTS.html
+[1.7 u55]: https://solr.apache.org/docs/5_5_5/SYSTEM_REQUIREMENTS.html
 [http://localhost:8983]: http://localhost:8983
 [http://localhost:8983/solr/#/omeka]: http://localhost:8983/solr/#/omeka
 [solr service gist]: https://gist.github.com/Daniel-KM/1fb475a47340d7945fa6c47c945707d0
-[Solr documentation]: https://lucene.apache.org/solr/resources.html
-[Solr Basic Authentication]: https://lucene.apache.org/solr/guide/basic-authentication-plugin.html#basic-authentication-plugin
-[taking Solr to production]: https://lucene.apache.org/solr/guide/taking-solr-to-production.html
-[reference guide]: https://solr.apache.org/guide/8_9/enabling-ssl.html
-[guide]: https://solr.apache.org/guide/8_9/enabling-ssl.html#solr-in-sh
+[Solr documentation]: https://solr.apache.org/resources.html
+[Solr Basic Authentication]: https://solr.apache.org/guide/basic-authentication-plugin.html#basic-authentication-plugin
+[taking Solr to production]: https://solr.apache.org/guide/taking-solr-to-production.html
+[reference guide]: https://solr.apache.org/guide/enabling-ssl.html
+[guide]: https://solr.apache.org/guide/enabling-ssl.html#solr-in-sh
+[reference guide to copy a field]: https://solr.apache.org/guide/schema-api.html#add-a-new-copy-field-rule
 [module issues]: https://gitlab.com/Daniel-KM/Omeka-S-module-Solr/-/issues
 [CeCILL v2.1]: https://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html
 [GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html

@@ -2,26 +2,29 @@
 
 namespace AdvancedSearch;
 
+use Omeka\Stdlib\Message;
+
 /**
  * @var Module $this
  * @var \Laminas\ServiceManager\ServiceLocatorInterface $services
- * @var string $oldVersion
  * @var string $newVersion
+ * @var string $oldVersion
  *
- * @var \Doctrine\ORM\EntityManager $entityManager
- * @var \Doctrine\DBAL\Connection $connection
  * @var \Omeka\Api\Manager $api
- * @var array $config
  * @var \Omeka\Settings\Settings $settings
+ * @var \Doctrine\DBAL\Connection $connection
+ * @var \Doctrine\ORM\EntityManager $entityManager
+ * @var \Omeka\Mvc\Controller\Plugin\Messenger $messenger
  */
-// $entityManager = $services->get('Omeka\EntityManager');
-$connection = $services->get('Omeka\Connection');
-// $api = $services->get('Omeka\ApiManager');
-// $config = require dirname(__DIR__, 2) . '/config/module.config.php';
+$plugins = $services->get('ControllerPluginManager');
+$api = $plugins->get('api');
 $settings = $services->get('Omeka\Settings');
+$connection = $services->get('Omeka\Connection');
+$messenger = $plugins->get('messenger');
+$entityManager = $services->get('Omeka\EntityManager');
 
 if (version_compare($oldVersion, '3.3.6.2', '<')) {
-    $this->checkDependency();
+    $this->checkDependencies();
 
     $sqls = <<<'SQL'
 CREATE TABLE `search_suggester` (
@@ -52,7 +55,7 @@ ALTER TABLE `search_suggester` ADD CONSTRAINT FK_F64D915AE78C9C0A FOREIGN KEY (`
 ALTER TABLE `search_suggestion` ADD CONSTRAINT FK_536C3D170913F08 FOREIGN KEY (`suggester_id`) REFERENCES `search_suggester` (`id`) ON DELETE CASCADE;
 SQL;
     foreach (array_filter(explode(";\n", $sqls)) as $sql) {
-        $connection->exec($sql);
+        $connection->executeStatement($sql);
     }
 }
 
@@ -63,7 +66,229 @@ if (version_compare($oldVersion, '3.3.6.3', '<')) {
     $sql = <<<'SQL'
 SELECT `id`, `path` FROM `search_config` ORDER BY `id`;
 SQL;
-    $searchConfigPaths = $connection->fetchAll($sql);
+    $searchConfigPaths = $connection->fetchAllAssociative($sql);
     $searchConfigPaths = array_column($searchConfigPaths, 'path', 'id');
     $settings->set('advancedsearch_all_configs', $searchConfigPaths);
+}
+
+// End of support of direct upgrade of modules Search and derivative modules.
+
+if (version_compare($oldVersion, '3.3.6.7', '<')) {
+    $sql = <<<SQL
+UPDATE `search_config`
+SET
+    `settings` =
+        REPLACE(
+        REPLACE(
+        REPLACE(
+        REPLACE(
+        REPLACE(
+        REPLACE(
+        REPLACE(
+        REPLACE(
+        REPLACE(
+        REPLACE(
+            `settings`,
+        '"resource_name"',
+        '"resource_type"'
+        ),
+        '"resource_field"',
+        '"id"'
+        ),
+        '"is_public_field"',
+        '"is_public"'
+        ),
+        '"owner_id_field"',
+        '"owner_id"'
+        ),
+        '"site_id_field"',
+        '"site_id"'
+        ),
+        '"resource_class_id_field"',
+        '"resource_class_id"'
+        ),
+        '"resource_template_id_field"',
+        '"resource_template_id"'
+        ),
+        '"items_set_id_field"',
+        '"item_set_id"'
+        ),
+        '"item_set_id_field"',
+        '"item_set_id"'
+        ),
+        '"items_set_id"',
+        '"item_set_id"'
+        )
+    ;
+SQL;
+    $connection->executeStatement($sql);
+
+    // Add the core type when needed.
+    $qb = $connection->createQueryBuilder();
+    $qb
+        ->select('search_config.id', 'search_config.settings')
+        ->from('search_config', 'search_config')
+        ->innerJoin('search_config', 'search_engine', 'search_engine', 'search_engine.id = search_config.engine_id')
+        ->where('search_engine.adapter = "internal"')
+        ->orderBy('search_config.id', 'asc');
+    $searchConfigsSettings = $connection->executeQuery($qb)->fetchAllKeyValue();
+    foreach ($searchConfigsSettings as $id => $searchConfigSettings) {
+        $searchConfigSettings = json_decode($searchConfigSettings, true) ?: [];
+        foreach ($searchConfigSettings['form']['filters'] ?? [] as $key => $filter) {
+            if (in_array($filter['field'], [
+                'site_id',
+                'owner_id',
+                'resource_class_id',
+                'resource_template_id',
+                'item_set_id',
+            ])) {
+                $searchConfigSettings['form']['filters'][$key]['type'] = trim('Omeka/' . $filter['type'], '/');
+            }
+        }
+        $sql = <<<'SQL'
+UPDATE `search_config`
+SET
+    `settings` = ?
+WHERE
+    `id` = ?
+;
+SQL;
+        $connection->executeStatement($sql, [
+            json_encode($searchConfigSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            $id,
+        ]);
+    }
+
+    // Add the default search partial process for internal engine.
+    // Add the default multi-fields to internal engine.
+    $searchEngineConfig = require __DIR__ . '/../../data/search_engines/internal.php';
+    $defaultAdapterSettings = $searchEngineConfig['o:settings']['adapter']
+        ?? ['default_search_partial_word' => false, 'multifields' => []];
+    $qb = $connection->createQueryBuilder();
+    $qb
+        ->select('id', 'settings')
+        ->from('search_engine', 'search_engine')
+        ->where('adapter = "internal"')
+        ->orderBy('id', 'asc');
+    $searchEnginesSettings = $connection->executeQuery($qb)->fetchAllKeyValue();
+    foreach ($searchEnginesSettings as $id => $searchEngineSettings) {
+        $searchEngineSettings = json_decode($searchEngineSettings, true) ?: [];
+        $searchEngineSettings['adapter'] = array_replace(
+            $defaultAdapterSettings,
+            $searchEngineSettings['adapter'] ?? []
+        );
+
+        $sql = <<<'SQL'
+UPDATE `search_engine`
+SET
+    `settings` = ?
+WHERE
+    `id` = ?
+;
+SQL;
+        $connection->executeStatement($sql, [
+            json_encode($searchEngineSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            $id,
+        ]);
+    }
+
+    /** @var \Omeka\Module\Manager $moduleManager */
+    $moduleManager = $services->get('Omeka\ModuleManager');
+    $module = $moduleManager->getModule('Reference');
+    $version = $module ? $module->getIni('version') : null;
+    if ($version && version_compare($version, '3.4.32.3', '<')) {
+        $message = new Message(
+            'The module %s should be updated to version %s.', // @translate
+            'Reference', '3.4.32.3'
+        );
+        $messenger->addWarning($message);
+    }
+
+    $message = new Message(
+        'It is now possible to aggregate properties with the internal (sql) adapter. See config of the internal search engine.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    $message = new Message(
+        'It is now possible to add a pagination per-page to the search page.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    $message = new Message(
+        'It is now possible to use "not" in advanced filters.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    $message = new Message(
+        'It is now possible to display the used search filters in the results header.' // @translate
+    );
+    $messenger->addSuccess($message);
+
+    $message = new Message(
+        'Some field types have been renamed for filters in the form. To use the core input elements, the type should be "Omeka" (or prepend "Omeka/" if needed). See the default config page.' // @translate
+    );
+    $messenger->addWarning($message);
+}
+
+if (version_compare($oldVersion, '3.3.6.9', '<')) {
+    $message = new Message(
+        'It is now possible to query ressources with linked ressources in the standard advanced form.' // @translate
+    );
+    $messenger->addWarning($message);
+}
+
+if (version_compare($oldVersion, '3.3.6.12', '<')) {
+    $message = new Message(
+        'A new option was added to display the resources mixed (by default) or item sets and items separately (old behavior).' // @translate
+    );
+    $messenger->addWarning($message);
+    $message = new Message(
+        'The template for the sort selector has been updated.' // @translate
+    );
+    $messenger->addWarning($message);
+    $message = new Message(
+        'A helper for the pagination per page has been added.' // @translate
+    );
+    $messenger->addSuccess($message);
+}
+
+if (version_compare($oldVersion, '3.3.6.15', '<')) {
+    $message = new Message(
+        'It’s now possible to search resources by multiples properties, and resources without class, template, item set, site or owner.' // @translate
+    );
+    $messenger->addSuccess($message);
+}
+
+if (version_compare($oldVersion, '3.3.6.16', '<')) {
+    $message = new Message(
+        'It’s now possible to use facet range with a double select (from/to). With internal sql engine, order is alphabetic only for now: it works for strings and simple four digits years or standard dates, not integer or variable dates. With Solr, only numbers and dates are supported. The theme may need to be updated.' // @translate
+    );
+    $messenger->addSuccess($message);
+    $message = new Message(
+        'The property query types lower/greater have been updated to use alphabetic order, no more date-time only. For integer and date-time, use numeric data types.' // @translate
+    );
+    $messenger->addWarning($message);
+    $message = new Message(
+        'Update your theme to support new features for facets (active facets, button apply facets with id="apply-facets", list of facet values).' // @translate
+    );
+    $messenger->addWarning($message);
+}
+
+if (version_compare($oldVersion, '3.3.6.19', '<')) {
+    $sql = <<<'SQL'
+UPDATE `site_page_block`
+SET
+    `data` = REPLACE(data, '"search_page":', '"search_config":')
+WHERE
+    `data` LIKE '%"search_page":%'
+;
+SQL;
+    $connection->executeStatement($sql);
+
+    $message = new Message(
+        'It’s now possible to search values similar other ones (via %1$sSoundex%2$s, designed for British English phonetic).', // @translate
+        '<a href="https://en.wikipedia.org/wiki/Soundex">', '</a>'
+    );
+    $message->setEscapeHtml(false);
+    $messenger->addSuccess($message);
 }

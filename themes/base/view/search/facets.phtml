@@ -68,77 +68,86 @@ $options = $searchPage->setting('facet', []);
 unset($options['facets']);
 ?>
 
-<div class="">    
-
-    <?php if ($displayActive && count($activeFacets)): ?>
+<?php if ($displayActive && count($activeFacets)): ?>
     <ul class="search-facets-active">
         <?php foreach ($activeFacets as $name => $facetValues) foreach ($facetValues as $facetValue): ?>
         <li class="<?= $name;?>"><?= $facetActive($name, ['value' => $facetValue, 'count' => null], $options) ?></li>
         <?php endforeach; ?>
     </ul>
-    <?php endif; ?>
+<?php endif; ?>
 
-    <form id="form-facets" class="page">
-        <h3 style="font-weight:bold;margin-bottom:0;"><?= $translate('Browse') ?></h3>
+<div class="facets-group">
+    <div class="facets">    
 
-        <?php if ($displayFacetButton): ?>
-        <?= $this->hiddenInputsFromFilteredQuery(null, ['facet', 'page', 'limit', 'offset', 'per_page']) ?>
+        <?php if ($displayActive && count($activeFacets)): ?>
+            <ul class="search-facets-active">
+                <?php foreach ($activeFacets as $name => $facetValues) foreach ($facetValues as $facetValue): ?>
+                <li class="<?= $name;?>"><?= $facetActive($name, ['value' => $facetValue, 'count' => null], $options) ?></li>
+                <?php endforeach; ?>
+            </ul>
         <?php endif; ?>
 
-        <?php if ($displayFacetButton && ($displayButton === 'above' || $displayButton === 'both')): ?>
-        <div class="apply-facets apply-facets-top">
-            <input type="submit" value="<?= $translate('Apply filters') ?>"/>
-        </div>
-        <?php endif; ?>
+        <form id="form-facets">
+            <h3 style="font-weight:bold;margin-bottom:0;"><?= $translate('Browse') ?></h3>
 
-        <?php if (empty($facets) && empty($activeFacets)): ?>
-        <p><?= $translate('No filters.') ?></p>
-        <?php else: ?>
-        <ul class="search-facets-list">
-            <?php foreach ($facets as $name => $facetValues): ?>
-            <li class="search-facet">
-                <?php if($facetLabel($name) != "Type"):?>
-                <h4><?= $translate($facetLabel($name)) ?></h4>
-                <?php endif;?>
-                <ul class="search-facet-items">
-                    <?php if(sizeof($facetValues) > 10):?>
-                    <input class="form-control txtSearch" type="text" placeholder="filter">
+            <?php if ($displayFacetButton): ?>
+            <?= $this->hiddenInputsFromFilteredQuery(null, ['facet', 'page', 'limit', 'offset', 'per_page']) ?>
+            <?php endif; ?>
+
+            <?php if ($displayFacetButton && ($displayButton === 'above' || $displayButton === 'both')): ?>
+            <div class="apply-facets apply-facets-top">
+                <input type="submit" value="<?= $translate('Apply filters') ?>"/>
+            </div>
+            <?php endif; ?>
+
+            <?php if (empty($facets) && empty($activeFacets)): ?>
+            <p><?= $translate('No filters.') ?></p>
+            <?php else: ?>
+            <ul class="search-facets-list">
+                <?php foreach ($facets as $name => $facetValues): ?>
+                <li class="search-facet">
+                    <?php if($facetLabel($name) != "Type"):?>
+                    <h4><?= $translate($facetLabel($name)) ?></h4>
                     <?php endif;?>
-                    <?php 
-                        $facetvaluesSorted = [];
-                        foreach ($facetValues as $facetValue):        
-                            $key = strtolower(str_replace("'s-","",$facetValue["value"]));    
-                            if(str_contains($key,"?")):
-                            $key = str_replace("?","",$key)."?"; 
-                            endif;
-                            $key = str_replace("[","",$key);  
-                            $facetvaluesSorted[$key] = $facetValue;
-                        endforeach;    
-                        ksort($facetvaluesSorted);
-                        if($facetLabel($name) == "Type"):
-                            $facetvaluesSorted = array_reverse($facetvaluesSorted);
-                        endif;    
-                        $facetValues = $facetvaluesSorted;
-                    ?>
-                    <?php foreach ($facetValues as $facetValue): ?>
-                    <li class="search-facet-item">
-                        <?= $facetElement($name, $facetValue, $options) ?>
-                    </li>
-                    <?php endforeach; ?>
-                </ul>
-            </li>
-            <?php endforeach; ?>
-        </ul>
-        <?php endif; ?>
+                    <ul class="search-facet-items">
+                        <?php if(sizeof($facetValues) > 10):?>
+                        <input class="form-control txtSearch" type="text" placeholder="filter">
+                        <?php endif;?>
+                        <?php 
+                            $facetvaluesSorted = [];
+                            foreach ($facetValues as $facetValue):        
+                                $key = strtolower(str_replace("'s-","",$facetValue["value"]));    
+                                if(str_contains($key,"?")):
+                                $key = str_replace("?","",$key)."?"; 
+                                endif;
+                                $key = str_replace("[","",$key);  
+                                $facetvaluesSorted[$key] = $facetValue;
+                            endforeach;    
+                            ksort($facetvaluesSorted);
+                            if($facetLabel($name) == "Type"):
+                                $facetvaluesSorted = array_reverse($facetvaluesSorted);
+                            endif;    
+                            $facetValues = $facetvaluesSorted;
+                        ?>
+                        <?php foreach ($facetValues as $facetValue): ?>
+                        <li class="search-facet-item">
+                            <?= $facetElement($name, $facetValue, $options) ?>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+            <?php endif; ?>
 
-        <?php if ($displayFacetButton && ($displayButton === 'below' || $displayButton === 'both')): ?>
-        <div class="apply-facets apply-facets-bottom">
-            <input type="submit" value="<?= $translate('Apply filters') ?>"/>
-        </div>
-        <?php endif; ?>
+            <?php if ($displayFacetButton && ($displayButton === 'below' || $displayButton === 'both')): ?>
+            <div class="apply-facets apply-facets-bottom">
+                <input type="submit" value="<?= $translate('Apply filters') ?>"/>
+            </div>
+            <?php endif; ?>
 
-    </form>
-
+        </form>
+    </div>
 </div>
 
 <script>

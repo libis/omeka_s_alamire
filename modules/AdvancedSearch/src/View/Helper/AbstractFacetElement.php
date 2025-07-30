@@ -7,10 +7,11 @@ class AbstractFacetElement extends AbstractFacet
     /**
      * Create one facet as link, checkbox or button.
      *
-     * @param array $facet A facet has two keys: value and count.
+     * @param array $facet A facet has at least two keys: "value" and "count".
+     * May contain the key, that may be a numeric key, or string like "from" or "to".
      * @return string|array
      */
-    public function __invoke(string $name, array $facet, array $options = [], bool $asData = false)
+    public function __invoke(string $facetField, array $facet, array $options = [], bool $asData = false)
     {
         // Variables are static to speed up process for all facets.
         // TODO Share the list between active and facet helpers.
@@ -42,6 +43,11 @@ class AbstractFacetElement extends AbstractFacet
             $params = $view->params()->fromRoute();
             $queryBase = $view->params()->fromQuery();
 
+            // Keep browsing inside an item set.
+            if (!empty($params['item-set-id'])) {
+                $route = 'site/item-set';
+            }
+
             $isSiteRequest = $plugins->get('status')->isSiteRequest();
             if ($isSiteRequest) {
                 $this->siteId = $plugins
@@ -55,21 +61,35 @@ class AbstractFacetElement extends AbstractFacet
         }
 
         $facetValue = (string) $facet['value'];
-        if (!isset($facetsData[$name][$facetValue])) {
+
+        $isReady = isset($facetsData[$facetField][$facetValue]);
+        $isFromTo = isset($facet['key'])
+            && ($facet['key'] === 'from' || $facet['key'] === 'to');
+        if (!$isReady || ($isFromTo && !isset($facetsData[$facetField][$facetValue][$facet['key']]))) {
             $query = $queryBase;
 
             // The facet value is compared against a string (the query args).
-            $facetValueLabel = (string) $this->facetValueLabel($name, $facetValue);
+            $facetValueLabel = (string) $this->facetValueLabel($facetField, $facetValue);
             if (strlen($facetValueLabel)) {
-                if (isset($query['facet'][$name]) && array_search($facetValue, $query['facet'][$name]) !== false) {
-                    $values = $query['facet'][$name];
-                    $values = array_filter($values, function ($v) use ($facetValue) {
-                        return $v !== $facetValue;
-                    });
-                    $query['facet'][$name] = $values;
+                if (isset($query['facet'][$facetField]) && array_search($facetValue, $query['facet'][$facetField]) !== false) {
+                    // Facet range is managed differently: the first facet is "from", the second is "to".
+                    $isSelectRange = isset($options['facets'][$facetField]['type']) && $options['facets'][$facetField]['type'] === 'SelectRange';
+                    // Rewrite the query without the current facet.
+                    if ($isSelectRange && $isFromTo) {
+                        unset($query['facet'][$facetField][$facet['key']]);
+                    } else {
+                        $values = $query['facet'][$facetField];
+                        $values = array_filter($values, function ($v) use ($facetValue) {
+                            return $v !== $facetValue;
+                        });
+                        $query['facet'][$facetField] = $values;
+                    }
+                    if (empty($query['facet'][$facetField])) {
+                        unset($query['facet'][$facetField]);
+                    }
                     $active = true;
                 } else {
-                    $query['facet'][$name][] = $facetValue;
+                    $query['facet'][$facetField][] = $facetValue;
                     $active = false;
                 }
                 $url = $urlHelper($route, $params, ['query' => $query]);
@@ -78,12 +98,13 @@ class AbstractFacetElement extends AbstractFacet
                 $url = '';
             }
 
-            $facetsData[$name][$facetValue] = [
-                'name' => $name,
+            $data = [
+                'name' => $facetField,
                 'value' => $facetValue,
                 'label' => $facetValueLabel,
                 'count' => $facet['count'],
                 'active' => $active,
+                'key' => $facet['key'] ?? null,
                 'url' => $url,
                 'options' => $options,
                 // To speed up process.
@@ -92,18 +113,25 @@ class AbstractFacetElement extends AbstractFacet
                 'translate' => $this->translate,
                 'facetLabel' => $facetLabel,
             ];
+            $facetsData[$facetField][$facetValue] = $isFromTo
+                ? [$facet['key'] => $data]
+                : $data;
         } elseif (isset($facet['count'])) {
             // When facet selected is used, the count is null, so it should be
             // updated when possible.
-            $facetsData[$name][$facetValue]['count'] = $facet['count'];
+            $facetsData[$facetField][$facetValue]['count'] = $facet['count'];
         }
+
+        $facetData = $isFromTo
+            ? $facetsData[$facetField][$facetValue][$facet['key']]
+            : $facetsData[$facetField][$facetValue];
 
         if ($asData) {
-            return $facetsData[$name][$facetValue];
+            return $facetData;
         }
 
-        return strlen($facetsData[$name][$facetValue]['label'])
-            ? $partialHelper($this->partial, $facetsData[$name][$facetValue])
+        return strlen($facetData['label'])
+            ? $partialHelper($this->partial, $facetData)
             : '';
     }
 }

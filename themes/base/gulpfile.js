@@ -1,23 +1,38 @@
-'use strict';
+'use strict'; 
 
-var gulp = require('gulp');
+const gulp = require('gulp');
 
-gulp.task('css', function () {
-    var sass = require('gulp-sass');
-    var postcss = require('gulp-postcss');
-    var autoprefixer = require('autoprefixer');
+//sass
+const sass = require('gulp-sass')(require('sass'));
+const cleanCSS = require('gulp-clean-css');
+const sassGlob = require('gulp-sass-glob');
+var rename = require("gulp-rename");
 
-    return gulp.src('./asset/sass/*.scss')
-        .pipe(sass({
-            outputStyle: 'compressed',
-            includePaths: ['node_modules/susy/sass']
-        }).on('error', sass.logError))
-        .pipe(postcss([
-            autoprefixer()
-        ]))
+//js
+const uglify = require('gulp-uglify');
+var concat = require('gulp-concat');
+
+
+gulp.task('buildingStyles', function () {
+    return gulp.src('./asset/sass/**/*.scss')
+        .pipe(sassGlob())
+        .pipe(sass().on('error', sass.logError))
+        .pipe(cleanCSS({}))
+        .pipe(rename('style.min.css'))
         .pipe(gulp.dest('./asset/css'));
 });
 
-gulp.task('css:watch', function () {
-    gulp.watch('./asset/sass/*.scss', gulp.parallel('css'));
+gulp.task('uglifyJs', function () {
+    return gulp.src('./asset/sass/**/*.js')
+        .pipe(uglify())
+        .pipe(concat('main.js'))
+        .pipe(gulp.dest('./asset/js'));
 });
+
+gulp.task('all:watch', function () {
+    gulp.watch('./asset/sass/**/*.scss', gulp.parallel('buildingStyles'));
+    gulp.watch('./asset/sass/**/*.js', gulp.parallel('uglifyJs'));
+});
+
+gulp.task('all:build', gulp.parallel(['buildingStyles', 'uglifyJs']));
+

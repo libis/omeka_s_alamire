@@ -29,6 +29,7 @@ class SearchingForm extends AbstractBlockLayout
         $data = $block->getData() + ['query' => '', 'query_filter' => ''];
         $data['query'] = ltrim($data['query'], "? \t\n\r\0\x0B");
         $data['query_filter'] = ltrim($data['query_filter'], "? \t\n\r\0\x0B");
+        // TODO Store queries as array to avoid to parse them each time.
         $block->setData($data);
     }
 
@@ -59,10 +60,10 @@ class SearchingForm extends AbstractBlockLayout
 
     public function render(PhpRenderer $view, SitePageBlockRepresentation $block)
     {
-        // Name "search_page" is kept to simplify migration.
+        $data = $block->data();
 
         /** @var \AdvancedSearch\Api\Representation\SearchConfigRepresentation $searchConfig */
-        $searchConfig = $block->dataValue('search_page');
+        $searchConfig = $data['search_config'] ?? null;
         if ($searchConfig) {
             try {
                 $searchConfig = $view->api()->read('search_configs', ['id' => $searchConfig])->getContent();
@@ -79,6 +80,12 @@ class SearchingForm extends AbstractBlockLayout
                 $view->logger()->err($message);
                 return '';
             }
+        } else {
+            $message = new \Omeka\Stdlib\Message(
+                'No search page specified for this block.' // @translate
+            );
+            $view->logger()->err($message);
+            return '';
         }
 
         /** @var \Laminas\Form\Form $form */
@@ -88,21 +95,25 @@ class SearchingForm extends AbstractBlockLayout
         }
 
         $site = $block->page()->site();
-        $displayResults = $block->dataValue('display_results', false);
+        $displayResults = !empty($data['display_results']);
 
         $vars = [
-            'heading' => $block->dataValue('heading', ''),
-            'displayResults' => $displayResults,
+            'block' => $block,
+            'site' => $site,
+            'heading' => $data['heading'] ?? '',
+            'searchConfig' => $searchConfig,
             // Name "searchPage" is kept to simplify migration.
             'searchPage' => $searchConfig,
-            'site' => $site,
             'query' => null,
+            'displayResults' => $displayResults,
             'response' => new Response,
+            // Returns results on the same page.
+            'skipFormAction' => true,
         ];
 
         if ($displayResults) {
             $query = [];
-            parse_str((string) $block->dataValue('query'), $query);
+            parse_str((string) ($data['query'] ?? ''), $query);
             $query = array_filter($query);
 
             $filterQuery = [];
@@ -124,7 +135,7 @@ class SearchingForm extends AbstractBlockLayout
             if ($result['status'] === 'success') {
                 $vars = array_replace($vars, $result['data']);
             } elseif ($result['status'] === 'error') {
-                $messenger = new \Omeka\Mvc\Controller\Plugin\Messenger;
+                $messenger = $block->getServiceLocator()->get('ControllerPluginManager')->get('messenger');
                 $messenger->addError($result['message']);
             }
         }
@@ -157,7 +168,7 @@ class SearchingForm extends AbstractBlockLayout
             if (!$form->isValid()) {
                 $messages = $form->getMessages();
                 if (isset($messages['csrf'])) {
-                    $messenger = new \Omeka\Mvc\Controller\Plugin\Messenger;
+                    $messenger = $searchConfig->getServiceLocator()->get('ControllerPluginManager')->get('messenger');
                     $messenger->addError('Invalid or missing CSRF token'); // @translate
                     return false;
                 }

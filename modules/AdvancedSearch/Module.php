@@ -6,7 +6,7 @@
  * Improve search with new fields, auto-suggest, filters, facets, specific pages, etc.
  *
  * @copyright BibLibre, 2016-2017
- * @copyright Daniel Berthereau, 2017-2021
+ * @copyright Daniel Berthereau, 2017-2023
  * @license http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.txt
  *
  * This software is governed by the CeCILL license under French law and abiding
@@ -47,7 +47,6 @@ use Laminas\EventManager\SharedEventManagerInterface;
 use Laminas\ModuleManager\ModuleManager;
 use Laminas\Mvc\MvcEvent;
 use Omeka\Entity\Resource;
-use Omeka\Mvc\Controller\Plugin\Messenger;
 use Omeka\Stdlib\Message;
 
 class Module extends AbstractModule
@@ -58,11 +57,6 @@ class Module extends AbstractModule
      * @var bool
      */
     protected $isBatchUpdate;
-
-    /**
-     * @var Listener\SearchResourcesListener
-     */
-    protected $searchResourcesListener;
 
     public function init(ModuleManager $moduleManager): void
     {
@@ -109,7 +103,7 @@ class Module extends AbstractModule
             return;
         }
 
-        $version = $module->getIni('version');
+        $version = (string) $module->getIni('version');
         if (version_compare($version, '3.5.7', '<')) {
             // Check the module Search of BibLibre.
             throw new \Omeka\Module\Exception\ModuleCannotInstallException(
@@ -121,57 +115,70 @@ class Module extends AbstractModule
                 'To be automatically upgraded and replaced by this module, the module "Search" should be updated first to version 3.5.23.3 or greater.' // @translate
             );
         }
+
+        $module = $moduleManager->getModule('AdvancedSearch');
+        $version = $module ? (string) $module->getIni('version') : null;
+        if (version_compare($version, '3.3.6.6', '>')) {
+            throw new \Omeka\Module\Exception\ModuleCannotInstallException(
+                'To be automatically upgraded and replaced by this module, use version 3.3.6.6 or below, then upgrade it.' // @translate
+            );
+        }
     }
 
     protected function postInstall(): void
     {
-        $messenger = new Messenger;
+        $services = $this->getServiceLocator();
+        /** @var \Omeka\Module\Manager $moduleManager */
+        $moduleManager = $services->get('Omeka\ModuleManager');
+        $messenger = $services->get('ControllerPluginManager')->get('messenger');
+
         $optionalModule = 'Reference';
         if (!$this->isModuleActive($optionalModule)) {
             $messenger->addWarning('The module Reference is required to use the facets with the default internal adapter, but not for the Solr adapter.'); // @translate
         }
 
-        $services = $this->getServiceLocator();
-        /** @var \Omeka\Module\Manager $moduleManager */
-        $moduleManager = $services->get('Omeka\ModuleManager');
-
         // Upgrade from old modules AdvancedSearchPlus and Search.
 
-        $module = $moduleManager->getModule('AdvancedSearchPlus');
-        if ($module && in_array($module->getState(), [
-            \Omeka\Module\Manager::STATE_ACTIVE,
-            \Omeka\Module\Manager::STATE_NOT_ACTIVE,
-            \Omeka\Module\Manager::STATE_NEEDS_UPGRADE,
-        ])) {
-            try {
-                $filepath = $this->modulePath() . '/data/scripts/upgrade_from_advancedsearchplus.php';
-                require_once $filepath;
-            } catch (\Exception $e) {
-                $message = new Message(
-                    'An error occurred during migration of module "%s". Check the config and uninstall it manually.', // @translate
-                    'AdvancedSearchPlus'
-                );
-                $messenger->addError($message);
+        $module = $moduleManager->getModule('AdvancedSearch');
+        $version = $module ? $module->getIni('version') : null;
+        if (version_compare($version, '3.3.6.6', '<=')) {
+            $module = $moduleManager->getModule('AdvancedSearchPlus');
+            if ($module && in_array($module->getState(), [
+                \Omeka\Module\Manager::STATE_ACTIVE,
+                \Omeka\Module\Manager::STATE_NOT_ACTIVE,
+                \Omeka\Module\Manager::STATE_NEEDS_UPGRADE,
+            ])) {
+                try {
+                    $filepath = $this->modulePath() . '/data/scripts/upgrade_from_advancedsearchplus.php';
+                    require_once $filepath;
+                } catch (\Exception $e) {
+                    $message = new Message(
+                        'An error occurred during migration of module "%s". Check the config and uninstall it manually.', // @translate
+                        'AdvancedSearchPlus'
+                    );
+                    $messenger->addError($message);
+                }
             }
-        }
 
-        $module = $moduleManager->getModule('Search');
-        if ($module && in_array($module->getState(), [
-            \Omeka\Module\Manager::STATE_ACTIVE,
-            \Omeka\Module\Manager::STATE_NOT_ACTIVE,
-            \Omeka\Module\Manager::STATE_NEEDS_UPGRADE,
-        ])) {
-            try {
-                $filepath = $this->modulePath() . '/data/scripts/upgrade_from_search.php';
-                require_once $filepath;
-            } catch (\Exception $e) {
-                $message = new Message(
-                    'An error occurred during migration of module "%s". Check the config and uninstall it manually.', // @translate
-                    'Search'
-                );
-                $messenger->addError($message);
+            $module = $moduleManager->getModule('Search');
+            if ($module && in_array($module->getState(), [
+                \Omeka\Module\Manager::STATE_ACTIVE,
+                \Omeka\Module\Manager::STATE_NOT_ACTIVE,
+                \Omeka\Module\Manager::STATE_NEEDS_UPGRADE,
+            ])) {
+                try {
+                    $filepath = $this->modulePath() . '/data/scripts/upgrade_from_search.php';
+                    require_once $filepath;
+                } catch (\Exception $e) {
+                    $message = new Message(
+                        'An error occurred during migration of module "%s". Check the config and uninstall it manually.', // @translate
+                        'Search'
+                    );
+                    $messenger->addError($message);
+                }
             }
         } else {
+            $messenger->addWarning('The modules Search, Advanced Search Plus, PSL Search Form, Search Solr cannot be upgraded with a version of Advanced Search greater than 3.3.6.6.'); // @translate
             $this->installResources();
         }
 
@@ -220,12 +227,6 @@ class Module extends AbstractModule
             [$this, 'addHeaders']
         );
 
-        /*
-         * The listener is stored because it is uses for each adapter and in the
-         * method "filterSearchFilters()".
-         */
-        $this->searchResourcesListener = new Listener\SearchResourcesListener();
-
         $adapters = [
             \Omeka\Api\Adapter\ItemAdapter::class,
             \Omeka\Api\Adapter\ItemSetAdapter::class,
@@ -238,12 +239,14 @@ class Module extends AbstractModule
             // normally, then process properties normally in api.search.query.
             // This process is required because it is not possible to override
             // the method buildPropertyQuery() in AbstractResourceEntityAdapter.
+            // The point is the same to search resource without template, class,
+            // item set, site and owner.
             // Because this event does not apply when initialize = false, the
             // api manager has a delegator that does the same.
             $sharedEventManager->attach(
                 $adapter,
                 'api.search.pre',
-                [$this, 'onApiSearchPre'],
+                [$this, 'startOverrideQuery'],
                 // Let any other module, except core, to search properties.
                 -100
             );
@@ -251,7 +254,7 @@ class Module extends AbstractModule
             $sharedEventManager->attach(
                 $adapter,
                 'api.search.query',
-                [$this->searchResourcesListener, 'onDispatch'],
+                [$this, 'endOverrideQuery'],
                 // Process before any other module in order to reset query.
                 +100
             );
@@ -284,12 +287,6 @@ class Module extends AbstractModule
                 'view.advanced_search',
                 [$this, 'displayAdvancedSearch']
             );
-            // Filter the search filters for the advanced search pages.
-            $sharedEventManager->attach(
-                $controller,
-                'view.search.filters',
-                [$this, 'filterSearchFilters']
-            );
         }
         $controllers = [
             'Omeka\Controller\Site\Item',
@@ -306,84 +303,119 @@ class Module extends AbstractModule
             );
         }
 
-        // Listeners for the indexing for items, item sets and media.
+        // The search pages use the core process to display used filters.
+        $sharedEventManager->attach(
+            \AdvancedSearch\Controller\IndexController::class,
+            'view.search.filters',
+            [$this, 'filterSearchFilters']
+        );
 
+        // Listeners for the indexing of items, item sets and media.
+        // Let other modules to update data before indexing.
+
+        // The use of the form avoids to run the indexing three times.
+        // See below preBatchUpdateSearchEngine().
+        $sharedEventManager->attach(
+            \Omeka\Form\ResourceBatchUpdateForm::class,
+            'form.add_elements',
+            [$this, 'formAddElementsResourceBatchUpdateForm']
+        );
+
+        // Items.
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemAdapter::class,
             'api.create.post',
-            [$this, 'updateSearchEngine']
-        );
-        $sharedEventManager->attach(
-            \Omeka\Api\Adapter\ItemAdapter::class,
-            'api.batch_update.pre',
-            [$this, 'preBatchUpdateSearchEngine']
-        );
-        $sharedEventManager->attach(
-            \Omeka\Api\Adapter\ItemAdapter::class,
-            'api.batch_update.post',
-            [$this, 'postBatchUpdateSearchEngine']
+            [$this, 'updateSearchEngine'],
+            -100
         );
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemAdapter::class,
             'api.update.post',
-            [$this, 'updateSearchEngine']
+            [$this, 'updateSearchEngine'],
+            -100
         );
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemAdapter::class,
             'api.delete.post',
-            [$this, 'updateSearchEngine']
+            [$this, 'updateSearchEngine'],
+            -100
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemAdapter::class,
+            'api.batch_update.pre',
+            [$this, 'preBatchUpdateSearchEngine'],
+            -100
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemAdapter::class,
+            'api.batch_update.post',
+            [$this, 'postBatchUpdateSearchEngine'],
+            -100
         );
 
+        // Item sets.
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemSetAdapter::class,
             'api.create.post',
-            [$this, 'updateSearchEngine']
-        );
-        $sharedEventManager->attach(
-            \Omeka\Api\Adapter\ItemSetAdapter::class,
-            'api.batch_update.pre',
-            [$this, 'preBatchUpdateSearchEngine']
-        );
-        $sharedEventManager->attach(
-            \Omeka\Api\Adapter\ItemSetAdapter::class,
-            'api.batch_update.post',
-            [$this, 'postBatchUpdateSearchEngine']
+            [$this, 'updateSearchEngine'],
+            -100
         );
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemSetAdapter::class,
             'api.update.post',
-            [$this, 'updateSearchEngine']
+            [$this, 'updateSearchEngine'],
+            -100
         );
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\ItemSetAdapter::class,
             'api.delete.post',
-            [$this, 'updateSearchEngine']
+            [$this, 'updateSearchEngine'],
+            -100
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemSetAdapter::class,
+            'api.batch_update.pre',
+            [$this, 'preBatchUpdateSearchEngine'],
+            -100
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\ItemSetAdapter::class,
+            'api.batch_update.post',
+            [$this, 'postBatchUpdateSearchEngine'],
+            -100
         );
 
+        // Medias.
+        // There is no api.create.post for medias.
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\MediaAdapter::class,
             'api.update.post',
-            [$this, 'updateSearchEngineMedia']
-        );
-        $sharedEventManager->attach(
-            \Omeka\Api\Adapter\MediaAdapter::class,
-            'api.batch_update.pre',
-            [$this, 'preBatchUpdateSearchEngine']
-        );
-        $sharedEventManager->attach(
-            \Omeka\Api\Adapter\MediaAdapter::class,
-            'api.batch_update.post',
-            [$this, 'postBatchUpdateSearchEngine']
+            [$this, 'updateSearchEngineMedia'],
+            -100
         );
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\MediaAdapter::class,
             'api.delete.pre',
-            [$this, 'preUpdateSearchEngineMedia']
+            [$this, 'preUpdateSearchEngineMedia'],
+            -100
         );
         $sharedEventManager->attach(
             \Omeka\Api\Adapter\MediaAdapter::class,
             'api.delete.post',
-            [$this, 'updateSearchEngineMedia']
+            [$this, 'updateSearchEngineMedia'],
+            -100
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\MediaAdapter::class,
+            'api.batch_update.pre',
+            [$this, 'preBatchUpdateSearchEngine'],
+            -100
+        );
+        $sharedEventManager->attach(
+            \Omeka\Api\Adapter\MediaAdapter::class,
+            'api.batch_update.post',
+            [$this, 'postBatchUpdateSearchEngine'],
+            -100
         );
 
         // Listeners for sites.
@@ -563,6 +595,38 @@ class Module extends AbstractModule
                                 ],
                             ],
                         ],
+                        'atom' => [
+                            'type' => \Laminas\Router\Http\Literal::class,
+                            'options' => [
+                                'route' => '/atom',
+                                'defaults' => [
+                                    '__NAMESPACE__' => 'AdvancedSearch\Controller',
+                                    '__SITE__' => true,
+                                    'controller' => \AdvancedSearch\Controller\IndexController::class,
+                                    'action' => 'rss',
+                                    'feed' => 'atom',
+                                    'id' => $searchConfigId,
+                                    // Store the page slug to simplify checks.
+                                    'page-slug' => $searchConfigSlug,
+                                ],
+                            ],
+                        ],
+                        'rss' => [
+                            'type' => \Laminas\Router\Http\Literal::class,
+                            'options' => [
+                                'route' => '/rss',
+                                'defaults' => [
+                                    '__NAMESPACE__' => 'AdvancedSearch\Controller',
+                                    '__SITE__' => true,
+                                    'controller' => \AdvancedSearch\Controller\IndexController::class,
+                                    'action' => 'rss',
+                                    'feed' => 'rss',
+                                    'id' => $searchConfigId,
+                                    // Store the page slug to simplify checks.
+                                    'page-slug' => $searchConfigSlug,
+                                ],
+                            ],
+                        ],
                     ],
                 ]
             );
@@ -570,21 +634,44 @@ class Module extends AbstractModule
     }
 
     /**
-     * Save key "property" of the original query to process it one time only.
+     * Clean useless fields and store some keys to process them one time only.
      *
-     * @param Event $event
+     * @see \AdvancedSearch\Api\ManagerDelegator::search()
+     * @see \AdvancedSearch\Mvc\Controller\Plugin\SearchResources::startOverrideQuery()
      */
-    public function onApiSearchPre(Event $event): void
+    public function startOverrideQuery(Event $event): void
     {
         /** @var \Omeka\Api\Request $request */
         $request = $event->getParam('request');
-        $query = $request->getContent();
-        if (empty($query['property'])) {
-            return;
-        }
-        $request->setOption('override', ['property' => $query['property']]);
-        unset($query['property']);
-        $request->setContent($query);
+
+        /** @see \AdvancedSearch\Mvc\Controller\Plugin\SearchResources::startOverrideQuery() */
+        $this->getServiceLocator()->get('ControllerPluginManager')
+            ->get('searchResources')
+            ->startOverrideRequest($request);
+    }
+
+    /**
+     * Reset original fields and process search after core.
+     *
+     * @see \AdvancedSearch\Api\ManagerDelegator::search()
+     * @see \AdvancedSearch\Mvc\Controller\Plugin\SearchResources::endOverrideQuery()
+     */
+    public function endOverrideQuery(Event $event): void
+    {
+        /** @var \Omeka\Api\Request $request */
+        $request = $event->getParam('request');
+        $qb = $event->getParam('queryBuilder');
+        $adapter = $event->getTarget();
+
+        /** @see \AdvancedSearch\Mvc\Controller\Plugin\SearchResources::endOverrideQuery() */
+        $searchResources = $this->getServiceLocator()->get('ControllerPluginManager')
+            ->get('searchResources');
+
+        $searchResources
+            ->endOverrideRequest($request)
+            ->setAdapter($adapter)
+            // Process the query for overridden keys.
+            ->buildInitialQuery($qb, $request->getContent());
     }
 
     public function onFormVocabMemberSelectQuery(Event $event): void
@@ -606,15 +693,22 @@ class Module extends AbstractModule
     {
         // Adapted from the advanced-search/properties.phtml template.
 
-        if ($this->getServiceLocator()->get('Omeka\Status')->isAdminRequest()) {
-            $view = $event->getTarget();
-            $assetUrl = $view->plugin('assetUrl');
+        // The advanced search form can be used anywhere, so load it in all cases.
+        $view = $event->getTarget();
+        $assetUrl = $view->plugin('assetUrl');
+        $view->headScript()
+            ->appendFile($assetUrl('js/search.js', 'AdvancedSearch'), 'text/javascript', ['defer' => 'defer']);
+        if ($view->status()->isAdminRequest()) {
+            // For the main search field in the left sidebar in admin.
             $view->headLink()
-                ->appendStylesheet($assetUrl('vendor/chosen-js/chosen.css', 'Omeka'))
                 ->appendStylesheet($assetUrl('css/advanced-search-admin.css', 'AdvancedSearch'));
             $view->headScript()
-                ->appendFile($assetUrl('vendor/chosen-js/chosen.jquery.js', 'Omeka'), 'text/javascript', ['defer' => 'defer'])
                 ->appendFile($assetUrl('js/advanced-search-admin.js', 'AdvancedSearch'), 'text/javascript', ['defer' => 'defer']);
+        } else {
+            $view->headLink()
+                ->prependStylesheet($assetUrl('vendor/chosen-js/chosen.min.css', 'Omeka'));
+            $view->headScript()
+                ->appendFile($assetUrl('vendor/chosen-js/chosen.jquery.js', 'Omeka'), 'text/javascript', ['defer' => 'defer']);
         }
 
         $query = $event->getParam('query', []);
@@ -682,6 +776,12 @@ class Module extends AbstractModule
     /**
      * Filter search filters.
      *
+     * The search filter helper is overridden, so manage only the searching
+     * filters here.
+     *
+     * @see \Omeka\View\Helper\SearchFilters
+     * @see \AdvancedSearch\View\Helper\SearchFilters
+     *
      * @param Event $event
      */
     public function filterSearchFilters(Event $event): void
@@ -691,110 +791,62 @@ class Module extends AbstractModule
             return;
         }
 
-        $view = $event->getTarget();
-        $translate = $view->plugin('translate');
         $filters = $event->getParam('filters');
 
-        $query = $this->searchResourcesListener->normalizeQueryDateTime($query);
-        if (!empty($query['datetime'])) {
-            $queryTypes = [
-                'gt' => $translate('after'),
-                'gte' => $translate('after or on'),
-                'eq' => $translate('on'),
-                'neq' => $translate('not on'),
-                'lte' => $translate('before or on'),
-                'lt' => $translate('before'),
-                'ex' => $translate('has any date / time'),
-                'nex' => $translate('has no date / time'),
-            ];
+        $this->baseUrl = (string) $event->getParam('baseUrl');
 
-            $value = $query['datetime'];
-            $engine = 0;
-            foreach ($value as $queryRow) {
-                $joiner = $queryRow['joiner'];
-                $field = $queryRow['field'];
-                $type = $queryRow['type'];
-                $datetimeValue = $queryRow['value'];
+        /** @var \AdvancedSearch\Mvc\Controller\Plugin\SearchResources $searchResources */
+        $searchResources = $this->getServiceLocator()->get('ControllerPluginManager')
+            ->get('searchResources');
 
-                $fieldLabel = $field === 'modified' ? $translate('Modified') : $translate('Created');
-                $filterLabel = $fieldLabel . ' ' . $queryTypes[$type];
-                if ($engine > 0) {
-                    if ($joiner === 'or') {
-                        $filterLabel = $translate('OR') . ' ' . $filterLabel;
-                    } else {
-                        $filterLabel = $translate('AND') . ' ' . $filterLabel;
-                    }
-                }
-                $filters[$filterLabel][] = $datetimeValue;
-                ++$engine;
-            }
+        $cleanedQuery = $searchResources->cleanQuery($query);
+        $searchConfig = $cleanedQuery['__searchConfig'] ?? null;
+        // TODO Use the search Query directly or the query in the params? Currently, Query is not used.
+        // $searchQuery = $cleanedQuery['__searchQuery'] ?? null;
+        unset(
+            $cleanedQuery['page'],
+            $cleanedQuery['offset'],
+            $cleanedQuery['submit'],
+            $cleanedQuery['__searchConfig'],
+            $cleanedQuery['__searchQuery']
+        );
+
+        // TODO Clarify main search filters and searching filters.
+        if ($searchConfig) {
+            $view = $event->getTarget();
+            $filters = $view->searchingFilters()->filterSearchingFilters($searchConfig, $cleanedQuery, $filters);
         }
-
-        if (isset($query['is_public']) && $query['is_public'] !== '') {
-            $value = $query['is_public'] === '0' ? $translate('Private') : $translate('Public');
-            $filters[$translate('Visibility')][] = $value;
-        }
-
-        if (isset($query['resource_class_term'])) {
-            $value = $query['resource_class_term'];
-            if ($value) {
-                $filterLabel = $translate('Class'); // @translate
-                $filters[$filterLabel][] = $value;
-            }
-        }
-
-        if (isset($query['has_media'])) {
-            $value = $query['has_media'];
-            if ($value) {
-                $filterLabel = $translate('Has media'); // @translate
-                $filters[$filterLabel][] = $translate('yes'); // @translate
-            } elseif ($value !== '') {
-                $filterLabel = $translate('Has media'); // @translate
-                $filters[$filterLabel][] = $translate('no'); // @translate
-            }
-        }
-
-        if (isset($query['has_original'])) {
-            $value = $query['has_original'];
-            if ($value) {
-                $filterLabel = $translate('Has original'); // @translate
-                $filters[$filterLabel][] = $translate('yes'); // @translate
-            } elseif ($value !== '') {
-                $filterLabel = $translate('Has original'); // @translate
-                $filters[$filterLabel][] = $translate('no'); // @translate
-            }
-        }
-
-        if (isset($query['has_thumbnails'])) {
-            $value = $query['has_thumbnails'];
-            if ($value) {
-                $filterLabel = $translate('Has thumbnails'); // @translate
-                $filters[$filterLabel][] = $translate('yes'); // @translate
-            } elseif ($value !== '') {
-                $filterLabel = $translate('Has thumbnails'); // @translate
-                $filters[$filterLabel][] = $translate('no'); // @translate
-            }
-        }
-
-        if (!empty($query['media_types'])) {
-            $value = is_array($query['media_types'])
-                ? $query['media_types']
-                : [$query['media_types']];
-            foreach ($value as $subValue) {
-                $filterLabel = $translate('Media types'); // @translate
-                $filters[$filterLabel][] = $subValue;
-            }
-        }
-
-        // The query "item_set_id" is already managed by the main search filter.
 
         $event->setParam('filters', $filters);
     }
 
     /**
-     * Prepare a batch update to process it one time only for performance.
+     * Flag a front or back batch update to process in bulk one time only.
      *
-     * This process avoids a bug too.
+     * The batch create/update processes is mainly a loop of create/update
+     * processes, so it may not be efficient for bulk indexing. Furthermore, a
+     * batch update is divided in three batches: one to replace data, the second
+     * to remove data and the third to append data.
+     * @see \Omeka\Form\ResourceBatchUpdateForm::preprocessData()
+     * @see \Omeka\Job\BatchUpdate
+     * The process should be done only one time, so at the end of the last
+     * sub-batch (append). Because The only way to do it is to append it to the
+     * form. But the index should not be run when there is no action, and it is
+     * not possible to determine if there were other actions before, because the
+     * data are not passed as a whole, but by part.
+     * A better solution requires changes in core: to pass all data, or to use a
+     * whole event pre and/or post batch updat, or to use only one batch update
+     * with three steps.
+     *
+     * So this method set a flag to skip individual update of resources and to
+     * allow to run the update in bulk during post. Finally, it avoids too to
+     * index resources when the process is terminated with error.
+     *
+     * The previous version was a way too to fix issue #omeka/omeka-s/1690.
+     * The fix was not enough for foreground batch edit (see new fix).
+     * @see https://github.com/omeka/omeka-s/issues/1690
+     *
+     * Explanation of the bug < v3.1.
      * When there is a batch update, with modules SearchSolr and NumericDataTypes,
      * a bug occurs on the second call to update when the process is done in
      * admin ui via batch edit selected resources and when one of the selected
@@ -809,17 +861,29 @@ class Module extends AbstractModule
      * and \Omeka\Job\BatchUpdate::perform()). But, conversely, when this option
      * is set, it doesn't work any more for a background process, so a check is
      * done to check if this is a background event.
-     * @todo Find where the resource template property is created. This issue may disappear de facto in a future version.
      *
-     * @todo Clean the process with the fix in Omeka 3.1.
-     *
-     * @param Event $event
+     * For >= v3.1, no difference is done between front/back process.
      */
+    public function formAddElementsResourceBatchUpdateForm(Event $event): void
+    {
+        /** @var \Omeka\Form\ResourceBatchUpdateForm $form */
+        $form = $event->getTarget();
+        $form
+            ->add([
+                'name' => 'advancedsearch',
+                'type' => \Laminas\Form\Element\Hidden::class,
+                'attributes' => [
+                    'id' => 'advancedsearch',
+                    'value' => '1',
+                    // This attribute is required to make "batch edit all" working.
+                    'data-collection-action' => 'append',
+                ],
+            ]);
+    }
+
     public function preBatchUpdateSearchEngine(Event $event): void
     {
-        // This is a background job if there is no route match.
-        $routeMatch = $this->getServiceLocator()->get('application')->getMvcEvent()->getRouteMatch();
-        $this->isBatchUpdate = !empty($routeMatch);
+        $this->isBatchUpdate = true;
     }
 
     public function postBatchUpdateSearchEngine(Event $event): void
@@ -828,13 +892,19 @@ class Module extends AbstractModule
             return;
         }
 
-        $serviceLocator = $this->getServiceLocator();
-        $api = $serviceLocator->get('Omeka\ApiManager');
-
+        /** @var \Omeka\Api\Request $request */
         $request = $event->getParam('request');
+        $collectionAction = $request->getOption('collectionAction');
+        if ($collectionAction !== 'append') {
+            return;
+        }
+
         $requestResource = $request->getResource();
         $response = $event->getParam('response');
         $resources = $response->getContent();
+
+        $serviceLocator = $this->getServiceLocator();
+        $api = $serviceLocator->get('Omeka\ApiManager');
 
         /** @var \AdvancedSearch\Api\Representation\SearchEngineRepresentation[] $searchEngines */
         $searchEngines = $api->search('search_engines')->getContent();
@@ -877,6 +947,7 @@ class Module extends AbstractModule
         if ($this->isBatchUpdate) {
             return;
         }
+
         $serviceLocator = $this->getServiceLocator();
         $api = $serviceLocator->get('Omeka\ApiManager');
 
@@ -902,6 +973,10 @@ class Module extends AbstractModule
 
     public function updateSearchEngineMedia(Event $event): void
     {
+        if ($this->isBatchUpdate) {
+            return;
+        }
+
         $serviceLocator = $this->getServiceLocator();
         $api = $serviceLocator->get('Omeka\ApiManager');
 
@@ -1045,6 +1120,7 @@ class Module extends AbstractModule
 
         // No echo: it should just be a preload.
         // "searchPage" is kept to simplify migration.
+        $view->vars()->offsetSet('searchConfig', $searchConfig);
         $view->vars()->offsetSet('searchPage', $searchConfig);
         $view->partial($partialHeaders);
     }
@@ -1062,7 +1138,7 @@ class Module extends AbstractModule
         $services = $this->getServiceLocator();
         $settings = $services->get('Omeka\Settings');
         $siteSettings = $services->get('Omeka\Settings\Site');
-        $api = $services->get('ControllerPluginManager')->get('api');
+        $api = $services->get('Omeka\ApiManager');
         $site = null;
         $searchConfig = null;
 
@@ -1070,7 +1146,10 @@ class Module extends AbstractModule
         // default search config.
         $defaultSite = (int) $settings->get('default_site');
         if ($defaultSite) {
-            $site = $api->searchOne('sites', ['id' => $defaultSite])->getContent();
+            try {
+                $site = $api->read('sites', ['id' => $defaultSite])->getContent();
+            } catch (\Exception $e) {
+            }
         }
         if ($site) {
             $siteSettings->setTargetId($site->id());
@@ -1078,15 +1157,23 @@ class Module extends AbstractModule
         } else {
             $searchConfigId = (int) $settings->get('advancedsearch_main_config');
         }
+        $searchConfig = null;
         if ($searchConfigId) {
-            $searchConfig = $api->searchOne('search_configs', ['id' => $searchConfigId])->getContent();
+            try {
+                $searchConfig = $api->read('search_configs', ['id' => $searchConfigId])->getContent();
+            } catch (\Exception $e) {
+            }
         }
         if (!$searchConfig) {
-            $searchConfig = $api->searchOne('search_configs')->getContent();
+            try {
+                $searchConfig = $api->search('search_configs', ['limit' => 1])->getContent();
+                $searchConfig = reset($searchConfig);
+            } catch (\Exception $e) {
+            }
         }
         if (!$searchConfig) {
             $searchConfigId = $this->createDefaultSearchConfig();
-            $searchConfig = $api->searchOne('search_configs', ['id' => $searchConfigId])->getContent();
+            $searchConfig = $api->read('search_configs', ['id' => $searchConfigId])->getContent();
         }
 
         /** @var \Omeka\Entity\Site $site */
@@ -1103,6 +1190,9 @@ class Module extends AbstractModule
         $this->createDefaultSearchConfig();
     }
 
+    /**
+     * @todo Replace this method by the standard InstallResources() when the upgrade from Search will be removed.
+     */
     protected function createDefaultSearchConfig(): int
     {
         // Note: during installation or upgrade, the api may not be available
@@ -1111,7 +1201,7 @@ class Module extends AbstractModule
         $services = $this->getServiceLocator();
 
         $urlHelper = $services->get('ViewHelperManager')->get('url');
-        $messenger = new Messenger;
+        $messenger = $services->get('ControllerPluginManager')->get('messenger');
 
         /** @var \Doctrine\DBAL\Connection $connection */
         $connection = $services->get('Omeka\Connection');
@@ -1123,7 +1213,7 @@ FROM `search_engine`
 WHERE `adapter` = "internal"
 ORDER BY `id`;
 SQL;
-        $searchEngineId = (int) $connection->fetchColumn($sqlSearchEngineId);
+        $searchEngineId = (int) $connection->fetchOne($sqlSearchEngineId);
 
         if (!$searchEngineId) {
             // Create the internal adapter.
@@ -1131,15 +1221,15 @@ SQL;
 INSERT INTO `search_engine`
 (`name`, `adapter`, `settings`, `created`)
 VALUES
-('Internal (sql)', 'internal', ?, NOW());
+(?, ?, ?, NOW());
 SQL;
-            $searchEngineSettings = [
-                'resources' => ['items', 'item_sets'],
-            ];
-            $connection->executeQuery($sql, [
-                json_encode($searchEngineSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            $searchEngineConfig = require __DIR__ . '/data/search_engines/internal.php';
+            $connection->executeStatement($sql, [
+                $searchEngineConfig['o:name'],
+                $searchEngineConfig['o:adapter'],
+                json_encode($searchEngineConfig['o:settings'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ]);
-            $searchEngineId = $connection->fetchColumn($sqlSearchEngineId);
+            $searchEngineId = $connection->fetchOne($sqlSearchEngineId);
             $message = new Message(
                 'The internal search engine (sql) is available. Configure it in the %ssearch manager%s.', // @translate
                 // Don't use the url helper, the route is not available during install.
@@ -1158,7 +1248,7 @@ WHERE `engine_id` = $searchEngineId
 ORDER BY `id`
 LIMIT 1;
 SQL;
-        $suggesterId = (int) $connection->fetchColumn($sqlSuggesterId);
+        $suggesterId = (int) $connection->fetchOne($sqlSuggesterId);
 
         if (!$suggesterId) {
             // Create the internal suggester.
@@ -1169,7 +1259,7 @@ VALUES
 ($searchEngineId, 'Internal suggester (sql)', ?, NOW());
 SQL;
             $suggesterSettings = [
-                'direct' => true,
+                'direct' => false,
                 'mode_index' => 'start',
                 'mode_search' => 'start',
                 'limit' => 25,
@@ -1177,12 +1267,12 @@ SQL;
                 'fields' => [],
                 'excluded_fields' => [],
             ];
-            $connection->executeQuery($sql, [
+            $connection->executeStatement($sql, [
                 json_encode($suggesterSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ]);
             // $suggesterId = $connection->fetchColumn($sqlSuggesterId);
             $message = new Message(
-                'The internal suggester (sql) is available. Configure it in the %ssearch manager%s.', // @translate
+                'The internal suggester (sql) will be available after indexation. Configure it in the %ssearch manager%s.', // @translate
                 // Don't use the url helper, the route is not available during install.
                 sprintf('<a href="%s">', $urlHelper('admin') . '/search-manager'),
                 '</a>'
@@ -1198,24 +1288,27 @@ FROM `search_config`
 WHERE `engine_id` = $searchEngineId
 ORDER BY `id`;
 SQL;
-        $searchConfigId = (int) $connection->fetchColumn($sqlSearchConfigId);
+        $searchConfigId = (int) $connection->fetchOne($sqlSearchConfigId);
 
         if (!$searchConfigId) {
             $sql = <<<SQL
 INSERT INTO `search_config`
 (`engine_id`, `name`, `path`, `form_adapter`, `settings`, `created`)
 VALUES
-($searchEngineId, 'Default', 'find', 'main', ?, NOW());
+($searchEngineId, ?, ?, ?, ?, NOW());
 SQL;
-            $searchConfigSettings = require __DIR__ . '/data/search_configs/default.php';
-            $connection->executeQuery($sql, [
-                json_encode($searchConfigSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            $searchConfigConfig = require __DIR__ . '/data/search_configs/default.php';
+            $connection->executeStatement($sql, [
+                $searchConfigConfig['o:name'],
+                $searchConfigConfig['o:path'],
+                $searchConfigConfig['o:form'],
+                json_encode($searchConfigConfig['o:settings'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
             ]);
 
             $message = new Message(
                 'The default search page is available. Configure it in the %ssearch manager%s, in the main settings (for admin) and in site settings (for public).', // @translate
                 // Don't use the url helper, the route is not available during install.
-                sprintf('<a href="%s">', $urlHelper('admin') . '/search-manager'),
+                sprintf('<a href="%s">', $urlHelper('admin') . '/search-manager/suggester/1/edit'),
                 '</a>'
             );
             $message->setEscapeHtml(false);

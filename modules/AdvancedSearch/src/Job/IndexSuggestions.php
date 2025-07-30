@@ -40,13 +40,6 @@ class IndexSuggestions extends AbstractJob
      */
     protected $connection;
 
-    /**
-     * List of property ids by term and id.
-     *
-     * @var array
-     */
-    protected $propertiesByTermsAndIds;
-
     public function perform(): void
     {
         /**
@@ -153,11 +146,13 @@ class IndexSuggestions extends AbstractJob
         ];
         $resourceNames = array_intersect_key($mapResources, array_flip($resourceNames));
 
+        $easyMeta = $this->getServiceLocator()->get('ViewHelperManager')->get('easyMeta');
+
         // FIXME Fields are not only properties, but titles, classes and templates.
         $fields = $suggester->setting('fields') ?: [];
-        $fields = $this->getPropertyIds($fields);
+        $fields = $easyMeta->propertyIds($fields);
         $excludedFields = $suggester->setting('excuded_fields') ?: [];
-        $excludedFields = $this->getPropertyIds($excludedFields);
+        $excludedFields = $easyMeta->propertyIds($excludedFields);
 
         $modeIndex = $suggester->setting('mode_index') ?: 'start';
 
@@ -296,7 +291,7 @@ DROP TABLE IF EXISTS `_suggestions_temporary`;
 
 SQL;
 
-        $this->connection->executeQuery($sql, $bind, $types);
+        $this->connection->executeStatement($sql, $bind, $types);
 
         return $this;
     }
@@ -471,7 +466,7 @@ DROP TABLE IF EXISTS `_suggestions_temporary`;
 
 SQL;
 
-        $this->connection->executeQuery($sql, $bind, $types);
+        $this->connection->executeStatement($sql, $bind, $types);
 
         return $this;
     }
@@ -637,7 +632,7 @@ SQL;
             }
 
             // Get it each loop because of the entity manager clearing clearing.
-            $suggester = $this->entityManager->getRepository(\AdvancedSearch\Entity\SearchSuggester::class)->find($suggesterId);
+            $suggester = $this->entityManager->find(\AdvancedSearch\Entity\SearchSuggester::class, $suggesterId);
 
             $suggestionCriteria = new Criteria($expr->eq('suggester', $suggester));
             $suggestions = $suggestionRepository->matching($suggestionCriteria);
@@ -731,48 +726,5 @@ SQL;
         ));
 
         return $this;
-    }
-
-    /**
-     * Get property ids by JSON-LD terms or by numeric ids.
-     *
-     * @return int[]
-     */
-    protected function getPropertyIds(array $termOrIds): array
-    {
-        if (is_null($this->propertiesByTermsAndIds)) {
-            $this->prepareProperties();
-        }
-        return array_values(array_intersect_key($this->propertiesByTermsAndIds, array_flip($termOrIds)));
-    }
-
-    /**
-     * Prepare the list of properties and used properties.
-     */
-    protected function prepareProperties(): void
-    {
-        if (is_null($this->propertiesByTermsAndIds)) {
-            $qb = $this->connection->createQueryBuilder();
-            $qb
-                ->select([
-                    'DISTINCT property.id AS id',
-                    'CONCAT(vocabulary.prefix, ":", property.local_name) AS term',
-                    // Only the two first selects are needed, but some databases
-                    // require "order by" or "group by" value to be in the select.
-                    'vocabulary.id',
-                    'property.id',
-                ])
-                ->from('property', 'property')
-                ->innerJoin('property', 'vocabulary', 'vocabulary', 'property.vocabulary_id = vocabulary.id')
-                ->orderBy('vocabulary.id', 'asc')
-                ->addOrderBy('property.id', 'asc')
-                ->addGroupBy('property.id')
-            ;
-            $stmt = $this->connection->executeQuery($qb);
-            // Fetch by key pair is not supported by doctrine 2.0.
-            $properties = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-            $properties = array_map('intval', array_column($properties, 'id', 'term'));
-            $this->propertiesByTermsAndIds = array_replace($properties, array_combine($properties, $properties));
-        }
     }
 }

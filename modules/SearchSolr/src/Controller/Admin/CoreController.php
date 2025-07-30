@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016
- * Copyright Daniel Berthereau, 2017-2021
+ * Copyright Daniel Berthereau, 2017-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -118,15 +118,18 @@ class CoreController extends AbstractActionController
         // SolrClient requires a boolean for the option "secure".
         $data['o:settings']['client']['secure'] = !empty($data['o:settings']['client']['secure']);
         $data['o:settings']['client']['host'] = preg_replace('(^https?://)', '', $data['o:settings']['client']['host']);
-        $data['o:settings']['site_url'] = $this->getBaseUrl();
         $data['o:settings']['resource_languages'] = implode(' ', array_unique(array_filter(explode(' ', $data['o:settings']['resource_languages']))));
         unset($data['o:settings']['clear_full_index']);
         $this->api()->update('solr_cores', $id, $data);
 
-        $result = $this->checkCoreConfig($core);
-        if (!$result) {
-            $this->messenger()->addError(new Message('The config to manage the Solr core "%s" was updated, but with an incorrect config.', $core->name())); // @translate
-            return $this->redirect()->toRoute('admin/search/solr/core-id', ['id' => $core->id(), 'action' => 'edit']);
+        $this->messenger()->addSuccess(new Message('Solr core "%s" updated.', $core->name())); // @translate
+
+        $missingMaps = $core->missingRequiredMaps();
+        if ($missingMaps) {
+            $this->messenger()->addError(new Message(
+                'Some required fields are missing or not available in the core: "%s". Update the generic or the resource mappings.', // @translate
+                implode('", "', array_unique($missingMaps))
+            ));
         }
 
         if (!empty($data['o:settings']['support'])) {
@@ -139,20 +142,17 @@ class CoreController extends AbstractActionController
                     'Some specific static or dynamic fields are missing or not available for "%s" in the core: "%s".', // @translate
                     $data['o:settings']['support'], implode('", "', array_keys($unsupportedFields))
                 ));
-            } else {
-                $this->messenger()->addSuccess(new Message('Solr core "%s" updated.', $core->name())); // @translate
             }
+            $this->messenger()->addWarning('Don’t forget to reindex this core with external indexers.'); // @translate
         } else {
-            $this->messenger()->addSuccess(new Message('Solr core "%s" updated.', $core->name())); // @translate
+            $this->messenger()->addWarning('Don’t forget to reindex the resources and to check the mapping of the search pages that use this core.'); // @translate
         }
+
         if ($clearFullIndex) {
             $this->clearFullIndex($core);
             $this->messenger()->addWarning(new Message('All indexes of core "%s" are been deleted.', $core->name())); // @translate
         }
-        $this->messenger()->addWarning('Don’t forget to reindex the resources and to check the mapping of the search pages that use this core.'); // @translate
-        if ($clearFullIndex) {
-            $this->messenger()->addWarning('Don’t forget to reindex this core with external indexers.'); // @translate
-        }
+
         return $this->redirect()->toRoute('admin/search/solr');
     }
 
@@ -305,54 +305,6 @@ class CoreController extends AbstractActionController
         return true;
     }
 
-    /**
-     * Get the base url of the server.
-     *
-     * This value avoids issue in background job.
-     *
-     * @return string
-     */
-    protected function getBaseUrl()
-    {
-        $helpers = $this->viewHelpers();
-        return $helpers->get('ServerUrl')->__invoke($helpers->get('BasePath')->__invoke('/'));
-    }
-
-    protected function checkCoreConfig(SolrCoreRepresentation $solrCore)
-    {
-        // Check if the specified fields are available.
-        $fields = [
-            'is_public_field' => true,
-            'resource_name_field' => true,
-            'sites_field' => true,
-            'index_field' => false,
-        ];
-
-        $unavailableFields = [];
-        foreach ($fields as $field => $isRequired) {
-            $fieldName = $solrCore->setting($field);
-            if (empty($fieldName)) {
-                if ($isRequired) {
-                    $unavailableFields[] = $fieldName;
-                }
-                continue;
-            }
-            if (!$solrCore->getSchemaField($fieldName)) {
-                $unavailableFields[] = $fieldName;
-            }
-        }
-
-        if (count($unavailableFields)) {
-            $this->messenger()->addError(new Message(
-                'Some static or dynamic fields are missing or not available in the core: "%s".', // @translate
-                implode('", "', $unavailableFields)
-            ));
-            return false;
-        }
-
-        return true;
-    }
-
     protected function clearFullIndex(SolrCoreRepresentation $solrCore): void
     {
         $solariumClient = $solrCore->solariumClient();
@@ -376,7 +328,7 @@ class CoreController extends AbstractActionController
         $rows = array_values($rows);
         if (array_values($rows[0]) !== array_values($this->mappingHeaders)) {
             $this->messenger()->addError(
-                'The headers of the file are not the default ones. You may check the delimiter too.' // @translate
+                'The headers of the file are not the default ones. Or the delimiter is not the good one according to the media-type or extension.' // @translate
             );
             return false;
         }
@@ -398,7 +350,7 @@ class CoreController extends AbstractActionController
                     $key + 1
                 ));
                 unset($rows[$key]);
-            } elseif (!in_array($row['resource_name'], ['items', 'item_sets'])) {
+            } elseif (!in_array($row['resource_name'], ['generic', 'resources', 'items', 'item_sets', 'media'])) {
                 $this->messenger()->addWarning(new Message(
                     'The row #%d does not manage resource "%s".', // @translate
                     $key + 1, $row['resource_name']
@@ -571,7 +523,7 @@ class CoreController extends AbstractActionController
         $fileData['extension'] = $extension;
 
         // Manage an exception for a very common format, undetected by fileinfo.
-        if ($mediaType === 'text/plain' || 'application/octet-stream') {
+        if ($mediaType === 'text/plain' || $mediaType === 'application/octet-stream') {
             $extensions = [
                 'txt' => 'text/plain',
                 'csv' => 'text/csv',
@@ -588,8 +540,9 @@ class CoreController extends AbstractActionController
             // 'application/vnd.oasis.opendocument.spreadsheet' => true,
             'text/plain' => true,
             'text/tab-separated-values' => true,
+            'application/csv' => true,
         ];
-        if (! isset($supporteds[$mediaType])) {
+        if (!isset($supporteds[$mediaType])) {
             return false;
         }
 

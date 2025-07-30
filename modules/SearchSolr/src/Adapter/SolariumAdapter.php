@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /*
- * Copyright Daniel Berthereau, 2017-2021
+ * Copyright Daniel Berthereau, 2017-2023
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -30,7 +30,6 @@
 namespace SearchSolr\Adapter;
 
 use AdvancedSearch\Adapter\AbstractAdapter;
-use AdvancedSearch\Api\Representation\SearchEngineRepresentation;
 use Laminas\I18n\Translator\TranslatorInterface;
 use Omeka\Api\Manager as ApiManager;
 use SearchSolr\Form\Admin\SolrConfigFieldset;
@@ -78,9 +77,13 @@ class SolariumAdapter extends AbstractAdapter
         return \SearchSolr\Querier\SolariumQuerier::class;
     }
 
-    public function getAvailableFields(SearchEngineRepresentation $index): array
+    public function getAvailableFields(): array
     {
-        $solrCoreId = $index->settingAdapter('solr_core_id');
+        if (!$this->searchEngine) {
+            return [];
+        }
+
+        $solrCoreId = $this->searchEngine->settingAdapter('solr_core_id');
         if (!$solrCoreId) {
             return [];
         }
@@ -88,24 +91,29 @@ class SolariumAdapter extends AbstractAdapter
         /** @var \SearchSolr\Api\Representation\SolrCoreRepresentation $solrCore */
         $solrCore = $this->api->read('solr_cores', $solrCoreId)->getContent();
 
-        $facetFields = [];
-        foreach ($solrCore->maps() as $map) {
+        // TODO Add support of input field for id (from o:id).
+
+        $fields = [];
+        foreach ($solrCore->mapsOrderedByStructure() as $map) {
             $name = $map->fieldName();
             $label = $map->setting('label', '');
-            $facetFields[$name] = [
+            $fields[$name] = [
                 'name' => $name,
                 'label' => $label,
+                'from' => $map->source(),
             ];
         }
 
-        ksort($facetFields);
-
-        return $facetFields;
+        return $fields;
     }
 
-    public function getAvailableSortFields(SearchEngineRepresentation $index): array
+    public function getAvailableSortFields(): array
     {
-        $solrCoreId = $index->settingAdapter('solr_core_id');
+        if (!$this->searchEngine) {
+            return [];
+        }
+
+        $solrCoreId = $this->searchEngine->settingAdapter('solr_core_id');
         if (!$solrCoreId) {
             return [];
         }
@@ -126,7 +134,7 @@ class SolariumAdapter extends AbstractAdapter
             'desc' => $this->translator->translate('Desc'),
         ];
 
-        foreach ($solrCore->maps() as $map) {
+        foreach ($solrCore->mapsOrderedByStructure() as $map) {
             $fieldName = $map->fieldName();
             $schemaField = $schema->getField($fieldName);
             if (!$schemaField || $schemaField->isMultivalued()) {
@@ -142,13 +150,38 @@ class SolariumAdapter extends AbstractAdapter
             }
         }
 
-        ksort($sortFields);
-
         return $sortFields;
     }
 
-    public function getAvailableFacetFields(SearchEngineRepresentation $index): array
+    public function getAvailableFacetFields(): array
     {
-        return $this->getAvailableFields($index);
+        if (!$this->searchEngine) {
+            return [];
+        }
+
+        $solrCoreId = $this->searchEngine->settingAdapter('solr_core_id');
+        if (!$solrCoreId) {
+            return [];
+        }
+
+        /** @var \SearchSolr\Api\Representation\SolrCoreRepresentation $solrCore */
+        $solrCore = $this->api->read('solr_cores', $solrCoreId)->getContent();
+        $schema = $solrCore->schema();
+
+        $fields = [];
+        foreach ($solrCore->mapsOrderedByStructure() as $map) {
+            $name = $map->fieldName();
+            $schemaField = $schema->getField($name);
+            if (!$schemaField || $schemaField->isGeneralText()) {
+                continue;
+            }
+            $label = $map->setting('label', '');
+            $fields[$name] = [
+                'name' => $name,
+                'label' => $label,
+            ];
+        }
+
+        return $fields;
     }
 }

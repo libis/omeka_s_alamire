@@ -2,7 +2,7 @@
 
 /*
  * Copyright BibLibre, 2016-2017
- * Copyright Daniel Berthereau, 2018-2021
+ * Copyright Daniel Berthereau, 2018-2022
  *
  * This software is governed by the CeCILL license under French law and abiding
  * by the rules of distribution of free software.  You can use, modify and/ or
@@ -30,15 +30,11 @@
 
 namespace AdvancedSearch\Form\Admin;
 
-use AdvancedSearch\Form\Element\ArrayText;
-use AdvancedSearch\Form\Element\DataTextarea;
-use AdvancedSearch\Form\Element\OptionalRadio;
-use AdvancedSearch\Form\Element\OptionalSelect;
-use AdvancedSearch\Form\Element\OptionalUrl;
+use AdvancedSearch\Form\Element as AdvancedSearchElement;
 use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
 use Laminas\Form\Form;
-use Omeka\Form\Element\ArrayTextarea;
+use Omeka\Form\Element as OmekaElement;
 
 class SearchConfigConfigureForm extends Form
 {
@@ -60,25 +56,11 @@ class SearchConfigConfigureForm extends Form
 
         // This is the settings for the search config, not the search form one.
 
-        // TODO Simplify the form with js, storing the whole form one time. See UserProfile and https://docs.laminas.dev/laminas-form/v3/form-creation/creation-via-factory/
+        // TODO Simplify the form with js, storing the whole form one time.
+        // TODO See UserProfile and https://docs.laminas.dev/laminas-form/v3/form-creation/creation-via-factory/
 
         // These fields may be overridden by the available fields.
         $availableFields = $this->getAvailableFields();
-        $specialOptions = [
-            'is_public_field' => 'Is public', // @translate
-            // TODO Create a default field for item set, resource class and resource template for Solr.
-            'item_set_id_field' => 'Item set id (if available in fields)', // @translate
-            'resource_class_id_field' => 'Resource class id (if available in fields)', // @translate
-            'resource_template_id_field' => 'Resource template id (if available in fields)', // @translate
-            'owner_id_field' => 'Owner id (if available in fields)', // @translate
-        ] + $availableFields;
-
-        // Remove some of the available fields used by the internal adapter,
-        // because here, it's about special options and for any adapter.
-        unset($specialOptions['item_set_id']);
-        unset($specialOptions['resource_class_id']);
-        unset($specialOptions['resource_template_id']);
-        unset($specialOptions['owner_id']);
 
         $this
             ->setAttribute('id', 'search-form-configure');
@@ -111,100 +93,38 @@ class SearchConfigConfigureForm extends Form
                     'value' => 'default',
                 ],
             ])
+            // TODO Use UrlQuery instead of Text for the default query to avoid conversion each time.
             ->add([
                 'name' => 'default_query',
                 'type' => Element\Text::class,
                 'options' => [
                     'label' => 'Default query', // @translate
-                    'default' => 'The format of the query depends on the search form and the search engine.', // @translated
+                    'info' => 'The format of the query depends on the search form and the search engine.', // @translated
                 ],
                 'attributes' => [
                     'id' => 'default_query',
                 ],
             ])
-        ;
-
-        $this
             ->add([
-                'name' => 'resource_fields',
-                'type' => Fieldset::class,
+                'name' => 'default_query_post',
+                'type' => Element\Text::class,
                 'options' => [
-                    'label' => 'Resources fields for external search engines', // @translate
-                ],
-            ])
-            ->get('resource_fields')
-            ->add([
-                'name' => 'is_public_field',
-                'type' => Element\Select::class,
-                'options' => [
-                    'label' => 'Is public field', // @translate
-                    'value_options' => $specialOptions,
-                    'empty_option' => 'None', // @translate
+                    'label' => 'Complementary default query', // @translate
+                    'info' => 'Mainly used to specify a default sort when request is empty, but other args are possible (default pagination, selected facets…).', // @translated
                 ],
                 'attributes' => [
-                    'required' => false,
-                    'class' => 'chosen-select',
-                    'value' => 'is_public_field',
+                    'id' => 'default_query_post',
                 ],
             ])
             ->add([
-                'name' => 'item_set_id_field',
-                'type' => Element\Select::class,
+                'name' => 'hidden_query_filters',
+                'type' => AdvancedSearchElement\UrlQuery::class,
                 'options' => [
-                    'label' => 'Item set id field', // @translate
-                    'value_options' => $specialOptions,
-                    'empty_option' => 'None', // @translate
+                    'label' => 'Hidden query filter to limit results', // @translate
+                    'info' => 'These args are appended to all queries. The format of the query depends on the search form and the search engine.', // @translated
                 ],
                 'attributes' => [
-                    'id' => 'item_set_id_field',
-                    'required' => false,
-                    'class' => 'chosen-select',
-                    'value' => 'item_set_id_field',
-                ],
-            ])
-            ->add([
-                'name' => 'resource_class_id_field',
-                'type' => Element\Select::class,
-                'options' => [
-                    'label' => 'Resource class id field', // @translate
-                    'value_options' => $specialOptions,
-                    'empty_option' => 'None', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'resource_class_id_field',
-                    'required' => false,
-                    'class' => 'chosen-select',
-                    'value' => 'resource_class_id_field',
-                ],
-            ])
-            ->add([
-                'name' => 'resource_template_id_field',
-                'type' => Element\Select::class,
-                'options' => [
-                    'label' => 'Resource template id field', // @translate
-                    'value_options' => $specialOptions,
-                    'empty_option' => 'None', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'resource_template_id_field',
-                    'required' => false,
-                    'class' => 'chosen-select',
-                    'value' => 'resource_template_id_field',
-                ],
-            ])
-            ->add([
-                'name' => 'owner_id_field',
-                'type' => Element\Select::class,
-                'options' => [
-                    'label' => 'Owner id field', // @translate
-                    'value_options' => $specialOptions,
-                    'empty_option' => 'None', // @translate
-                ],
-                'attributes' => [
-                    'id' => 'owner_id_field',
-                    'required' => false,
-                    'class' => 'chosen-select',
-                    'value' => 'owner_id_field',
+                    'id' => 'hidden_query_filters',
                 ],
             ])
         ;
@@ -220,7 +140,7 @@ class SearchConfigConfigureForm extends Form
             ->get('autosuggest')
             ->add([
                 'name' => 'suggester',
-                'type' => OptionalSelect::class,
+                'type' => AdvancedSearchElement\OptionalSelect::class,
                 'options' => [
                     'label' => 'Suggester', // @translate
                     'value_options' => $this->suggesters,
@@ -235,7 +155,7 @@ class SearchConfigConfigureForm extends Form
             ])
             ->add([
                 'name' => 'url',
-                'type' => OptionalUrl::class,
+                'type' => AdvancedSearchElement\OptionalUrl::class,
                 'options' => [
                     'label' => 'Direct endpoint', // @translate
                     // @see https://solr.apache.org/guide/suggester.html#suggest-request-handler-parameters
@@ -272,7 +192,7 @@ class SearchConfigConfigureForm extends Form
 
             ->add([
                 'name' => 'filters',
-                'type' => DataTextarea::class,
+                'type' => AdvancedSearchElement\DataTextarea::class,
                 'options' => [
                     'label' => 'Filters', // @translate
                     'info' => 'List of filters that will be displayed in the search form. Format is "field = Label = Type = options". The field should exist in all resources fields.', // @translate
@@ -291,8 +211,8 @@ class SearchConfigConfigureForm extends Form
                 'attributes' => [
                     'id' => 'filters',
                     // field (term) = label = type = options
-                    'placeholder' => 'item_set_id_field = Collection = Select
-resource_class_id_field = Class = SelectFlat
+                    'placeholder' => 'item_set_id = Collection = Omeka/Select
+resource_class_id = Class = Omeka/SelectFlat
 dcterms:title = Title = Text
 dcterms:date = Date = DateRange
 dcterms:subject = Subject = MultiCheckbox = alpha | beta | gamma
@@ -302,7 +222,7 @@ advanced = Filters = Advanced',
             ])
             ->add([
                 'name' => 'available_filters',
-                'type' => ArrayTextarea::class,
+                'type' => OmekaElement\ArrayTextarea::class,
                 'options' => [
                     'label' => 'Available filters', // @translate
                     'info' => 'List of all available filters, among which some can be copied above.', // @translate
@@ -318,7 +238,7 @@ advanced = Filters = Advanced',
             ])
             ->add([
                 'name' => 'advanced',
-                'type' => DataTextarea::class,
+                'type' => AdvancedSearchElement\DataTextarea::class,
                 'options' => [
                     'label' => 'Advanced filters', // @translate
                     'info' => 'List of filters that will be displayed in the search form. Format is "term = Label". The field should exist in all resources fields.', // @translate
@@ -363,7 +283,16 @@ advanced = Filters = Advanced',
                     'id' => 'field_joiner',
                 ],
             ])
-            // TODO List value type (rename/remove).
+            ->add([
+                'name' => 'field_joiner_not',
+                'type' => Element\Checkbox::class,
+                'options' => [
+                    'label' => 'Add the joiner "not" to the advanced filters', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'field_joiner_not',
+                ],
+            ])
             ->add([
                 'name' => 'field_operator',
                 'type' => Element\Checkbox::class,
@@ -374,11 +303,188 @@ advanced = Filters = Advanced',
                     'id' => 'field_operator',
                 ],
             ])
+            ->add([
+                'name' => 'field_operators',
+                'type' => OmekaElement\ArrayTextarea::class,
+                'options' => [
+                    'label' => 'List of operators', // @translate
+                    'info' => 'The default list is: eq, neq, in, nin, sw, nsw, ew, new, ex, nex, res, nres. Negative operators are removed when the joiner "not" is used. The default operators are used when empty.', // @translate
+                    'as_key_value' => true,
+                    'key_value_separator' => '=',
+                ],
+                'attributes' => [
+                    'id' => 'field_operators',
+                    'placeholder' => 'eq = is exactly
+neq = is not exactly
+in = contains
+nin = does not contain
+sw = starts with
+nsw = does not start with
+ew = ends with
+new = does not end with
+ex = has any value
+nex = has no values
+res = is resource with ID
+nres = is not resource with ID
+lex = is a linked resource
+nlex = is not a linked resource
+lres = is linked with resource with ID
+nlres = is not linked with resource with ID
+',
+                    'rows' => 12,
+                ],
+            ])
+        ;
+
+        $this
+            ->add([
+                'name' => 'display',
+                'type' => Fieldset::class,
+                'options' => [
+                    'label' => 'Results display (when supported by theme)', // @translate
+                ],
+            ])
+            ->get('display')
+            ->add([
+                'name' => 'search_filters',
+                'type' => AdvancedSearchElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'List of query filters', // @translate
+                    'value_options' => [
+                        'none' => 'No', // @translate
+                        'header' => 'Results header', // @translate
+                        'footer' => 'Results footer', // @translate
+                        'both' => 'Both', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'search_filters',
+                    'value' => 'header',
+                ],
+            ])
+            ->add([
+                'name' => 'paginator',
+                'type' => AdvancedSearchElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'Paginator', // @translate
+                    'value_options' => [
+                        'none' => 'No', // @translate
+                        'header' => 'Results header', // @translate
+                        'footer' => 'Results footer', // @translate
+                        'both' => 'Both', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'paginator',
+                    'value' => 'header',
+                ],
+            ])
+            ->add([
+                'name' => 'per_pages',
+                'type' => AdvancedSearchElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'Pagination per page', // @translate
+                    'value_options' => [
+                        'none' => 'No', // @translate
+                        'header' => 'Results header', // @translate
+                        'footer' => 'Results footer', // @translate
+                        'both' => 'Both', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'per_pages',
+                    'value' => 'header',
+                ],
+            ])
+            ->add([
+                'name' => 'sort',
+                'type' => AdvancedSearchElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'Sort', // @translate
+                    'value_options' => [
+                        'none' => 'No', // @translate
+                        'header' => 'Results header', // @translate
+                        'footer' => 'Results footer', // @translate
+                        'both' => 'Both', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'sort',
+                    'value' => 'header',
+                ],
+            ])
+            ->add([
+                'name' => 'grid_list',
+                'type' => AdvancedSearchElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'Grid / list', // @translate
+                    'value_options' => [
+                        'none' => 'No', // @translate
+                        'header' => 'Results header', // @translate
+                        'footer' => 'Results footer', // @translate
+                        'both' => 'Both', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'grid_list',
+                    'value' => 'header',
+                ],
+            ])
+            ->add([
+                'name' => 'grid_list_mode',
+                'type' => AdvancedSearchElement\OptionalRadio::class,
+                'options' => [
+                    'label' => 'Grid / list default mode', // @translate
+                    'value_options' => [
+                        'auto' => 'Auto (previous user choice)', // @translate
+                        'grid' => 'Grid', // @translate
+                        'list' => 'List', // @translate
+                        'grid_only' => 'Only grid', // @translate
+                        'list_only' => 'Only list', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'grid_list_mode',
+                    'value' => 'auto',
+                ],
+            ])
+        ;
+
+        // Settings for the results (pagination).
+
+        // TODO Add the style of pagination (prev/next or list of pages).
+
+        $this
+            ->add([
+                'name' => 'pagination',
+                'type' => Fieldset::class,
+                'options' => [
+                    'label' => 'Pagination', // @translate
+                ],
+            ])
+            ->get('pagination')
+            ->add([
+                'name' => 'per_pages',
+                'type' => OmekaElement\ArrayTextarea::class,
+                'options' => [
+                    'label' => 'Results per page', // @translate
+                    'info' => 'If any, the search page will display a select to paginate results.', // @translate
+                    'as_key_value' => true,
+                    'key_value_separator' => '=',
+                ],
+                'attributes' => [
+                    'id' => 'per_pages',
+                    'placeholder' => '10 = Results by 10
+25 = Results by 25
+50 = Results by 50
+100 = Results by 100
+',
+                    'rows' => 6,
+                ],
+            ])
         ;
 
         // Settings for the results (sorting).
-
-        // TODO Add the style of pagination.
 
         $this
             ->add([
@@ -392,7 +498,7 @@ advanced = Filters = Advanced',
             // field (term + asc/desc) = label (+ asc/desc) (order means weight).
             ->add([
                 'name' => 'fields',
-                'type' => DataTextarea::class,
+                'type' => AdvancedSearchElement\DataTextarea::class,
                 'options' => [
                     'label' => 'Sort fields', // @translate
                     'info' => 'List of sort fields that will be displayed in the search page. Format is "term dir = Label".', // @translate
@@ -411,7 +517,7 @@ advanced = Filters = Advanced',
             ])
             ->add([
                 'name' => 'available_sort_fields',
-                'type' => ArrayTextarea::class,
+                'type' => OmekaElement\ArrayTextarea::class,
                 'options' => [
                     'label' => 'Available sort fields', // @translate
                     'info' => 'List of all available sort fields, among which some can be copied above.', // @translate
@@ -442,10 +548,10 @@ advanced = Filters = Advanced',
             // field (term) = label (order means weight).
             ->add([
                 'name' => 'facets',
-                'type' => DataTextarea::class,
+                'type' => AdvancedSearchElement\DataTextarea::class,
                 'options' => [
                     'label' => 'List of facets', // @translate
-                    'info' => 'List of facets that will be displayed in the search page. Format is "field = Label" and optionnally " = Select".', // @translate
+                    'info' => 'List of facets that will be displayed in the search page. Format is "field = Label" and optionnally " = Select" or " = SelectRange". With internal sql engine, "SelectRange" orders values alphabetically. With Solr, "SelectRange" works only with date and numbers.', // @translate
                     'as_key_value' => true,
                     'key_value_separator' => '=',
                     'data_keys' => [
@@ -462,7 +568,7 @@ advanced = Filters = Advanced',
             ])
             ->add([
                 'name' => 'available_facets',
-                'type' => ArrayTextarea::class,
+                'type' => OmekaElement\ArrayTextarea::class,
                 'options' => [
                     'label' => 'Available facets', // @translate
                     'info' => 'List of all available facets, among which some can be copied above.', // @translate
@@ -492,7 +598,7 @@ advanced = Filters = Advanced',
             ])
             ->add([
                 'name' => 'order',
-                'type' => OptionalRadio::class,
+                'type' => AdvancedSearchElement\OptionalRadio::class,
                 'options' => [
                     'label' => 'Order of facet items', // @translate
                     'value_options' => [
@@ -510,7 +616,7 @@ advanced = Filters = Advanced',
             ])
             ->add([
                 'name' => 'languages',
-                'type' => ArrayText::class,
+                'type' => AdvancedSearchElement\ArrayText::class,
                 'options' => [
                     'label' => 'Get facets from specific languages', // @translate
                     'info' => 'Generally, facets are translated in the view, but in some cases, facet values may be translated directly in a multivalued property. Use "|" to separate multiple languages. Use a trailing "|" for values without language. When fields with languages (like subjects) and fields without language (like date) are facets, the empty language must be set to get results.', // @translate
@@ -523,7 +629,7 @@ advanced = Filters = Advanced',
             ])
             ->add([
                 'name' => 'mode',
-                'type' => OptionalRadio::class,
+                'type' => AdvancedSearchElement\OptionalRadio::class,
                 'options' => [
                     'label' => 'Facet mode', // @translate
                     'value_options' => [
@@ -539,7 +645,7 @@ advanced = Filters = Advanced',
             ])
             ->add([
                 'name' => 'display_button',
-                'type' => OptionalRadio::class,
+                'type' => AdvancedSearchElement\OptionalRadio::class,
                 'options' => [
                     'label' => 'Position of the button "Apply filters"', // @translate
                     'value_options' => [
@@ -669,7 +775,7 @@ advanced = Filters = Advanced',
         }
 
         $options = [];
-        $fields = $searchAdapter->getAvailableFields($searchEngine);
+        $fields = $searchAdapter->setSearchEngine($searchEngine)->getAvailableFields();
         foreach ($fields as $name => $field) {
             $options[$name] = $field['label'] ?? $name;
         }
@@ -687,7 +793,7 @@ advanced = Filters = Advanced',
         }
 
         $options = [];
-        $fields = $searchAdapter->getAvailableSortFields($searchEngine);
+        $fields = $searchAdapter->setSearchEngine($searchEngine)->getAvailableSortFields();
         foreach ($fields as $name => $field) {
             $options[$name] = $field['label'] ?? $name;
         }
@@ -705,7 +811,7 @@ advanced = Filters = Advanced',
         }
 
         $options = [];
-        $fields = $searchAdapter->getAvailableFacetFields($searchEngine);
+        $fields = $searchAdapter->setSearchEngine($searchEngine)->getAvailableFacetFields();
         foreach ($fields as $name => $field) {
             $options[$name] = $field['label'] ?? $name;
         }

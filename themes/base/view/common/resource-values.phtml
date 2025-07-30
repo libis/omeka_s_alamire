@@ -1,6 +1,7 @@
 <?php
 $translate = $this->plugin('translate');
 $escape = $this->plugin('escapeHtml');
+$helper = $this->plugin('Custom');
 $labelInfo = $this->setting('property_label_information');
 $firstextra = true;
 
@@ -21,6 +22,15 @@ endif;
     $propertyData = $values[$property->property()->term()];
   else:
     continue;
+  endif;
+
+  if(isset($values["alamire:furtherBibliography"]) && isset($values["alamire:bibliographicCitation"]) && $property->property()->term() == "alamire:bibliographicCitation"):
+    //if both bibliographies are present add an extran subtitle (in comment)
+    $comment = "Bibliography";
+  elseif($property->property()->term() == "alamire:bibliographicCitation"):
+    //if not change select bibliography to bibliography
+    $propertyData['alternate_label'] = "Bibliography";
+    $comment = "";  
   endif;
    
   if($propertyData['property']->term() == "alamire:thumbnail" || $propertyData['alternate_label'] == "Manuscript Label"  || $propertyData['alternate_label'] == "Chant Label"):
@@ -48,7 +58,7 @@ endif;
     
   <?php $firstextra = true;?>
   <?php endif; ?>
-  <?php if($comment != "extra" && $comment != ""):?>
+  <?php if($comment != "extra" && $comment):?>
     <div class="columns is-12"> 
       <div class="column">
         <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;"><?php echo $comment;?></h4>
@@ -57,21 +67,22 @@ endif;
   <?php endif; ?>
   <?php
     $style="";$extra_class="";
+    $alt_class="";
     if ($propertyData['alternate_label']):
-      if($propertyData['alternate_label'] == "Inventory" || $propertyData['alternate_label'] == "Audio" || $propertyData['alternate_label'] == "Bibliography"):
+      if($propertyData['alternate_label'] == "Inventory" || $propertyData['alternate_label'] == "Audio" || $propertyData['alternate_label'] == "Bibliography"  || $propertyData['alternate_label'] == "Archival record"):
         $extra_class="section-head";
         $style="padding-top:1rem;";
       endif;
+      
+      if(!str_contains($propertyData['alternate_label'],"title")):
+        $alt_class = $propertyData['alternate_label'];
+      endif;
     endif;
   ?>       
-  <div class="columns <?php echo str_replace(" ","",$propertyData['alternate_label']); ?>" style="<?php echo $style;?>">  
+  <div class="columns <?php echo $alt_class; ?>" style="<?php echo $style;?>">  
     <div class="column is-one-fifth">
-      <?php if ($propertyData['alternate_label']): ?>
-        <?php if($propertyData['alternate_label'] == "Archival record"):  
-          $extra_class="no-title";
-        endif;?>
-      <?php endif;?>  
-      <h4 class="has-text-weight-semibold is-6 <?php echo $extra_class;?>">
+      
+      <h5 class="has-text-weight-semibold is-6 <?php echo $extra_class;?>">
       <?php if ($propertyData['alternate_label']): ?>
       <?php echo $escape($propertyData['alternate_label']); ?>
       <?php else: ?>
@@ -82,10 +93,10 @@ endif;
       <?php elseif ('vocab' === $labelInfo): ?>
       <span class="field-term">(<?php echo $escape($propertyData['property']->vocabulary()->label()); ?>)</span>
       <?php endif; ?>
-      </h4>
+      </h5>
     </div>
-    <div class="column is-four-fifths">
-      <?php if(($propertyData['property']->term() == "alamire:relatedComposition" && $propertyData['alternate_label'] == "Hierarchy") || $propertyData['property']->term() == "alamire:description" || $propertyData['property']->term() == "alamire:bibliographicCitation"  || $propertyData['property']->term() == "alamire:furtherBibliography"):?>
+    <div class="column is-four-fifths <?php echo $alt_class; ?>-items">
+      <?php if(($propertyData['property']->term() == "alamire:relatedComposition") || $propertyData['property']->term() == "alamire:description" || $propertyData['property']->term() == "alamire:bibliographicCitation" || $propertyData['property']->term() == "alamire:furtherBibliography"):?>
         <div class="values text">
       <?php else:?>
         <div class="values">
@@ -106,70 +117,13 @@ endif;
           ?>
 
           <?php if($propertyData['property']->term() == 'alamire:holdingInstitution'):?>  
-            <?php echo $value->asHtml();?>
+              <div style="margin-bottom:0.5rem;"><?php echo $value->asHtml();?></div>
           <?php elseif($propertyData['property']->term() == 'alamire:formatGeneral'):?>   
             <?php if($value->asHtml() == "codex (other)"):?>   
-              <?php echo 'codex';?>   
+              <div style="margin-bottom:0.5rem;"><?php echo 'codex';?></div>   
             <?php else: ?>
-                <?php echo $value->asHtml();?>
-            <?php endif;?> 
-          <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscript'):?>
-            <?php 
-              if($values['alamire:relatedManuscript']['values']):
-                $cites = $values['alamire:relatedManuscript']['values'];
-                $sort_cites = array();
-                foreach($cites as $cite):
-                  if(str_contains($cite->asHtml(),"$$")):
-                    $cite = explode(" $$ ",$cite->asHtml());  
-                     
-                    if(isset($cite[5])):
-                      $sort_cites[trim($cite[0]).trim($cite[5])] = $cite;
-                    else:
-                      $sort_cites[] = $cite;
-                    endif;
-
-                  endif;  
-                endforeach;
-                
-                ksort($sort_cites);  
-                foreach($sort_cites as $cite): 
-                 
-                  $rels = $cite;
-                  
-                  $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$rels[0].'&item_set_id[]=&site_id=';
-                  parse_str($query,$query);
-    
-                  $rel = $items = $this->api()->searchOne('items',$query);
-                  $rel = $rel->getContent();
-                  if($rel):
-                    echo '<div style="margin-bottom:0.5rem;">';
-                    echo '<a href="'.$rel->url().'">'.$rels[0].'</a>';
-                    $label = "";
-                    //page
-                    if(trim($rels[2]) == "fol."){
-                      $label = trim($rels[3]);
-                      $label = str_replace("page:","p.",$label);
-                    }
-                    else{
-                      //fol
-                      $label = trim($rels[2]);
-                    }
-                    
-                    if(str_contains($rels[4],"http") && $auth):
-                      $link = str_replace(" link:","",$rels[4]);
-                      $link = str_replace("&amp;","&",$link);
-                      echo ' <span style="font-style:italic;border-bottom:1px solid #cc6733"><a target="_blank" href="'.$link.'">'.$label.'</a></span>';
-                    else:
-                      echo ' <span style="font-style:italic;">'.$label.'</span>';
-                    endif;  
-                    echo '</div>';
-                  else:
-                    //echo $value->asHtml();
-                  endif; 
-                endforeach;  
-              endif;
-              $values['alamire:relatedManuscript']['values']="";
-            ?>    
+              <div style="margin-bottom:0.5rem;"><?php echo $value->asHtml();?></div>
+            <?php endif;?>
           <?php elseif($propertyData['property']->term() == 'alamire:creator_display'):?>
             <?php 
               if($values['alamire:creator_display']['values']):
@@ -187,7 +141,7 @@ endif;
                 foreach($sort_cites as $cite):        
                   $comps = trim($cite);
                   $comps = explode(" (",$comps);
-                  if(!empty($comps[1])):
+                  if(!empty($comps[1]) && $comps[1] != ")"):
                       $type = $comps[1];
                       if($type == "credited)"):
                         $comp = $comps[0]." (".$comps[1];
@@ -231,10 +185,13 @@ endif;
                 echo '<div style="margin-bottom:0.5rem;"><a target="_blank" href="'.$archive[2].'">Renaissance Archive of the School of Music (University of Illinois at Urbana-Champaign)</a></div>';                    
               endif;  
             ?>  
+          <?php elseif($propertyData['property']->term() == 'alamire:description'):?>  
+            <div style="margin-bottom:0.5rem;"><?php echo $value;?></div>
           <?php elseif($propertyData['property']->term() == 'alamire:bibliographicCitation'):
             if($values['alamire:bibliographicCitation']['values']):
               $cites = $values['alamire:bibliographicCitation']['values'];
               $sort_cites = array();
+              
               foreach($cites as $cite):
                 $cite = $cite.'';
                 if(str_contains($cite,"$$")):
@@ -284,6 +241,60 @@ endif;
             endif;
             $values['alamire:bibliographicCitation']['values'] = "";
           ?>   
+          <?php elseif($propertyData['property']->term() == 'alamire:furtherBibliography'):
+            if($values['alamire:furtherBibliography']['values']):
+              $cites = $values['alamire:furtherBibliography']['values'];
+              $sort_cites = array();
+              
+              foreach($cites as $cite):
+                $cite = $cite.'';
+                if(str_contains($cite,"$$")):
+                  $cite = explode("$$",$cite);     
+                  if(!empty($cite[5])):
+                    $sort_cites[trim($cite[5])] = $cite;
+                  else:
+                    $sort_cites[] = $cite;
+                  endif;
+                else:
+                   //compos
+                   $cite = explode(" ",$cite);
+                   array_shift($cite);
+                   echo '<div style="margin-bottom:0.5rem;">'.implode(" ",$cite)."</div>";
+                endif;  
+              endforeach;
+              ksort($sort_cites);
+
+              foreach($sort_cites as $cite):               
+                //manu                          
+                if(!empty($cite[2]) && !empty($cite[0])):
+                  $cite[0] = str_replace("[","",$cite[0]);
+                  $cite[0] = str_replace("]","",$cite[0]);
+                  if(!empty(trim($cite[3]))):
+                    $label = '<a href="'.$cite[3].'">'.$cite[2].'</a>';
+                  else:
+                    $label = trim($cite[2]);
+                  endif;
+                  echo '<div style="margin-bottom:0.5rem;"><strong>'.trim($cite[0])."</strong> ".$label;
+                  if(!empty($cite[4])):
+                    echo $cite[4];
+                  endif;  
+                  echo "</div>";
+                elseif(!empty($cite[2]) && empty($cite[0])):
+                  if(!empty(trim($cite[3]))):
+                    $label = '<a href="'.$cite[3].'">'.trim($cite[2]).'</a>';
+                  else:
+                    $label = trim($cite[2]);
+                  endif; 
+                  //$label = trim($cite[2]);
+                  echo '<div style="margin-bottom:0.5rem;">'.$label.$cite[4]."</div>";
+                else:
+                  echo '<div style="margin-bottom:0.5rem;">'.trim($cite[0]).$cite[4]."</div>";
+                endif;
+              endforeach;  
+                  
+            endif;
+            $values['alamire:furtherBibliography']['values'] = "";
+          ?>   
           <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscriptID'):
             $id = strtolower($value->asHtml());
             echo '<a target="_blank" href="/item/'.$id.'">'.$value->asHtml().'</a>';
@@ -309,9 +320,9 @@ endif;
               ksort($array);  
               foreach($array as $audio):
                 if(str_contains($audio->asHtml(),"spotify")):?>
-                  <button data-index="1" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-brands fa-spotify collapsible"></i></span><span>Spotify</span></button>                 
+                  <button data-index="1" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-solid fa-music"></i></span><span>Spotify</span></button>                 
                 <?php elseif(str_contains($audio->asHtml(),"apple")):?>
-                  <button data-index="2" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-brands fa-apple "></i></span><span>Apple Music</span></button>                
+                  <button data-index="2" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-solid fa-music"></i></span><span>Apple Music</span></button>                
                 <?php elseif(str_contains($audio->asHtml(),"deezer")):?>
                   <button data-index="3" class="collapsible button is-small is-primary"><span class="icon"><i class="fa fa-solid fa-music"></i></i></span><span>Deezer</span></button>                
                 <?php elseif(str_contains($audio->asHtml(),"qobuz")):?>
@@ -362,8 +373,123 @@ endif;
           <?php elseif($propertyData['property']->term() == 'alamire:relatedAudio'):
             $rels = explode("$$",$value->asHtml());
             echo trim($rels[0]);
+            ?>       
+          <?php elseif($propertyData['property']->term() == 'alamire:differentiaLabel'):
+            $label =  $values['alamire:differentiaLabel']['values'][0]->asHtml();
+            $url = '';
+            if(!empty($values['alamire:differentiaURL']['values'])):
+              $url = $values['alamire:differentiaURL']['values'][0]->asHtml();
+            endif;
+            $values['alamire:differentiaLabel']['values'] = "";
+            $values['alamire:differentiaURL']['values'] = "";
+            echo '<a target="_blank" href="'.trim($url).'">'.trim($label).'</a>';
             ?>                   
           <?php elseif($propertyData['property']->term() == 'alamire:relatedComposition'):?>
+            <?php
+            //manuscript
+            if(str_contains($value->asHtml(),"link:") && $values['alamire:relatedComposition']['values']):
+              $rels = $values['alamire:relatedComposition']['values'];
+
+              //make array and sort the whole thing
+              $sorted_rels = array();
+              foreach($rels as $rel):
+                $irel = explode("$$",$rel);
+                if(!empty($irel[8])):
+                  $sorted_rels[trim($irel[8])] = $irel;
+                else:
+                  $sorted_rels[] = $irel;
+                endif;  
+              endforeach;  
+
+              ksort($sorted_rels);
+              $rels = $sorted_rels;
+
+              $items = [];
+              $tree = [];
+
+              // Build flat list
+              foreach ($rels as $rel) {
+                  $id = trim($rel[0]);
+                  $parentId = trim($rel[1]);
+
+                  $items[$id] = ['value' => $rel, 'children' => []];
+              }
+
+              // Assign children to parents
+              foreach ($items as $id => &$item) {
+                  $parentId = trim($item['value'][1]);
+                  if ($parentId && isset($items[$parentId])) {
+                      $items[$parentId]['children'][$id] = &$item;
+                  } else {
+                      // No parent = root
+                      $tree[$id] = &$item;
+                  }
+              }
+
+              echo "<table><tbody>";
+              $helper->renderTree($tree, $auth, $helper);
+              echo "</tbody></table>";
+              
+              $values['alamire:relatedComposition']['values'] = "";    
+            //composition  
+            elseif($values['alamire:relatedComposition']['values']):  
+              $rels = explode("##",$value->asHtml());
+              $firstrel = array_shift($rels);
+              
+              $first = explode("$$",$firstrel);
+              $first = explode(" ",$first[0]);
+              $firstcode = array_shift($first);
+
+              $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]='.$firstcode.'&item_set_id[]=&site_id=';
+              parse_str($query,$query);
+
+              $first_r = $this->api()->searchOne('items',$query);
+              $first_r = $first_r->getContent();
+              
+
+              $firstrel = explode(" ",$firstrel);
+              array_shift($firstrel);
+              $firstrel = implode(" ",$firstrel);
+              $firstrel = explode(" $$ ",$firstrel);
+             
+              if(!empty($firstrel[1])):?>
+                <span style="color:#cc6633;"><?php echo $firstrel[1]." ";?></span>
+              <?php endif;
+
+              if($first_r):
+                echo $first_r->displayTitle();               
+              else:
+                echo trim(implode(" ",$first));
+              endif; 
+
+              if(!empty($firstrel[2])):
+                echo " (".$firstrel[2]."v)";
+              endif;
+
+              echo "<br>";
+
+              $rels = explode("||",$rels[0]);
+             
+              foreach($rels as $rel):
+                $rel = explode(" ",$rel);
+                array_shift($rel);
+                $rel = implode(" ",$rel);
+                $rel = explode(" $$ ",$rel);
+               
+                if(!empty($rel[0])):
+                  echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                  if(!empty($rel[1]) && !str_contains($rel[1],"$$")):
+                    echo '<span style="font-weight:bold;">'.$rel[1]."</span> ";
+                  endif;
+                  echo $rel[0];
+                  if(!empty($rel[2])):
+                    echo " (".$rel[2]."v)";
+                  endif;
+                  echo "<br>";
+                endif;
+              endforeach;  
+            endif;?>            
+          <?php elseif($propertyData['property']->term() == 'alamire:relatedCompoosition'):?>
             <?php 
             //manuscript
             if(str_contains($value->asHtml(),"link:") && $values['alamire:relatedComposition']['values']):
@@ -397,8 +523,7 @@ endif;
                   //fol
                   $label = trim($irel[5]);
                 }
-
-                if($irel[4] != "  " ){
+                if(trim($irel[4])){
                   $seq = "<span style='width:27px;margin-right:2px;display:inline-block;'>".trim($irel[4]).". </span>";
                 }
 
@@ -432,6 +557,8 @@ endif;
                                 $comp = "[".$comps[0]."]";
                             elseif($type == "contested)"):
                                 $comp = "?".$comps[0];
+                            else:
+                                $comp = $comps[0];    
                             endif;
                         else:      
                             $comp = $comps[0];
@@ -446,7 +573,6 @@ endif;
                     if($composer):
                       $composer = "<strong>".$composer."</strong>: ";
                     endif;  
-
 
                     echo  $seq.$composer.'<a style="font-weight:bold;" href="'.$first->url().'">'.$irel[3].'</a>';
                     
@@ -471,9 +597,9 @@ endif;
                   endif;   
                     
                   if($i == 0):
-                      echo '<a href="#" class="expand"><i class="fa fa-chevron-up"></i></a><div class="hidden-content">';
+                      echo '<a href="#" class="expand expand-icon"><i class="fa fa-chevron-up"></i></a><div class="hidden-content">';
                     else:
-                      echo '<a href="#" class="expand"><i class="fa fa-chevron-down"></i></a><div class="hidden-content" style="display:none;">';
+                      echo '<a href="#" class="expand expand-icon"><i class="fa fa-chevron-down"></i></a><div class="hidden-content" style="display:none;">';
                   endif;                  
                 else:
                   if(in_array($irel[1],$lvl1)):
@@ -500,6 +626,20 @@ endif;
                       echo $label.'<br>';
                     endif; 
                     $lvl4[] = $irel[0];   
+                  else:
+                    //first level is a child??
+                    if($i != 0):
+                      echo "</div></div><div class='content-holder'>";
+                    else:
+                      echo "<div class='content-holder'>";  
+                    endif; 
+                    //echo $irel[3]." ".$irel[4]."<br>";
+                    echo $irel[3];
+                    if(str_contains($irel[7],"http") && $auth):
+                      echo '<a target="_blank" style="font-style:italic;" href="'.str_replace(" link: ","",$irel[7]).'">'.$label.'</a>';
+                    else:
+                      echo $label;
+                    endif; 
                   endif;  
                 endif;
                 $i++;
@@ -567,9 +707,8 @@ endif;
             endif;
             ?>    
             
-            <?php elseif($propertyData['property']->term() == 'alamire:objectHoldingInstitution'):?>
-              <a target="_blank" href="<?php echo $value->asHtml() ?>"><?php echo $value->asHtml() ?></a>
-            
+          <?php elseif($propertyData['property']->term() == 'alamire:objectHoldingInstitution'):?>
+            <a target="_blank" href="<?php echo $value->asHtml() ?>"><?php echo $value->asHtml() ?></a>            
                    
           <?php else:?>
             <div class="<?php echo implode(' ', $class); ?>" lang="<?php echo $escape($value->lang()); ?>">

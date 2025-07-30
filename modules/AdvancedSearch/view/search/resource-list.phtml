@@ -2,9 +2,12 @@
 /**
  * @var \Laminas\View\Renderer\PhpRenderer $this
  * @var \Omeka\Api\Representation\SiteRepresentation $site
+ * @var \AdvancedSearch\Api\Representation\SearchConfigRepresentation $searchConfig
+ * @var \AdvancedSearch\Api\Representation\SearchConfigRepresentation $searchPage Alias of $searchConfig
+ * @var \AdvancedSearch\Query $query
  * @var \AdvancedSearch\Response $response
- * @var string $resourceName
  * @var string $title
+ * @var string $resourceName
  */
 
 $resources = $response->getResources($resourceName);
@@ -12,57 +15,55 @@ $resources = $response->getResources($resourceName);
 if (!$resources) return;
 
 $plugins = $this->getHelperPluginManager();
+$escape = $plugins->get('escapeHtml');
+$assetUrl = $plugins->get('assetUrl');
 $translate = $plugins->get('translate');
 $hyperlink = $plugins->get('hyperlink');
-$assetUrl = $plugins->get('assetUrl');
-$escape = $plugins->get('escapeHtml');
-$thumbnailHelper = $plugins->get('thumbnail');
+$thumbnail = $plugins->get('thumbnail');
 
+// Can be simplified in a public theme.
 $setting = $plugins->get($site ? 'siteSetting' : 'setting');
 
+$siteSlug = $site ? $site->slug() : null;
+
 $filterLocale = (bool) $setting('filter_locale_values');
-$lang = $this->lang();
+$siteLang = $plugins->get('lang')();
+$lang = $filterLocale ? $siteLang : null;
+$langValue = $filterLocale ? [$siteLang, ''] : null;
+$untitled = $translate('[Untitled]');
 
 $headingTerm = $setting('browse_heading_property_term');
 $bodyTerm = $setting('browse_body_property_term');
-if ($headingTerm) {
-    $headingOptions = [
-        'default' => $translate('[Untitled]'),
-        'lang' => ($filterLocale ? [$lang, ''] : null)
-    ];
-} else {
-    $headingOptions = $filterLocale ? [$lang, ''] : null;
-}
-if ($bodyTerm) {
-    $bodyOptions = ['lang' => ($filterLocale ? [$lang, ''] : null)];
-} else {
-    $bodyOptions = $filterLocale ? [$lang, ''] : null;
-}
 
-$defaultThumbnail = '<img src="' . $assetUrl('thumbnails/default.png', 'Omeka') . '" title="' . $translate('No media') . '"/>';
+$gridListMode = $searchConfig ? $searchConfig->subSetting('display', 'grid_list_mode', 'auto') : 'auto';
+
+$defaultThumbnail = '<img src="' . $assetUrl('thumbnails/default.png', 'Omeka', true) . '" title="' . $translate('No media') . '"/>';
 ?>
 
 <?php if ($title): ?>
 <h3><?= $escape($title) ?></h3>
 <?php endif; ?>
-<ul class="resource-list search-results-list">
+<ul class="resource-list search-results-list<?= $gridListMode === 'list_only' ? ' list' : ($gridListMode === 'grid_only' ? ' grid' : '') ?>">
     <?php /** @var \Omeka\Api\Representation\AbstractResourceEntityRepresentation $resource */
     foreach ($resources as $resource):
+        // Can be simplified in the public theme.
+        $resourceUrl = $site ? $resource->siteUrl($siteSlug) : $resource->adminUrl($siteSlug);
         $resourceType = $resource->resourceName();
-        $media = $resource->primaryMedia();
-        $thumbnail = $media ? $thumbnailHelper($media, 'medium') : $defaultThumbnail;
-        $heading = $headingTerm ? $resource->value($headingTerm, $headingOptions) : $resource->displayTitle(null, $headingOptions);
-        $body = $bodyTerm ? $resource->value($bodyTerm, $bodyOptions) : $resource->displayDescription(null, $bodyOptions);
+        $resourceThumbnail = $thumbnail($resource, 'medium') ?: $defaultThumbnail;
+        $heading = $headingTerm ? $resource->value($headingTerm, ['lang' => $langValue]) : null;
+        $heading = $heading ? $heading->asHtml() : $escape($resource->displayTitle($untitled, $lang));
+        $body = $bodyTerm ? $resource->value($bodyTerm, ['lang' => $langValue]) : null;
+        $body = $body ? $body->asHtml() : $escape($resource->displayDescription(null, $lang));
     ?>
 
     <li class="resource <?= $resourceType ?>">
         <div class="resource-thumbnail">
-            <?= $hyperlink->raw($thumbnail, $resource->url(), ['class' => 'resource-link']) ?>
+            <?= $hyperlink->raw($resourceThumbnail, $resourceUrl, ['class' => 'resource-link']) ?>
         </div>
         <div class="resource-metadata">
-            <h4><?= $resource->link($heading) ?></h4>
+            <h4><?= $resource->linkRaw($heading) ?></h4>
             <div class="description">
-                <?= $escape($body) ?>
+                <?= $body ?>
             </div>
         </div>
     </li>
