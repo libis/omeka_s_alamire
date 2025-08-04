@@ -55,6 +55,7 @@ COPY modules /var/www/html/modules
 COPY import-cron /etc/cron.d/import-cron
 RUN chmod 0744 /etc/cron.d/import-cron
 
+RUN crontab /etc/cron.d/import-cron
 RUN touch /var/log/cron.log
 
 # PHP settings
@@ -68,4 +69,4 @@ COPY update-exim4.conf.conf /etc/exim4/update-exim4.conf.conf
 RUN chmod -R 775 /etc/exim4/
 RUN update-exim4.conf
 
-CMD ["apache2-foreground"]
+RUN sed -i 's/^exec /service cron start\n\nexec /' /usr/local/bin/apache2-foreground

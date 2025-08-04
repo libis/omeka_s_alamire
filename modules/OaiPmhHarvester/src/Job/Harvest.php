@@ -249,13 +249,15 @@ class Harvest extends AbstractJob
                     }
                 }
                 $pre_record = $this->{$method}($record, $args['item_set_id'],$args);
-				
-                if($pre_record['alamire:identifier'][0]['@value']):
+                if (!$pre_record) {
+                    continue;
+                }
+                
+                if(isset($pre_record['alamire:identifier'][0]['@value'])){
                     $id_exists = $this->itemExists($pre_record, $pre_record['alamire:identifier'][0]['@value'],$args['resource_type']);
-                    
-                endif; 
+                } 
 
-                if(!$id_exists && ($pre_record['alamire:identifier'][0]['@value'])){
+                if(!$id_exists && isset($pre_record['alamire:identifier'][0]['@value'])){
                   try{
                       $response_c = $this->api->create($args['resource_type'], $pre_record, [], []);
                       $response_c = null;

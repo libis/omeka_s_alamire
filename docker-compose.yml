@@ -7,7 +7,7 @@ services:
     ports:
       - "9018:80"
     volumes:
-      #- ./modules/:/var/www/html/alamire/modules/
+      - ./modules/OaiPmhHarvester/:/var/www/html/modules/OaiPmhHarvester/
       - ./themes/:/var/www/html/themes/
       - ./files/:/var/www/html/files/
       - ./config/:/var/www/html/config/
