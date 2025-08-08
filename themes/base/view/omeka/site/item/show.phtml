@@ -441,8 +441,19 @@ endif;
               <div class="hidden-content" style="display:none">
                 <div class="metadata">
                   <?php echo $pu->displayValues(); ?>
+                  <?php $linked = $pu->subjectValues(); 
+                    if(isset($linked["alamire:relatedProductionUnit"])):                      
+                      $linked = $linked["alamire:relatedProductionUnit"];
+                      $related_composition = [];
+                      foreach($linked as $link):
+                        $link = $link->resource();
+                        if (!$link) continue;
+                        $related_composition[$link->value("alamire:identifier").''] = $link;
+                      endforeach;
+                    endif;
+                  ?>
                 </div>
-                <?php if ($pu->value("alamire:relatedCompositionFull")): ?>
+                <?php if ($pu->value("alamire:relatedCompositionFull") && !empty($related_composition)): ?>
                   <div class="text" style="max-height:250px;margin-bottom:1rem;">
                     <table class="">
                       <?php $s_comps = [];
@@ -465,9 +476,10 @@ endif;
 
                             <?php
                             $parent_id = $comp["id"];
-                            parse_str('property[0][joiner]=and&property[0][property][]=216&property[0][type]=eq&property[0][text]=' . $parent_id . '&resource_template_id[]=3&sort_by=created&sort_order=desc&datetime[0][joiner]=and&datetime[0][field]=created&datetime[0][type]=gte&datetime[0][value]=&is_public=&has_media=&has_original=&has_thumbnails=', $query);
-                            $comp_record = $this->api()->searchOne('items', $query);
-                            $comp_record = $comp_record->getContent();
+                            //parse_str('property[0][joiner]=and&property[0][property][]=216&property[0][type]=eq&property[0][text]=' . $parent_id . '&resource_template_id[]=3&sort_by=created&sort_order=desc&datetime[0][joiner]=and&datetime[0][field]=created&datetime[0][type]=gte&datetime[0][value]=&is_public=&has_media=&has_original=&has_thumbnails=', $query);
+                            //$comp_record = $this->api()->searchOne('items', $query);
+                            //$comp_record = $comp_record->getContent();
+                            $comp_record = $related_composition[$comp["id"]];
                             ?>
                             <tr id="<?php echo $parent_id; ?>">
                             <?php elseif (sizeof($structure) > 1): ?>
