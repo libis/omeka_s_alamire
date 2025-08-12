@@ -135,7 +135,10 @@ class Harvest extends AbstractJob
                 break;    
             case 'ProductionUnit':                
                 $method = '_alamireToJson';
-                break;        
+                break;    
+            case 'text':                
+                $method = '_alamireToJson';
+                break;          
             case 'oai_dcterms':
             case 'oai_dcq':
             case 'oai_qdc':
@@ -663,10 +666,31 @@ class Harvest extends AbstractJob
                 }                    
             }
 
-            //add resources
-            if(strpos($args["endpoint"], 'MPComposition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
-                //create links to compositions in production units (not in manuscripts!)
-                /*if($localName == 'relatedComposition'){
+            //create links to texts (in compostions)
+            if($localName == 'relatedText'){
+                $i=0;
+                foreach ($dcMetadata->$localName as $pid) {
+                    //look for alamire:identifier in resource template 12 (text)
+                    parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=12&site_id=", $query);
+                    $result = $this->api->search("items",$query);
+                    $result = $result->getContent();
+                    //$this->logger->info("related");
+                    if($result){
+                        //$this->logger->info("result");
+                        $elementTexts['alamire:relatedText'][$i] = [
+                            'property_id' => 203,
+                            'type' => 'resource',
+                            'is_public' => true,
+                            'value_resource_id' => $result[0]->id(),
+                            'value_resource_name' => 'items'
+                        ];
+                    }
+                    $i++;
+                }                    
+            }
+
+            //create links to compositions (in production units and texts) (never use in manuscripts!)
+            if($localName == 'relatedComposition' && strpos($args["endpoint"], 'Manuscript') == false){
                     $i=0;
                     foreach ($dcMetadata->$localName as $pid) {
                         parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=3&site_id=", $query);
@@ -684,7 +708,12 @@ class Harvest extends AbstractJob
                         }
                         $i++;
                     }
-                }*/
+                }
+
+            //add resources
+            if(strpos($args["endpoint"], 'MPComposition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
+                
+                
                 //create links to production units in compositions
                 if($localName == 'interstitialInfo'){
                     $i=0;
@@ -727,6 +756,8 @@ class Harvest extends AbstractJob
             $meta['o:resource_template'] = ["o:id" => "21"];	    	
         elseif(strpos($args["endpoint"], 'PrintedSource') !== false):
             $meta['o:resource_template'] = ["o:id" => "22"];		
+        elseif(strpos($args["endpoint"], 'Text') !== false):
+            $meta['o:resource_template'] = ["o:id" => "12"];		    
         endif;
 
         $meta["o:site"][] = 1;

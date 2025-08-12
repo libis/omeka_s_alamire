@@ -145,81 +145,66 @@ endif;
         <?php endif; ?>
       </div>
 
-      <?php if ($item->value('alamire:originalText') && $item->value('alamire:translation')): ?>
+      <?php if ($item->value('alamire:relatedText')): ?>
+        <?php $related_text = [];?>
+        <?php 
+          if($text = $item->value('alamire:relatedText')->valueResource()):
+            $related_text[] = $text;
+          elseif($linked = $item->subjectValues()):
+            if(isset($linked["alamire:relatedComposition"])):                      
+              $linked = $linked["alamire:relatedComposition"];
+              foreach($linked as $link):
+                $link = $link->resource();
+                if($link->value('alamire:translations')):
+                  if (!$link) continue;
+                  $related_text[$link->value("alamire:identifier").''] = $link;
+                endif;
+              endforeach;
+            endif;
+          endif;  
+        ?>
         <div class="columns">
           <div class="column is-12">
             <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Text with translation(s)</h4>
           </div>
         </div>
-        <?php
-        $originals = $item->value('alamire:originalText', array("all" => true));
-        $orig_provided = $item->value('alamire:originalProvidedBy', array("all" => true));
-        $orig_author = $item->value('alamire:originalAuthor', array("all" => true));
-        $translations = $item->value('alamire:translation', array("all" => true));
-        $y = 0;
-        ?>
-        <?php foreach ($originals as $index => $original): ?>
+        
+        <?php foreach($related_text as $text):?>  
           <?php
-          $original = explode("$$", $original);
-          $text_id = trim($original[0]);
-          if (isset($original[1])):
-            $original = $original[1];
-          else:
-            $original = $original[0];
-          endif;
+            $translations = $text->value('alamire:translations', array("all" => true));
+            $y = 0;
+            $text_id = $text->value('alamire:identifier')."";         
           ?>
           <div class="columns">
             <div class="column is-4" style="padding-top:0.5rem;">
               <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
-                <?php
-                if ($item->value('alamire:relatedText')):
-                  //print related text
-                  $rel = $item->value('alamire:relatedText')->asHtml();
-                  $rel = explode("$$", $rel);
-                  echo " " . trim($rel[1]);
-                elseif ($item->value('alamire:relatedManuscript')):
-                  //or the manuscript name
-                  $rel = $item->value('alamire:relatedManuscript')->asHtml();
-                  $rel = explode("$$", $rel);
-                  echo " " . $rel[0];
-                endif; ?>
+                <?php echo $item->value('alamire:title')->asHtml();?>
               </h3>
               <div class="trans-text">
-                <?php echo $original; ?>
+                <?php echo $text->value('alamire:originalText'); ?>
               </div>
               <br><br>
-              <?php if (isset($orig_author[$y])): ?>
-                <?php echo "Author: " . $orig_author[$y]; ?><br>
+              <?php if ($text->value('alamire:originalAuthor')): ?>
+                <?php echo "Author: " . $text->value('alamire:originalAuthor'); ?><br>
               <?php endif; ?>
-              <?php if (isset($orig_provided[$y])): ?>
-                <?php echo "Provided by: " . $orig_provided[$y]; ?>
+              <?php if ($text->value('alamire:originalProvidedBy')): ?>
+                <?php echo "Provided by: " . $text->value('alamire:originalProvidedBy'); ?>
               <?php endif; ?>
             </div>
             <div class="column is-6 translation-column  pt-2" style="padding-top:0.5rem;">
               <div class="tabs is-small">
                 <ul>
-                  <?php foreach ($translations as $key => $trans): ?>
-                    <?php $trans1 = explode("$$", $trans); ?>
-                    <?php $trans_id = trim(array_shift($trans1)); ?>
-                    <?php $trans = implode("$$", $trans1); ?>
-                    <?php if ($trans_id == $text_id): ?>
+                  <?php foreach ($translations as $key => $trans): ?>                  
                       <?php $transs = explode("||", $trans); ?>
                       <?php foreach ($transs as $trans): ?>
                         <?php $trans = explode("$$", $trans); ?>
                         <li class="tab <?php echo $trans[0]; ?>"><a href="#<?php echo trim($trans[0]) . "-" . $key; ?>"><?php echo $trans[0]; ?></a></li>
                       <?php endforeach; ?>
-                    <?php endif; ?>
                   <?php endforeach; ?>
                 </ul>
               </div>
               <?php foreach ($translations as $key => $trans): ?>
-                <?php $trans1 = explode("$$", $trans); ?>
-                <?php $trans_id = trim(array_shift($trans1)); ?>
-                <?php $trans = implode("$$", $trans1); ?>
-
-                <?php if (trim($trans_id) == $text_id): ?>
                   <?php $transs = explode("||", $trans); ?>
-
                   <?php foreach ($transs as $trans): ?>
                     <?php $trans = explode("$$", $trans); ?>
                     <div id="<?php echo trim($trans[0]) . "-" . $key; ?>" class="tab-pane translation <?php echo $trans[0]; ?>">
@@ -235,20 +220,18 @@ endif;
                       <?php endif; ?>
                     </div>
                   <?php endforeach; ?>
-                <?php endif; ?>
               <?php endforeach; ?>
             </div>
           </div>
-          <?php $y++; ?>
-        <?php endforeach; ?>
-
-        <?php if ($item->value('alamire:textNotes')): ?>
-          <?php foreach ($item->value('alamire:textNotes', array("all" => true)) as $note): ?>
+          <?php if ($text->value('alamire:textNotes')): ?>
+          <?php foreach ($text->value('alamire:textNotes', array("all" => true)) as $note): ?>
             <div class="trans-text" style="padding-top:1rem;">
               <?php echo $note; ?>
             </div>
           <?php endforeach; ?>
         <?php endif; ?>
+          <?php $y++; ?>
+        <?php endforeach; ?>        
       <?php endif; ?>
 
       <?php if ($item->value('alamire:fileID') && $type == "Chant"): ?>
@@ -476,9 +459,6 @@ endif;
 
                             <?php
                             $parent_id = $comp["id"];
-                            //parse_str('property[0][joiner]=and&property[0][property][]=216&property[0][type]=eq&property[0][text]=' . $parent_id . '&resource_template_id[]=3&sort_by=created&sort_order=desc&datetime[0][joiner]=and&datetime[0][field]=created&datetime[0][type]=gte&datetime[0][value]=&is_public=&has_media=&has_original=&has_thumbnails=', $query);
-                            //$comp_record = $this->api()->searchOne('items', $query);
-                            //$comp_record = $comp_record->getContent();
                             $comp_record = $related_composition[$comp["id"]];
                             ?>
                             <tr id="<?php echo $parent_id; ?>">
