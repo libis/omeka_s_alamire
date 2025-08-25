@@ -146,39 +146,39 @@ endif;
       </div>
 
       <?php if ($item->value('alamire:relatedText')): ?>
-        <?php $related_text = [];?>
-        <?php 
-          if($text = $item->value('alamire:relatedText')->valueResource()):
-            $related_text[] = $text;
-          elseif($linked = $item->subjectValues()):
-            if(isset($linked["alamire:relatedComposition"])):                      
-              $linked = $linked["alamire:relatedComposition"];
-              foreach($linked as $link):
-                $link = $link->resource();
-                if($link->value('alamire:translations')):
-                  if (!$link) continue;
-                  $related_text[$link->value("alamire:identifier").''] = $link;
-                endif;
-              endforeach;
-            endif;
-          endif;  
+        <?php $related_text = []; ?>
+        <?php
+        if ($text = $item->value('alamire:relatedText')->valueResource()):
+          $related_text[] = $text;
+        elseif ($linked = $item->subjectValues()):
+          if (isset($linked["alamire:relatedComposition"])):
+            $linked = $linked["alamire:relatedComposition"];
+            foreach ($linked as $link):
+              $link = $link->resource();
+              if ($link->value('alamire:translations')):
+                if (!$link) continue;
+                $related_text[$link->value("alamire:identifier") . ''] = $link;
+              endif;
+            endforeach;
+          endif;
+        endif;
         ?>
         <div class="columns">
           <div class="column is-12">
             <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Text with translation(s)</h4>
           </div>
         </div>
-        
-        <?php foreach($related_text as $text):?>  
+
+        <?php foreach ($related_text as $text): ?>
           <?php
-            $translations = $text->value('alamire:translations', array("all" => true));
-            $y = 0;
-            $text_id = $text->value('alamire:identifier')."";         
+          $translations = $text->value('alamire:translations', array("all" => true));
+          $y = 0;
+          $text_id = $text->value('alamire:identifier') . "";
           ?>
           <div class="columns">
             <div class="column is-4" style="padding-top:0.5rem;">
               <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
-                <?php echo $item->value('alamire:title')->asHtml();?>
+                <?php echo $item->value('alamire:title')->asHtml(); ?>
               </h3>
               <div class="trans-text">
                 <?php echo $text->value('alamire:originalText'); ?>
@@ -194,44 +194,44 @@ endif;
             <div class="column is-6 translation-column  pt-2" style="padding-top:0.5rem;">
               <div class="tabs is-small">
                 <ul>
-                  <?php foreach ($translations as $key => $trans): ?>                  
-                      <?php $transs = explode("||", $trans); ?>
-                      <?php foreach ($transs as $trans): ?>
-                        <?php $trans = explode("$$", $trans); ?>
-                        <li class="tab <?php echo $trans[0]; ?>"><a href="#<?php echo trim($trans[0]) . "-" . $key; ?>"><?php echo $trans[0]; ?></a></li>
-                      <?php endforeach; ?>
+                  <?php foreach ($translations as $key => $trans): ?>
+                    <?php $transs = explode("||", $trans); ?>
+                    <?php foreach ($transs as $trans): ?>
+                      <?php $trans = explode("$$", $trans); ?>
+                      <li class="tab <?php echo $trans[0]; ?>"><a href="#<?php echo trim($trans[0]) . "-" . $key; ?>"><?php echo $trans[0]; ?></a></li>
+                    <?php endforeach; ?>
                   <?php endforeach; ?>
                 </ul>
               </div>
               <?php foreach ($translations as $key => $trans): ?>
-                  <?php $transs = explode("||", $trans); ?>
-                  <?php foreach ($transs as $trans): ?>
-                    <?php $trans = explode("$$", $trans); ?>
-                    <div id="<?php echo trim($trans[0]) . "-" . $key; ?>" class="tab-pane translation <?php echo $trans[0]; ?>">
-                      <div class="trans-text">
-                        <?php echo $trans[2]; ?>
-                      </div>
-                      <br><br>
-                      <?php if (strlen(trim($trans[1])) != 0): ?>
-                        <?php echo "Translator: " . $trans[1]; ?><br>
-                      <?php endif; ?>
-                      <?php if (strlen(trim($trans[3])) != 0): ?>
-                        <?php echo "Provided by: " . $trans[3]; ?>
-                      <?php endif; ?>
+                <?php $transs = explode("||", $trans); ?>
+                <?php foreach ($transs as $trans): ?>
+                  <?php $trans = explode("$$", $trans); ?>
+                  <div id="<?php echo trim($trans[0]) . "-" . $key; ?>" class="tab-pane translation <?php echo $trans[0]; ?>">
+                    <div class="trans-text">
+                      <?php echo $trans[2]; ?>
                     </div>
-                  <?php endforeach; ?>
+                    <br><br>
+                    <?php if (strlen(trim($trans[1])) != 0): ?>
+                      <?php echo "Translator: " . $trans[1]; ?><br>
+                    <?php endif; ?>
+                    <?php if (strlen(trim($trans[3])) != 0): ?>
+                      <?php echo "Provided by: " . $trans[3]; ?>
+                    <?php endif; ?>
+                  </div>
+                <?php endforeach; ?>
               <?php endforeach; ?>
             </div>
           </div>
           <?php if ($text->value('alamire:textNotes')): ?>
-          <?php foreach ($text->value('alamire:textNotes', array("all" => true)) as $note): ?>
-            <div class="trans-text" style="padding-top:1rem;">
-              <?php echo $note; ?>
-            </div>
-          <?php endforeach; ?>
-        <?php endif; ?>
+            <?php foreach ($text->value('alamire:textNotes', array("all" => true)) as $note): ?>
+              <div class="trans-text" style="padding-top:1rem;">
+                <?php echo $note; ?>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
           <?php $y++; ?>
-        <?php endforeach; ?>        
+        <?php endforeach; ?>
       <?php endif; ?>
 
       <?php if ($item->value('alamire:fileID') && $type == "Chant"): ?>
@@ -424,16 +424,16 @@ endif;
               <div class="hidden-content" style="display:none">
                 <div class="metadata">
                   <?php echo $pu->displayValues(); ?>
-                  <?php $linked = $pu->subjectValues(); 
-                    if(isset($linked["alamire:relatedProductionUnit"])):                      
-                      $linked = $linked["alamire:relatedProductionUnit"];
-                      $related_composition = [];
-                      foreach($linked as $link):
-                        $link = $link->resource();
-                        if (!$link) continue;
-                        $related_composition[$link->value("alamire:identifier").''] = $link;
-                      endforeach;
-                    endif;
+                  <?php $linked = $pu->subjectValues();
+                  if (isset($linked["alamire:relatedProductionUnit"])):
+                    $linked = $linked["alamire:relatedProductionUnit"];
+                    $related_composition = [];
+                    foreach ($linked as $link):
+                      $link = $link->resource();
+                      if (!$link) continue;
+                      $related_composition[$link->value("alamire:identifier") . ''] = $link;
+                    endforeach;
+                  endif;
                   ?>
                 </div>
                 <?php if ($pu->value("alamire:relatedCompositionFull") && !empty($related_composition)): ?>
@@ -483,10 +483,16 @@ endif;
                               <?php endif; ?>
                             </td>
                             <td>
+
                               <?php if ($auth && $comp["folio"] != "fol."): ?>
                                 <a href="<?php echo $comp["link"]; ?>"><?php echo $comp["folio"] ?></a>
                               <?php elseif ($comp["folio"] != "fol."): ?>
                                 <?php echo $comp["folio"] ?>
+                              <?php endif; ?>
+                              <?php if ($auth && $comp["page"] != "page:"): ?>
+                                <a href="<?php echo $comp["link"]; ?>"><?php echo $comp["page"] ?></a>
+                              <?php elseif ($comp["page"] != "page:"): ?>
+                                <?php echo $comp["page"] ?>
                               <?php endif; ?>
                             </td>
                             <td style="text-align: right;">
@@ -587,7 +593,8 @@ endif;
               "ed" => trim($expl[0]),
               "part" =>  trim($expl[2]),
               "fol" => trim($expl[3]),
-              "link" => trim($expl[4]),
+              "page" => trim($expl[4]),
+              "link" => trim($expl[5]),
               'pu' => trim($expl[1])
             ];
           else:
@@ -611,7 +618,7 @@ endif;
                 </div>
                 <div class="column is-four-fifths">
                   <div class="values">
-                    <?php ksort($pus, SORT_NATURAL); ?>
+                    <?php //ksort($pus, SORT_NATURAL); ?>
                     <?php $ed = "";
                     $i = 0; ?>
                     <?php if ($appears):
@@ -660,7 +667,6 @@ endif;
                             <a style="margin-left:5px;" href="#" class="expand"><i class="fa fa-chevron-down" aria-hidden="true"></i></a>
                             <div class="hidden-content" style="display: none" ;>
                             <?php endif; ?>
-                            <?php ksort($int, SORT_NATURAL); ?>
                             <?php foreach ($int as $in): ?>
                               <div>
                                 <?php if ($in["pu"] && isset($pus[$in["pu"]])): ?>
@@ -676,7 +682,8 @@ endif;
                                 <?php if ($auth && $in["link"]): ?>
                                   <a class="resource-link" target="_blank" href="<?php echo $in["link"]; ?>" style="font-style:italic;">
                                   <?php endif; ?>
-                                  <?php echo $in["fol"]; ?>
+                                  <?php echo $in["fol"] != "fol." ? $in["fol"] : ""; ?>
+                                  <?php echo $in["page"] != "page:" ? $in["page"] : ""; ?>
                                   <?php echo $in["part"] ? "(" . $in["part"] . ")" : ""; ?>
                                   <?php if ($auth && $in["link"]): ?>
                                   </a>
