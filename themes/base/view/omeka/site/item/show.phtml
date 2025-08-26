@@ -489,9 +489,11 @@ endif;
                               <?php elseif ($comp["folio"] != "fol."): ?>
                                 <?php echo $comp["folio"] ?>
                               <?php endif; ?>
-                              <?php if ($auth && $comp["page"] != "page:"): ?>
+                              <?php $comp["page"] = str_replace("page:","p.",$comp["page"]) ?>                             
+                              
+                              <?php if ($auth && $comp["page"] != "p."): ?>
                                 <a href="<?php echo $comp["link"]; ?>"><?php echo $comp["page"] ?></a>
-                              <?php elseif ($comp["page"] != "page:"): ?>
+                              <?php elseif ($comp["page"] != "p."): ?>
                                 <?php echo $comp["page"] ?>
                               <?php endif; ?>
                             </td>
@@ -680,10 +682,11 @@ endif;
                                   <?php echo $in["pu"]; ?>
                                 <?php endif; ?>
                                 <?php if ($auth && $in["link"]): ?>
-                                  <a class="resource-link" target="_blank" href="<?php echo $in["link"]; ?>" style="font-style:italic;">
+                                  <a class="resource-link" target="_blank" href="<?php echo $in["link"]; ?>" style="font-style:italic;margin-left:5px;">
                                   <?php endif; ?>
                                   <?php echo $in["fol"] != "fol." ? $in["fol"] : ""; ?>
-                                  <?php echo $in["page"] != "page:" ? $in["page"] : ""; ?>
+                                  <?php $in['page'] = str_replace("page:","p.",$in["page"]);?>
+                                  <?php echo $in["page"] != "p." ? $in['page'] : ""; ?>
                                   <?php echo $in["part"] ? "(" . $in["part"] . ")" : ""; ?>
                                   <?php if ($auth && $in["link"]): ?>
                                   </a>
