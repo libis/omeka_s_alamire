@@ -161,6 +161,8 @@ class Harvest extends AbstractJob
                 if (isset($args['set_spec']) && strlen((string) $args['set_spec'])) {
                     $url .= '&set=' . $args['set_spec'];
                 }
+                $url .= '&from=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('-1 months'));
+                $url .= '&until=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('+1 days'));
             }
 
             /** @var \SimpleXMLElement $response */
