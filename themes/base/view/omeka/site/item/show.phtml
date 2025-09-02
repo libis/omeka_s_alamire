@@ -183,13 +183,15 @@ endif;
               <div class="trans-text">
                 <?php echo $text->value('alamire:originalText'); ?>
               </div>
-              <br><br>
+          
+              <div style="font-size:0.9rem;margin-top:1.3rem;">
               <?php if ($text->value('alamire:originalAuthor')): ?>
                 <?php echo "Author: " . $text->value('alamire:originalAuthor'); ?><br>
               <?php endif; ?>
               <?php if ($text->value('alamire:originalProvidedBy')): ?>
                 <?php echo "Provided by: " . $text->value('alamire:originalProvidedBy'); ?>
               <?php endif; ?>
+              </div>
             </div>
             <div class="column is-6 translation-column  pt-2" style="padding-top:0.5rem;">
               <div class="tabs is-small">
@@ -211,13 +213,14 @@ endif;
                     <div class="trans-text">
                       <?php echo $trans[2]; ?>
                     </div>
-                    <br><br>
-                    <?php if (strlen(trim($trans[1])) != 0): ?>
-                      <?php echo "Translator: " . $trans[1]; ?><br>
-                    <?php endif; ?>
-                    <?php if (strlen(trim($trans[3])) != 0): ?>
-                      <?php echo "Provided by: " . $trans[3]; ?>
-                    <?php endif; ?>
+                    <div style="font-size:0.9rem;margin-top:1.5rem;">
+                      <?php if (strlen(trim($trans[1])) != 0): ?>
+                        <?php echo "Translator: " . $trans[1]; ?><br>
+                      <?php endif; ?>
+                      <?php if (strlen(trim($trans[3])) != 0): ?>
+                        <?php echo "Provided by: " . $trans[3]; ?>
+                      <?php endif; ?>
+                    </div>
                   </div>
                 <?php endforeach; ?>
               <?php endforeach; ?>
@@ -225,7 +228,7 @@ endif;
           </div>
           <?php if ($text->value('alamire:textNotes')): ?>
             <?php foreach ($text->value('alamire:textNotes', array("all" => true)) as $note): ?>
-              <div class="trans-text" style="padding-top:1rem;">
+              <div class="trans-text" style="padding-top:0.5rem;font-size:0.9rem;">
                 <?php echo $note; ?>
               </div>
             <?php endforeach; ?>
