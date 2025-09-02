@@ -606,7 +606,7 @@ class Harvest extends AbstractJob
                         $result = $this->api->search("items",$query);
                         $result = $result->getContent();
                         if($result){
-                            $this->logger->info("result");
+                           
                             $elementTexts['alamire:relatedComposition'][$i] = [
                                 'property_id' => 200,
                                 'type' => 'resource',
