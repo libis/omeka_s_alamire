@@ -117,4 +117,12 @@ class Custom extends AbstractHelper
             endif;
         endif;
     }
+
+    public function reverseName($name){
+        $parts = explode(", ", $name);
+        if (count($parts) == 2) {
+            return $parts[1] . " " . $parts[0];
+        }
+        return $name;
+    }
 }
