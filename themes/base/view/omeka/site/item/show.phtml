@@ -1038,7 +1038,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     }
 
     $(document).ready(function() {
-      $('.translations-block').readmore({ speed: 75, lessLink: '<a href="#">Read less</a>',collapsedHeight:550});
+      $('.translations-block').readmore({ speed: 75,moreLink: '<a href="#" class="read-toggle">Read more</a>', lessLink: '<a href="#" class="read-toggle">Read less</a>',collapsedHeight:450});
       $('.toggle-btn').on('click', function() {
         var targetId = $(this).data('target');
         $('.' + targetId).toggle(); // toggles <tbody> visibility

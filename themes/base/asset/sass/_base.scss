@@ -1498,6 +1498,13 @@ footer.footer{
   }
 }
 
+.read-toggle{
+  display: block;
+  border-top: 1px solid #dbdbdb;
+  padding-bottom:1rem;
+  padding-top:0.2rem;
+}
+
 @media (hover: none) {
   a:hover { 
     color: #A6361F; 
