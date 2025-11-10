@@ -198,8 +198,8 @@ class Harvest extends AbstractJob
                 if (isset($args['set_spec']) && strlen((string) $args['set_spec'])) {
                     $url .= '&set=' . $args['set_spec'];
                 }
-                $url .= '&from=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('-1 months'));
-                $url .= '&until=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('+1 days'));
+                $url .= '&from=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('-12 months'));
+                $url .= '&until=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('-3 months'));
             }
 
             /** @var \SimpleXMLElement $response */
@@ -597,6 +597,10 @@ class Harvest extends AbstractJob
                 $i=0;
                 foreach ($dcMetadata->$localName as $pid) {
                     //look for alamire:identifier in resource template 12 (text)
+                    if(str_contains($pid,"$$")):
+                        $pid = explode("$$",$pid.'');
+                        $pid = trim($pid[0]);
+                    endif;    
                     parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=".$args['templates']["Text"]."&site_id=", $query);
                     $result = $this->api->search("items",$query);
                     $result = $result->getContent();

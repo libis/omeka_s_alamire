@@ -181,21 +181,21 @@ endif;
           $y = 0;
           $text_id = $text->value('alamire:identifier') . "";
           ?>
-          <div class="columns">
+          <div class="columns translations-block" style="overflow:hidden;">
             <div class="column is-4" style="padding-top:0.5rem;font-size:0.9rem;">
               <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
                 <?php echo $item->value('alamire:title')->asHtml(); ?>
               </h3>
-              <div class="">
+              <div class="" style="">
                 <?php echo $text->value('alamire:originalText'); ?>
               </div>
           
               <div style="margin-top:1.3rem;">
               <?php if ($text->value('alamire:originalAuthor')): ?>
-                <?php echo "Author: " . $helper->reverseName($text->value('alamire:originalAuthor')); ?><br>
+                <?php echo "Author: <span class='font-weight:bold'>" . $helper->reverseName($text->value('alamire:originalAuthor')) . "</span>"; ?><br>
               <?php endif; ?>
               <?php if ($text->value('alamire:originalProvidedBy')): ?>
-                <?php echo "Provided by: " . $helper->reverseName($text->value('alamire:originalProvidedBy')); ?>
+                <?php echo "Provided by: <span class='font-weight:bold'>" . $helper->reverseName($text->value('alamire:originalProvidedBy')). "</span>"; ?>
               <?php endif; ?>
               </div>
             </div>
@@ -221,10 +221,10 @@ endif;
                     </div>
                     <div style="margin-top:1.5rem;">
                       <?php if (strlen(trim($trans[1])) != 0): ?>
-                        <?php echo "Translator: " . $helper->reverseName($trans[1]); ?><br>
+                        <?php echo "Translator: <span class='font-weight:bold'>" . $helper->reverseName($trans[1])."</span>"; ?><br>
                       <?php endif; ?>
                       <?php if (strlen(trim($trans[3])) != 0): ?>
-                        <?php echo "Provided by: " . $helper->reverseName($trans[3]); ?>
+                        <?php echo "Provided by: <span class='font-weight:bold'>" . $helper->reverseName($trans[3])."</span>"; ?>
                       <?php endif; ?>
                     </div>
                   </div>
@@ -1038,6 +1038,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     }
 
     $(document).ready(function() {
+      $('.translations-block').readmore({ speed: 75, lessLink: '<a href="#">Read less</a>',collapsedHeight:550});
       $('.toggle-btn').on('click', function() {
         var targetId = $(this).data('target');
         $('.' + targetId).toggle(); // toggles <tbody> visibility
