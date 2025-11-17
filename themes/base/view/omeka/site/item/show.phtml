@@ -186,16 +186,16 @@ endif;
               <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
                 <?php echo $item->value('alamire:title')->asHtml(); ?>
               </h3>
-              <div class="" style="">
+              <div class="">
                 <?php echo $text->value('alamire:originalText'); ?>
               </div>
           
-              <div style="margin-top:1.3rem;">
+              <div style="margin-top:1.3rem;font-style:italic;">
               <?php if ($text->value('alamire:originalAuthor')): ?>
-                <?php echo "Author: <span style='font-weight:bold'>" . $helper->reverseName($text->value('alamire:originalAuthor')) . "</span>"; ?><br>
+                <?php echo "Author: <span>" . $helper->reverseName($text->value('alamire:originalAuthor')) . "</span>"; ?><br>
               <?php endif; ?>
               <?php if ($text->value('alamire:originalProvidedBy')): ?>
-                <?php echo "Provided by: <span style='font-weight:bold'>" . $helper->reverseName($text->value('alamire:originalProvidedBy')). "</span>"; ?>
+                <?php echo "Provided by: <span>" . $helper->reverseName($text->value('alamire:originalProvidedBy')). "</span>"; ?>
               <?php endif; ?>
               </div>
             </div>
@@ -219,12 +219,12 @@ endif;
                     <div class="">
                       <?php echo $trans[2]; ?>
                     </div>
-                    <div style="margin-top:1.5rem;">
+                    <div style="margin-top:1.5rem;font-style:italic;">
                       <?php if (strlen(trim($trans[1])) != 0): ?>
-                        <?php echo "Translator: <span style='font-weight:bold'>" . $helper->reverseName($trans[1])."</span>"; ?><br>
+                        <?php echo "Translator: <span>" . $helper->reverseName($trans[1])."</span>"; ?><br>
                       <?php endif; ?>
                       <?php if (strlen(trim($trans[3])) != 0): ?>
-                        <?php echo "Provided by: <span style='font-weight:bold'>" . $helper->reverseName($trans[3])."</span>"; ?>
+                        <?php echo "Provided by: <span>" . $helper->reverseName($trans[3])."</span>"; ?>
                       <?php endif; ?>
                     </div>
                   </div>
@@ -1038,7 +1038,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
     }
 
     $(document).ready(function() {
-      $('.translations-block').readmore({ speed: 75,moreLink: '<a href="#" class="read-toggle">Read more</a>', lessLink: '<a href="#" class="read-toggle">Read less</a>',collapsedHeight:450});
+      $('.translations-block').readmore({ speed: 75,moreLink: '<a href="#" class="read-toggle">Read more</a>', lessLink: '<a href="#" class="read-toggle">Read less</a>',collapsedHeight:540});
       $('.toggle-btn').on('click', function() {
         var targetId = $(this).data('target');
         $('.' + targetId).toggle(); // toggles <tbody> visibility
