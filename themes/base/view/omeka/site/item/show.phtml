@@ -79,10 +79,36 @@ endif;
 <?php endif; ?>
 
 <?php if($type == "Library record"):?>
- <div class="icon-text" style="padding:2rem 0 1rem 0">
-  <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $item->value('alamire:publicationUrl')?>">
-    <span>VIEW FULL PUBLICATION</span></a>
-</div>
+  
+  <?php
+    $pdf = "";
+    $download = $item->value('alamire:download',array("all"=>true));
+    foreach($download as $d):
+      if(str_contains($d,"pdf")):
+        $pdf = $d;                  
+      endif;
+    endforeach;
+  ?>
+  <div class="columns">
+    <div class="column  is-12">
+      <div style="padding:1.5rem 0">
+        <a class="button is-primary is-small" href="<?php echo $pdf;?>">Download full pdf</a>
+      </div>
+      <div>
+        <object  
+              style="padding:1rem 0;display:block;"
+              class="pdf" 
+              data="<?php echo $pdf;?>"
+              width="800"
+              height="800">
+        </object>
+      </div>              
+    </div>
+  </div>
+  <div class="icon-text" style="padding:0 0 1rem 0">
+    <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $item->value('alamire:publicationUrl')?>">
+    <span>PURCHASE PRINTED VERSION</span></a>
+  </div>  
 <?php endif;?>  
 
 <div class="container metadata-container">
@@ -771,36 +797,6 @@ endif;
               </div>
             </div>
           <?php endif; ?>
- 
-          <?php if($type == "Library record"):?>            
-            <?php
-              $pdf = "";
-              $download = $item->value('alamire:download',array("all"=>true));
-              foreach($download as $d):
-                if(str_contains($d,"pdf")):
-                  $pdf = $d;                  
-                endif;
-              endforeach;
-            ?>
-            <div class="columns">
-            <div class="column  is-12">
-              <div style="padding:0.5 0">
-                <a class="button is-primary is-small" href="<?php echo $pdf;?>">Download full pdf</a>
-              </div>
-              <div>
-                <object  
-                      style="padding:2rem 0;display:block;"
-                      class="pdf" 
-                      data="<?php echo $pdf;?>"
-                      width="800"
-                      height="800">
-                </object>
-              </div>              
-            </div>
-          </div>
-          <?php endif;?>  
-
-
 
           <?php if($type != "Library record"):?>
           <div class="columns">
