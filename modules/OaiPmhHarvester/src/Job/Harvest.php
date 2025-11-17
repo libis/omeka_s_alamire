@@ -597,7 +597,7 @@ class Harvest extends AbstractJob
                 $i=0;
                 foreach ($dcMetadata->$localName as $pid) {
                     //look for alamire:identifier in resource template 12 (text)
-                    if(str_contains($pid,"$$")):
+                    if(str_contains($pid.'',"$$")):
                         $pid = explode("$$",$pid.'');
                         $pid = trim($pid[0]);
                     endif;    
