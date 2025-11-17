@@ -78,21 +78,26 @@ endif;
   </div>
 <?php endif; ?>
 
-<?php if($type == "Library record"):?>
-  
+<?php if($type == "Library record"):?>  
   <?php
-    $pdf = "";
+    $pdf = "";$download_name = "test.pdf";
     $download = $item->value('alamire:download',array("all"=>true));
+    $filename = $item->value('alamire:filename',array("all"=>true));
     foreach($download as $d):
       if(str_contains($d,"pdf")):
         $pdf = $d;                  
       endif;
     endforeach;
+    foreach($filename as $d):
+      if(str_contains($d,"pdf")):
+        $download_name = $d;                  
+      endif;
+    endforeach;
   ?>
   <div class="columns">
     <div class="column  is-12">
-      <div style="padding:1.5rem 0">
-        <a class="button is-primary is-small" href="<?php echo $pdf;?>">Download full pdf</a>
+      <div style="padding:1.5rem 0">        
+        <a title="download full pdf" class="button is-primary is-small" download="<?= $download_name ?>" href="<?php echo $pdf;?>">Download full pdf</a>
       </div>
       <div>
         <object  
