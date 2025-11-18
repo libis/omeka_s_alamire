@@ -47,7 +47,10 @@ endif;
 <?php if ($item->value('alamire:hasVersion') && $auth): ?>
   <div class="icon-text" style="padding-top:2rem">
     <?php if (str_contains($item->value('alamire:hasVersion') . '', "representation")): ?>
-      <?php $resolv = str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); ?>
+      <?php 
+        $resolv = str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); 
+        $resolv = str_replace("https://lib.is/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); 
+      ?>
       <a target="_blank" href="<?php echo str_replace("representation", "manifest", $resolv); ?>?manifest=<?php echo str_replace("representation", "manifest", $resolv); ?>">
         <!--<img style="height:15px;margin-right:5px;" src="/themes/base/asset/img/iiif.png">-->
         <svg style="height:15px;margin-right:5px;" class="MuiSvgIcon-root mirador79" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg width="100%" height="100%" viewBox="0 0 350 312" xmlns="http://www.w3.org/2000/svg">
@@ -72,7 +75,7 @@ endif;
         </svg></svg>
 
     <?php endif; ?>
-    <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); ?>">
+    <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $resolv, $item->value('alamire:hasVersion')); ?>">
       <span>VIEW SOURCE</span></a>
   </div>
 <?php endif; ?>
