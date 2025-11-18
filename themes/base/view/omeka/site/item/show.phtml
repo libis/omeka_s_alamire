@@ -49,8 +49,9 @@ endif;
   <div class="icon-text" style="padding-top:2rem">
     <?php if (str_contains($item->value('alamire:hasVersion') . '', "representation")): ?>
       <?php 
-        $resolv = str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); 
-        $resolv = str_replace("https://lib.is/", "https://data.idemdatabase.org/", $item->value('alamire:hasVersion')); 
+        $resolv = $item->value('alamire:hasVersion').'';
+        $resolv = str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $resolv); 
+        $resolv = str_replace("https://lib.is/", "https://data.idemdatabase.org/", $resolv); 
       ?>
       <a target="_blank" href="<?php echo str_replace("representation", "manifest", $resolv); ?>?manifest=<?php echo str_replace("representation", "manifest", $resolv); ?>">
         <!--<img style="height:15px;margin-right:5px;" src="/themes/base/asset/img/iiif.png">-->
@@ -76,7 +77,7 @@ endif;
         </svg></svg>
 
     <?php endif; ?>
-    <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $resolv, $item->value('alamire:hasVersion')); ?>">
+    <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $resolv; ?>">
       <span>VIEW SOURCE</span></a>
   </div>
 <?php endif; ?>
