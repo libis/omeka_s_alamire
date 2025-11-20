@@ -46,15 +46,15 @@ endif;
   </div>
 <?php endif; ?>
 <?php if ($item->value('alamire:hasVersion') && $auth): ?>
+  <?php 
+    $resolv = $item->value('alamire:hasVersion').'';
+    $resolv = str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $resolv); 
+    $resolv = str_replace("https://resolver.libis.be/", "https://data.idemdatabase.org/", $resolv);
+    $resolv = str_replace("https://lib.is/", "https://data.idemdatabase.org/", $resolv); 
+  ?>
   <div class="icon-text" style="padding-top:2rem">
-    <?php if (str_contains($item->value('alamire:hasVersion') . '', "representation")): ?>
-      <?php 
-        $resolv = $item->value('alamire:hasVersion').'';
-        $resolv = str_replace("http://resolver.libis.be/", "https://data.idemdatabase.org/", $resolv); 
-        $resolv = str_replace("https://lib.is/", "https://data.idemdatabase.org/", $resolv); 
-      ?>
+    <?php if (str_contains($resolv, "representation")): ?>     
       <a target="_blank" href="<?php echo str_replace("representation", "manifest", $resolv); ?>?manifest=<?php echo str_replace("representation", "manifest", $resolv); ?>">
-        <!--<img style="height:15px;margin-right:5px;" src="/themes/base/asset/img/iiif.png">-->
         <svg style="height:15px;margin-right:5px;" class="MuiSvgIcon-root mirador79" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><svg width="100%" height="100%" viewBox="0 0 350 312" xmlns="http://www.w3.org/2000/svg">
             <path d="M349.914,153.001c-7.226,2.462 -14.526,4.735 -21.608,7.558c-1.292,0.515 -2.384,3.264 -2.397,4.99c-0.158,19.829 -0.086,39.659 -0.085,59.489c0.001,19.33 -0.045,38.66 0.023,57.99c0.01,2.729 -0.365,4.639 -3.374,5.734c-20.773,7.564 -41.488,15.288 -62.229,22.942c-0.274,0.102 -0.64,-0.043 -1.375,-0.111c-0.149,-1.154 -0.45,-2.396 -0.45,-3.639c0.016,-72.654 0.053,-145.308 0.098,-217.962c0.025,-40.429 27.685,-76.061 66.956,-85.815c8,-1.987 16.288,-2.814 24.442,-4.177c0,20.333 0,40.667 0,61c-2.107,-0.355 -4.21,-0.746 -6.323,-1.062c-8.942,-1.335 -16.88,3.769 -17.504,12.61c-0.766,10.846 -0.183,21.787 -0.183,33.631c8.451,-2.879 16.23,-5.529 24.01,-8.18c-0.001,18.335 -0.001,36.669 -0.001,55.002Z" style="fill: rgb(233, 36, 40);"></path>
             <path d="M158.345,106.616c0.095,2.047 0.222,3.505 0.222,4.962c0.006,56.487 -0.047,112.975 0.094,169.461c0.01,4.037 -1.195,5.712 -5.008,7.072c-18.773,6.697 -37.406,13.788 -56.104,20.701c-1.672,0.618 -3.446,0.961 -5.603,1.549c0,-15.906 0.068,-31.381 -0.013,-46.854c-0.22,-42.298 -0.448,-84.595 -0.846,-126.891c-0.039,-4.124 1.115,-5.928 5.188,-7.368c19.113,-6.76 38.054,-14.008 57.064,-21.062c1.501,-0.557 3.057,-0.963 5.006,-1.57Z" style="fill: rgb(233, 36, 40);"></path>
