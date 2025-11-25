@@ -217,11 +217,11 @@ endif;
           $text_id = $text->value('alamire:identifier') . "";
           ?>
           <div class="columns translations-block" style="overflow:hidden;">
-            <div class="column is-4" style="padding-top:0.5rem;font-size:0.9rem;">
+            <div class="column is-6" style="padding-top:0.5rem;font-size:0.9rem;">
               <h3 style="font-weight:bold;margin-bottom: 1.5rem;padding: 5px 0em;border-bottom: 1px solid #dbdbdb;">
                 <?php echo $item->value('alamire:title')->asHtml(); ?>
               </h3>
-              <div class="">
+              <div class="" style="white-space: nowrap;">
                 <?php echo $text->value('alamire:originalText'); ?>
               </div>
           
