@@ -648,6 +648,7 @@ endif;
               'pu' => trim($expl[1])
             ];
           else:
+            if(sizeof($expl) < 5) continue;
             $appears[trim($expl[1])] = [
               'title' => trim($expl[1]),
               "fol" => trim($expl[3]),
