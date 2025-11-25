@@ -504,6 +504,13 @@ endif;
 
                             <?php
                             $parent_id = $comp["id"];
+
+                            if (isset($related_composition[$comp["id"]])) {
+                                $comp_record = $related_composition[$comp["id"]];
+                            } else {
+                                $comp_record = null;
+                            }
+
                             $comp_record = $related_composition[$comp["id"]];
                             ?>
                             <tr id="<?php echo $parent_id; ?>">
@@ -572,10 +579,9 @@ endif;
         if ($item->value("alamire:relatedManuscript")):
           foreach ($item->value("alamire:relatedManuscript", ['all' => true]) as $ms):
             if (str_contains($ms->asHtml(), "$$")):
-              $ms = explode(" $$ ", $ms->asHtml());
-
+              $ms = explode("$$", $ms->asHtml());
+              if($ms[0] == "") continue;
               if (isset($ms[5])):
-
                 $query = 'property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=' . $ms[0] . '&item_set_id[]=&site_id=';
                 parse_str($query, $query);
 
@@ -588,11 +594,6 @@ endif;
                   //fol
                   $label = trim($ms[2]);
                 }
-
-                if ($label && trim($ms[5])):
-                //part
-                //$label = $label." (".trim($ms[5]).")";
-                endif;
 
                 $ms_item = $this->api()->searchOne('items', $query);
                 $ms_item = $ms_item->getContent();
@@ -633,7 +634,9 @@ endif;
         $expl = '';
         $ints = $item->value("alamire:interstitialInfo", ['all' => true]);
         foreach ($ints as $int):
+
           $expl = explode('$$', $int . '');
+
           //if has edition
           if ($expl[0]):
             $ints_a[trim($expl[0])][trim($expl[1])] = [
@@ -659,6 +662,7 @@ endif;
         <?php if ($ints_a || $appears): ?>
           <div class="production-unit-comp-wrapper">
             <?php if ($appears): ?>
+
               <div class="columns">
                 <div class="column is-one-fifth">
                   <h4 class="has-text-weight-semibold is-6 ">In manuscripts</h4>
@@ -673,7 +677,7 @@ endif;
                     endif; ?>
                     <?php foreach ($appears as $key => $in): ?>
                       <div class="value resource items" lang="">
-                        <?php if (!is_array($in)): ?>
+                        <?php if (!is_array($in) && trim($in)): ?>
                           <?php echo $in; ?>
                         <?php else: ?>
                           <?php if ($in["pu"] && isset($pus[$in["pu"]])): ?>
