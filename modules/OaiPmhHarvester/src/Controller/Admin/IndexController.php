@@ -56,6 +56,8 @@ class IndexController extends AbstractActionController
         // FIXME Validate post.
         $post = $this->params()->fromPost();
         $endpoint = @$post['endpoint'];
+        $from = @$post['from'];
+        $until = @$post['until'];
 
         // Avoid direct acces to the page.
         if (empty($endpoint)) {
@@ -132,6 +134,8 @@ class IndexController extends AbstractActionController
             'endpoint' => $endpoint,
             'formats' => $formats,
             'sets' => $sets,
+            'from' => $from,
+            'until' => $until,
             'harvest_all_records' => $harvestAllRecords,
             'predefined_sets' => $predefinedSets,
             'favorite_format' => $favoriteFormat,
@@ -153,6 +157,8 @@ class IndexController extends AbstractActionController
     public function harvestAction()
     {
         $post = $this->params()->fromPost();
+        $from =  $post['from'];
+        $until =  $post['until'];
 
         $filters = [];
         $filters['whitelist'] = $post['filters_whitelist'];
@@ -256,6 +262,8 @@ class IndexController extends AbstractActionController
                 'endpoint' => $endpoint,
                 'set_spec' => $setSpec,
                 'item_set_id' => $set['item_set_id'],
+                'from' => $from,
+                'until' => $until,
                 'has_err' => 0,
                 'metadata_prefix' => $set['metadata_prefix'],
                 'resource_type' => 'items',

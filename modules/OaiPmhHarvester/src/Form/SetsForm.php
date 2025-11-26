@@ -14,6 +14,8 @@ class SetsForm extends Form
         $endpoint = $this->getOption('endpoint');
         $formats = $this->getOption('formats');
         $sets = $this->getOption('sets') ?: [];
+        $from = $this->getOption('from');
+        $until = $this->getOption('until');
         $harvestAllRecords = $this->getOption('harvest_all_records');
         $predefinedSets = $this->getOption('predefined_sets');
         $favoriteFormat = $this->getOption('favorite_format');
@@ -42,6 +44,52 @@ class SetsForm extends Form
                     'id' => 'harvest_all_records',
                     'value' => $harvestAllRecords,
                 ],
+            ])
+            ->add([
+
+
+                'type' => Element\Hidden::class,
+
+
+                'name' => 'from',
+
+
+                'attributes' => [
+
+
+                    'id' => 'from',
+
+
+                    'value' => $from,
+
+
+                ],
+
+
+            ])
+
+
+            ->add([
+
+
+                'type' => Element\Hidden::class,
+
+
+                'name' => 'until',
+
+
+                'attributes' => [
+
+
+                    'id' => 'until',
+
+
+                    'value' => $until,
+
+
+                ],
+
+
             ])
             ->add([
                 'name' => 'filters_whitelist',
