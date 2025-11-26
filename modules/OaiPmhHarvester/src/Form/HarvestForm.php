@@ -50,6 +50,89 @@ class HarvestForm extends Form
 humanities:serie-beta',
                 ],
             ])
+            ->add([
+
+
+
+                'name' => 'from',
+
+
+                'type' => Element\Text::class,
+
+
+                'options' => [
+
+
+                    'label' => 'From', // @translate
+
+
+                    'info' => 'The start date for the harvest (UTC format f.i. 2021-01-01T00:00:00Z).', // @translate
+
+
+                ],
+
+
+                'attributes' => [
+
+
+                    'id' => 'from',
+
+
+                    // The protocol requires http, but most of repositories
+
+
+                    // support it.
+
+
+                    'placeholder' => '2021-01-01T00:00:00Z',
+
+
+                ],
+
+
+            ])
+
+
+            ->add([
+
+
+                'name' => 'until',
+
+
+                'type' => Element\Text::class,
+
+
+                'options' => [
+
+
+                    'label' => 'Until', // @translate
+
+
+                    'info' => 'The end date for the harvest (UTC format f.i. 2021-01-01T00:00:00Z).', // @translate
+
+
+                ],
+
+
+                'attributes' => [
+
+
+                    'id' => 'until',
+
+
+                    // The protocol requires http, but most of repositories
+
+
+                    // support it.
+
+
+                    'placeholder' => '2021-01-01T00:00:00Z',
+
+
+                ],
+
+
+            ])
         ;
 
         $inputFilter = $this->getInputFilter();
