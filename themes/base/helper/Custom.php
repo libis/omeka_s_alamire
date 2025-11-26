@@ -108,7 +108,9 @@ class Custom extends AbstractHelper
             endif;
             echo "</td>";
         else:
-
+            if(isset($irel[9])):
+                $irel[3] = "<span style='color:#a6361f'>".$irel[9]."</span> ".$irel[3];
+            endif;    
             //echo $irel[3]." ".$irel[4]."<br>";
             echo "<td></td><td><span style='margin-left: " . ($depth * 1.2) . "rem;'>" . $irel[3] . "</span></td>";
             echo "<td>";
