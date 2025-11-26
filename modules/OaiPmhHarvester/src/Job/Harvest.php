@@ -199,7 +199,7 @@ class Harvest extends AbstractJob
                     $url .= '&set=' . $args['set_spec'];
                 }
                 $url .= '&from=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('-12 months'));
-                $url .= '&until=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('-3 months'));
+                $url .= '&until=' . gmdate('Y-m-d\TH:i:s\Z');
             }
 
             /** @var \SimpleXMLElement $response */
