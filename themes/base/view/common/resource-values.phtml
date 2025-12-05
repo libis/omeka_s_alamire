@@ -373,7 +373,31 @@ endif;
           <?php elseif($propertyData['property']->term() == 'alamire:relatedAudio'):
             $rels = explode("$$",$value->asHtml());
             echo trim($rels[0]);
-            ?>       
+            ?>     
+          <?php elseif($propertyData['property']->term() == 'alamire:contributors'):  
+            $contributor_r = [];
+            foreach($values['alamire:contributors']['values'] as $contributor):
+              $contributor_r[] = $contributor->asHtml();
+            endforeach;
+            echo implode(" | ",$contributor_r);
+            $values['alamire:contributors']['values'] = [];  
+          ?>       
+          <?php elseif($propertyData['property']->term() == 'alamire:author'):  
+            $author_r = [];
+            foreach($values['alamire:author']['values'] as $author):
+              $author_r[] = $author->asHtml();
+            endforeach;
+            echo implode(" | ",$author_r);
+            $values['alamire:author']['values'] = [];  
+          ?>   
+          <?php elseif($propertyData['property']->term() == 'alamire:editor'):  
+            $editor_r = [];
+            foreach($values['alamire:editor']['values'] as $editor):
+              $editor_r[] = $editor->asHtml();
+            endforeach;
+            echo implode(" | ",$editor_r);
+            $values['alamire:editor']['values'] = [];  
+          ?>      
           <?php elseif($propertyData['property']->term() == 'alamire:differentiaLabel'):
             $label =  $values['alamire:differentiaLabel']['values'][0]->asHtml();
             $url = '';
@@ -453,7 +477,7 @@ endif;
               $firstrel = explode(" $$ ",$firstrel);
              
               if(!empty($firstrel[1])):?>
-                <span style="color:#cc6633;"><?php echo $firstrel[1]." ";?></span>
+                <span style="color:#A6361F;"><?php echo $firstrel[1]." ";?></span>
               <?php endif;
 
               if($first_r):
@@ -669,7 +693,7 @@ endif;
               $firstrel = explode(" $$ ",$firstrel);
              
               if(!empty($firstrel[1])):?>
-                <span style="color:#cc6633;"><?php echo $firstrel[1]." ";?></span>
+                <span style="color:#A6361F;"><?php echo $firstrel[1]." ";?></span>
               <?php endif;
 
               if($first_r):

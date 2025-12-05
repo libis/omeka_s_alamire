@@ -26,6 +26,8 @@ class CheckAndFixForm extends Form
             ->appendFieldsetFilesDatabase()
             ->appendFieldsetResourceValues()
             ->appendFieldsetDatabase()
+            ->appendFieldsetBackup()
+            ->appendFieldsetCache()
             ->appendFieldsetTasks()
         ;
 
@@ -101,6 +103,30 @@ class CheckAndFixForm extends Form
             ->get('db_log')
             ->add([
                 'name' => 'days',
+                'required' => false,
+            ]);
+
+        $inputFilter->get('backup')
+            ->add([
+                'name' => 'process',
+                'required' => false,
+            ]);
+        $inputFilter->get('backup')
+            ->get('backup_install')
+            ->add([
+                'name' => 'include',
+                'required' => false,
+            ]);
+
+        $inputFilter->get('cache')
+            ->add([
+                'name' => 'process',
+                'required' => false,
+            ]);
+        $inputFilter->get('cache')
+            ->get('cache_clear')
+            ->add([
+                'name' => 'type',
                 'required' => false,
             ]);
 
@@ -323,10 +349,10 @@ class CheckAndFixForm extends Form
                         'files_size_fix' => 'Fix all file sizes in database (for example after hard import)', // @translate
                         'files_hash_check' => 'Check sha256 hashes of files', // @translate
                         'files_hash_fix' => 'Fix wrong sha256 of files', // @translate
-                        'files_dimension_check' => 'Check files dimensions (modules IIIF Server / Image Server)', // @translate
-                        'files_dimension_fix' => 'Fix files dimensions (modules IIIF Server / Image Server)', // @translate
                         'files_media_type_check' => 'Check generic media type of files, mainly for xml', // @translate
                         'files_media_type_fix' => 'Fix generic media type of files, mainly for xml', // @translate
+                        'files_dimension_check' => 'Check files dimensions (modules IIIF Server / Image Server)', // @translate
+                        'files_dimension_fix' => 'Fix files dimensions (modules IIIF Server / Image Server)', // @translate
                         'media_position_check' => 'Check positions of media (start from 1, without missing number)', // @translate
                         'media_position_fix' => 'Fix wrong positions of media', // @translate
                     ],
@@ -366,12 +392,18 @@ class CheckAndFixForm extends Form
                     // Fix the formatting issue of the label in Omeka.
                     'label_attributes' => ['style' => 'display: inline-block'],
                     'value_options' => [
+                        'db_resource_incomplete_check' => 'Check if all resources are specified as items, medias, etc.', // @translate
+                        'db_resource_incomplete_fix' => 'Remove all resources that are not specified', // @translate
                         'item_no_value' => 'Check items without value (media values are not checked)', // @translate
                         'item_no_value_fix' => 'Remove items without value (files are moved into "/files/check/")', // @translate
                         'db_utf8_encode_check' => 'Check if all values are utf-8 encoded (Windows issues like "Ã©" for "é")', // @translate
                         'db_utf8_encode_fix' => 'Fix utf-8 encoding issues', // @translate
                         'db_resource_title_check' => 'Check resource titles, for example after hard import', // @translate
                         'db_resource_title_fix' => 'Update resource titles', // @translate
+                        'db_item_primary_media_check' => 'Check if the primary medias are set', // @translate
+                        'db_item_primary_media_fix' => 'Set the primary medias to all items', // @translate
+                        'db_value_annotation_template_check' => 'Check templates for value annotations (module Advanced Resource Template)', // @translate
+                        'db_value_annotation_template_fix' => 'Fix templates for value annotations (module Advanced Resource Template)', // @translate
                     ],
                 ],
                 'attributes' => [
@@ -567,6 +599,177 @@ class CheckAndFixForm extends Form
         return $this;
     }
 
+    protected function appendFieldsetBackup(): self
+    {
+        $this
+            ->add([
+                'name' => 'backup',
+                'type' => Fieldset::class,
+                'options' => [
+                    'label' => 'Backup', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'backup',
+                    'class' => 'field-container',
+                ],
+            ]);
+
+        $fieldset = $this->get('backup');
+        $fieldset
+            ->add([
+                'name' => 'process',
+                'type' => Element\Radio::class,
+                'options' => [
+                    'label' => 'Tasks', // @translate
+                    // Fix the formatting issue of the label in Omeka.
+                    'label_attributes' => ['style' => 'display: inline-block'],
+                    'value_options' => [
+                        'backup_install' => 'Omeka, modules and themes (without directory /files)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'backup-process',
+                    'required' => false,
+                    'class' => 'fieldset-process'
+                ],
+            ]);
+
+        $fieldset
+            ->add([
+                'type' => Fieldset::class,
+                'name' => 'backup_install',
+                'options' => [
+                    'label' => 'Options to backup Omeka install', // @translate
+                ],
+                'attributes' => [
+                    'class' => 'backup_install',
+                ],
+            ]);
+        $fieldset->get('backup_install')
+            ->add([
+                'name' => 'include',
+                'type' => Element\MultiCheckbox::class,
+                'options' => [
+                    'label' => 'Include', // @translate
+                    // TODO Check size first and indicate it here.
+                    'value_options' => [
+                        'core' => 'Omeka sources files', // @translate
+                        'modules' => 'Modules', // @translate
+                        'themes' => 'Themes', // @translate
+                        // 'files' => 'Files (original, derivative, etc.)', // @translate
+                        'logs' => 'Logs', // @translate
+                        'local_config' => 'Config (local.config.php)', // @translate
+                        'database_ini' => 'database.ini', // @translate
+                        'htaccess' => '.htaccess', // @translate
+                        'htpasswd' => '.htpasswd', // @translate
+                        'hidden' => 'Hidden files (dot files)', // @translate
+                        'zip' => 'Compressed files (with extension bzip, bz2, tar, gz, xz, zip)', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'backup_omeka-include',
+                    'value' => [
+                        'core',
+                        'modules',
+                        'themes',
+                        'logs',
+                        'local_config',
+                        'htaccess',
+                        'hidden',
+                    ],
+                ],
+            ])
+            ->add([
+                'name' => 'compression',
+                'type' => Element\Number::class,
+                'options' => [
+                    'label' => 'Compression level (-1: auto, 0: none/quick, 9: max/slow)', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'backup_omeka-compression',
+                    'min' => '-1',
+                    'max' => '9',
+                    'value' => '-1',
+                ],
+            ])
+        ;
+
+        return $this;
+    }
+
+    protected function appendFieldsetCache(): self
+    {
+        $this
+            ->add([
+                'name' => 'cache',
+                'type' => Fieldset::class,
+                'options' => [
+                    'label' => 'Cache', // @translate
+                ],
+                'attributes' => [
+                    'id' => 'cache',
+                    'class' => 'field-container',
+                ],
+            ]);
+
+        $fieldset = $this->get('cache');
+        $fieldset
+            ->add([
+                'name' => 'process',
+                'type' => Element\Radio::class,
+                'options' => [
+                    'label' => 'Cache php', // @translate
+                    // Fix the formatting issue of the label in Omeka.
+                    'label_attributes' => ['style' => 'display: inline-block'],
+                    'value_options' => [
+                        'cache_check' => 'Check php cache (after update or modifications of code)', // @translate
+                        'cache_fix' => 'Clear php cache', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'cache-process',
+                    'required' => false,
+                    'class' => 'fieldset-process'
+                ],
+            ]);
+
+        $fieldset
+            ->add([
+                'type' => Fieldset::class,
+                'name' => 'cache_clear',
+                'options' => [
+                    'label' => 'Options to clear cache', // @translate
+                ],
+                'attributes' => [
+                    'class' => 'cache_check cache_fix',
+                ],
+            ]);
+        $fieldset->get('cache_clear')
+            ->add([
+                'name' => 'type',
+                'type' => Element\MultiCheckbox::class,
+                'options' => [
+                    'label' => 'Types of cache', // @translate
+                    'value_options' => [
+                        'code' => 'Code (opcache)', // @translate
+                        'data' => 'Data (apcu)', // @translate
+                        'path' => 'Real paths', // @translate
+                    ],
+                ],
+                'attributes' => [
+                    'id' => 'cache_clear-cache',
+                    'value' => [
+                        'code',
+                        'data',
+                        'path',
+                    ],
+                ],
+            ])
+        ;
+
+        return $this;
+    }
+
     protected function appendFieldsetTasks(): self
     {
         $this
@@ -609,7 +812,7 @@ class CheckAndFixForm extends Form
 
     protected function listIngesters(): array
     {
-        $sql = 'SELECT DISTINCT(ingester) FROM media ORDER BY ingester';
+        $sql = 'SELECT DISTINCT(ingester) FROM media ORDER BY ingester ASC';
         $result = $this->connection->executeQuery($sql)->fetchFirstColumn();
         return ['' => 'All ingesters'] // @translate
             + array_combine($result, $result);
@@ -617,7 +820,7 @@ class CheckAndFixForm extends Form
 
     protected function listRenderers(): array
     {
-        $sql = 'SELECT DISTINCT(renderer) FROM media ORDER BY renderer';
+        $sql = 'SELECT DISTINCT(renderer) FROM media ORDER BY renderer ASC';
         $result = $this->connection->executeQuery($sql)->fetchFirstColumn();
         return ['' => 'All renderers'] // @translate
             + array_combine($result, $result);
@@ -625,7 +828,7 @@ class CheckAndFixForm extends Form
 
     protected function listMediaTypes(): array
     {
-        $sql = 'SELECT DISTINCT(media_type) FROM media WHERE media_type IS NOT NULL AND media_type != "" ORDER BY media_type';
+        $sql = 'SELECT DISTINCT(media_type) FROM media WHERE media_type IS NOT NULL AND media_type != "" ORDER BY media_type ASC';
         $result = $this->connection->executeQuery($sql)->fetchFirstColumn();
         return ['' => 'All media types'] // @translate
             + array_combine($result, $result);

@@ -23,7 +23,6 @@ $formmail = isset($get["mail"]) ? $get['mail'] : '';
       <div class="column is-8">
       <?php                
         if($_SERVER['REQUEST_METHOD'] == 'POST'):
-         
           if(!isCaptchaValid($secretKey)):
             $error = "reCaptcha is not valid";
           else:  

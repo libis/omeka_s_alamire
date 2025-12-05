@@ -69,6 +69,25 @@ class Harvest extends AbstractJob
             //$collectiewijzer = false; 
         endif;   
 
+        //gather all the templates once
+        $response = $this->api->search('resource_templates');
+        $templates = $response->getContent();
+        $templates_array=[];
+        foreach ($templates as $template) {
+            $templates_array[$template->label()] = $template->id();
+        }
+        $args["templates"] = $templates_array;
+
+        //gather all the properties once
+        $response = $this->api->search('properties', ['vocabulary_prefix' => 'alamire']);
+        $properties = $response->getContent();
+
+        $alamireTerms = [];
+        foreach ($properties as $property) {
+            $alamireTerms[$property->term()] = $property->id();
+        }
+        $args["alamireTerms"] = $alamireTerms;
+        
         //alamire vocab
         $dcProperties = $this->api->search('properties', ['vocabulary_id' => 6], ['responseContent' => 'resource'])->getContent();
            
@@ -121,9 +140,27 @@ class Harvest extends AbstractJob
             case 'composition':                
 				$method = '_alamireToJson';
                 break;    
+            case 'MPcomposition':                
+                $method = '_alamireToJson';
+                break;       
             case 'manuscript':                
                 $method = '_alamireToJson';
                 break;     
+            case 'chant':                
+                $method = '_alamireToJson';
+                break;    
+            case 'PrintedSource':                
+                $method = '_alamireToJson';
+                break;    
+            case 'ProductionUnit':                
+                $method = '_alamireToJson';
+                break;    
+            case 'libraryRecord':                
+                $method = '_alamireToJson';
+                break;      
+            case 'text':                
+                $method = '_alamireToJson';
+                break;          
             case 'oai_dcterms':
             case 'oai_dcq':
             case 'oai_qdc':
@@ -174,16 +211,17 @@ class Harvest extends AbstractJob
             }
 
             /** @var \SimpleXMLElement $response */
-            //$response = \simplexml_load_file($url);
-            $timeout = 180;
+            $response = \simplexml_load_file($url);
+            $timeout = 350;
             $context = stream_context_create(['http' => ['timeout' => $timeout]]);
             $data = file_get_contents($url, false, $context);
             $response = simplexml_load_string($data);
+
             if (!$response) {
                 $message = 'Server unavailable. Retrying.'; // @translate
                 $this->logger->warn(sprintf(
                     'Error: the harvester does not list records with url %1$s. Retrying %2$d/%3$d times in %4$d seconds', // @translate
-                    $url, 1, self::REQUEST_MAX_RETRY, self::REQUEST_WAIT * 3
+                    $url, 1, self::REQUEST_MAX_RETRY, self::REQUEST_WAIT
                 ));
 
                 sleep(self::REQUEST_WAIT * 3);
@@ -259,15 +297,18 @@ class Harvest extends AbstractJob
                     }
                 }
                 $pre_record = $this->{$method}($record, $args['item_set_id'],$args);
+				$id_exists = false;
                 if (!$pre_record) {
+                    //$this->logger->info('Record skipped.');
                     continue;
                 }
-                
-                if(isset($pre_record['alamire:identifier'][0]['@value'])){
-                    $id_exists = $this->itemExists($pre_record, $pre_record['alamire:identifier'][0]['@value'],$args['resource_type']);
-                } 
 
-                if(!$id_exists && isset($pre_record['alamire:identifier'][0]['@value'])){
+                if ($pre_record['alamire:identifier'][0]['@value']):
+                    $id_exists = $this->itemExists($pre_record, $pre_record['alamire:identifier'][0]['@value'], $args['resource_type']);
+
+                endif;
+
+                if(!$id_exists && ($pre_record['alamire:identifier'][0]['@value'])){
                   try{
                       $response_c = $this->api->create($args['resource_type'], $pre_record, [], []);
                       $response_c = null;
@@ -283,17 +324,9 @@ class Harvest extends AbstractJob
                 $this->createItems($toInsert);
             }*/
             gc_collect_cycles();
-            $this->logger->info("mem: ".memory_get_usage());
+            //$this->logger->info("mem: ".memory_get_usage());
 
-            $identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
-            foreach ($identityMap as $entityClass => $entities) {
-                foreach ($entities as $idHash => $entity) {
-                    if (!isset($originalIdentityMap[$entityClass][$idHash])) {
-                        $entityManager->detach($entity);
-                    }
-                }
-            }
-
+            
             $resumptionToken = isset($response->ListRecords->resumptionToken) && $response->ListRecords->resumptionToken <> ''
                 ? $response->ListRecords->resumptionToken
                 : false;
@@ -305,6 +338,15 @@ class Harvest extends AbstractJob
                 'o-module-oai-pmh-harvester:stats' => $stats,
             ];
             $this->api->update('oaipmhharvester_harvests', $harvestId, $harvestData);
+            $identityMap = $entityManager->getUnitOfWork()->getIdentityMap();
+            foreach ($identityMap as $entityClass => $entities) {
+                foreach ($entities as $idHash => $entity) {
+                    if (!isset($originalIdentityMap[$entityClass][$idHash])) {
+                        $entityManager->detach($entity);
+                    }
+                }
+            }
+
         } while ($resumptionToken);
 
         // Update job.
@@ -325,7 +367,7 @@ class Harvest extends AbstractJob
     }
 
     protected function itemExists($item, $id_version, $resource_type){
-        
+        //return false;
 		$args = $this->job->getArgs();
         $query = [];
 		
@@ -348,7 +390,7 @@ class Harvest extends AbstractJob
         foreach($results as $result):
           if($result):
             try{
-              //don't update files for to avoid redownload
+              //don't update files to avoid redownload
               if(isset($item['o:media'])):
                 unset($item['o:media']);
               endif;
@@ -471,6 +513,7 @@ class Harvest extends AbstractJob
         $meta['o:item_set'] = ['o:id' => $itemSetId];
         return $meta;
     }
+
 	
 	private function _alamireToJson(SimpleXMLElement $record,$itemSetId,$args)
     {
@@ -479,12 +522,6 @@ class Harvest extends AbstractJob
             ->metadata
             ->children('oai_alamire',true)
             ->children('alamire',true);
-
-        /*foreach($dcMetadata as $key=>$value):
-           //$this->logger->info($key.' - '.implode(",",$value));     
-        endforeach;  */  
-        
-        //$this->logger->info(var_dump($dcMetadata->$localName));    
 
         $elementTexts = [];$media = [];$imgc = 0;
         foreach ($this->dcProperties as $propertyId => $localName) {
@@ -502,12 +539,17 @@ class Harvest extends AbstractJob
                 }
             }
             //add media if Beeld or Collectie
-            if($localName == 'original'){
+            if($localName == 'original' || $localName == 'download'){
                 //$this->logger->info("media - 1");                
                 foreach ($dcMetadata->$localName as $imageUrl) {      
-
+                    if(str_contains($imageUrl.'',"pdf")):
+                        continue;
+                    endif;    
                     $imageUrl = explode(" $$ ",$imageUrl.'');
-                    $viewer = $imageUrl[1];
+                    $viewer = '';
+                    if(isset($imageUrl[1])):
+                        $viewer = $imageUrl[1];
+                    endif;
                     $imageUrl = $imageUrl[0]; 
                     
                     //$this->logger->info($imageUrl[1]);
@@ -535,25 +577,143 @@ class Harvest extends AbstractJob
                   $imgc++;
                 }
             }    
+
+            //create links to production units in manuscripts and printed sources
+            if($localName == 'relatedProductionUnit'){
+                $i=0;
+                foreach ($dcMetadata->$localName as $pid) {
+                    parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=".$args['templates']["Production Unit"]."&site_id=", $query);
+                    $result = $this->api->search("items",$query);
+                    $result = $result->getContent();
+                    //$this->logger->info("related");
+                    if($result){
+                        
+                        $elementTexts['alamire:relatedProductionUnit'][$i] = [
+                            'property_id' => $args["alamireTerms"]['alamire:relatedProductionUnit'],
+                            'type' => 'resource',
+                            'is_public' => true,
+                            'value_resource_id' => $result[0]->id(),
+                            'value_resource_name' => 'items'
+                        ];
+                    }
+                    $i++;
+                }                    
+            }
+
+            //create links to texts (in compostions)
+            if($localName == 'relatedText'){
+                $i=0;
+                foreach ($dcMetadata->$localName as $pid) {
+                    //look for alamire:identifier in resource template 12 (text)
+                    if(str_contains($pid.'',"$$")):
+                        $pid = explode("$$",$pid.'');
+                        $pid = trim($pid[0]);
+                    endif;    
+                    parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=".$args['templates']["Text"]."&site_id=", $query);
+                    $result = $this->api->search("items",$query);
+                    $result = $result->getContent();
+                    //$this->logger->info("related");
+                    if($result){
+                        //$this->logger->info("result");
+                        $elementTexts['alamire:relatedText'][$i] = [
+                            'property_id' => $args["alamireTerms"]['alamire:relatedText'],
+                            'type' => 'resource',
+                            'is_public' => true,
+                            'value_resource_id' => $result[0]->id(),
+                            'value_resource_name' => 'items'
+                        ];
+                    }
+                    $i++;
+                }                    
+            }
+
+            //create links to compositions (in production units and texts) (never use in manuscripts!)
+            if($localName == 'relatedComposition' && strpos($args["endpoint"], 'Manuscript') == false){
+                    $i=0;
+                    foreach ($dcMetadata->$localName as $pid) {
+                        parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=".$args['templates']["Composition"]."&site_id=", $query);
+                        $result = $this->api->search("items",$query);
+                        $result = $result->getContent();
+                        if($result){
+                           
+                            $elementTexts['alamire:relatedComposition'][$i] = [
+                                'property_id' => $args["alamireTerms"]['alamire:relatedComposition'],
+                                'type' => 'resource',
+                                'is_public' => true,
+                                'value_resource_id' => $result[0]->id(),
+                                'value_resource_name' => 'items'
+                            ];
+                        }
+                        $i++;
+                    }
+                }
+
+            //add resources
+            if(strpos($args["endpoint"], 'MPComposition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
+                
+                
+                //create links to production units in compositions
+                if($localName == 'interstitialInfo'){
+                    $i=0;
+                    foreach ($dcMetadata->$localName as $pid) {
+                        $pid = explode("$$",$pid.'');
+                        $pid = trim($pid[1]);
+                        parse_str("property[0][joiner]=and&property[0][property]=216&property[0][type]=eq&property[0][text]=".$pid."&resource_template_id[]=".$args['templates']["Production Unit"]."&site_id=", $query);
+                        $result = $this->api->search("items",$query);
+                        $result = $result->getContent();
+                        if($result){
+                            $this->logger->info("result");
+                            $elementTexts['alamire:relatedProductionUnit'][$i] = [
+                                'property_id' => $args["alamireTerms"]['alamire:relatedProductionUnit'],
+                                'type' => 'resource',
+                                'is_public' => true,
+                                'value_resource_id' => $result[0]->id(),
+                                'value_resource_name' => 'items'
+                            ];
+                        }
+                        $i++;
+                    }                    
+                }
+            endif;
         }
         $meta = $elementTexts;
         $imgs = array();
+
         foreach($media as $img):
             $imgs[] = $img;            
         endforeach;
+
         if($imgs):
             $meta['o:media'] = $imgs;
         endif;
+
+        //make sure labels are correct and template exists
 		if(strpos($args["endpoint"], 'Manuscript') !== false):
-			$meta['o:resource_template'] = ["o:id" => "2"];
+            $label = 'Manuscript';
 		elseif(strpos($args["endpoint"], 'omposition') !== false):
-			$meta['o:resource_template'] = ["o:id" => "3"];			
-		endif;
+            $label = 'Composition';
+        elseif(strpos($args["endpoint"], 'Chant') !== false):
+            $label = 'Chant';
+        elseif(strpos($args["endpoint"], 'ProductionUnit') !== false):
+            $label = 'Production Unit';
+        elseif(strpos($args["endpoint"], 'PrintedSource') !== false):
+            $label = 'Printed Source';
+        elseif(strpos($args["endpoint"], 'Text') !== false):
+            $label = 'Text';   
+        elseif(strpos($args["endpoint"], 'LibraryRecord') !== false):
+            $label = 'Library record';    
+           
+        endif;
+        
+        if(isset($args['templates'][$label])):
+            $templateId = $args['templates'][$label];
+            $meta['o:resource_template'] = ["o:id" => $templateId];
+        endif;
 
         $meta["o:site"][] = 1;
 
         $meta['alamire:imported'][] = [
-            'property_id' => 259,
+            'property_id' => $args["alamireTerms"]['alamire:imported'],
             'type' => 'literal',
             'is_public' => false,
             '@value' => date("dmY"),
@@ -574,7 +734,10 @@ class Harvest extends AbstractJob
             if($localName == "pid"):
                 $texts = str_replace("#","",$texts);   
             endif;    
-            if($localName == "relatedComposition"):                
+            if($localName == "cantusID"):
+                $texts = str_replace("ci-","",$texts);   
+            endif;  
+            if($localName == "relatedComposition" || $localName == "interstitialInfo" || $localName == "translation"):                
                 $texts= array($texts.'');
             else:
                 $texts = explode('||',$texts);

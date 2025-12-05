@@ -4,6 +4,12 @@ namespace Reference;
 
 return [
     'entity_manager' => [
+        'mapping_classes_paths' => [
+            dirname(__DIR__) . '/src/Entity',
+        ],
+        'proxy_paths' => [
+            dirname(__DIR__) . '/data/doctrine-proxies',
+        ],
         'functions' => [
             'string' => [
                 'any_value' => \DoctrineExtensions\Query\Mysql\AnyValue::class,
@@ -35,6 +41,7 @@ return [
         'invokables' => [
             Form\Element\DoubleArrayTextarea::class => Form\Element\DoubleArrayTextarea::class,
             Form\Element\OptionalMultiCheckbox::class => Form\Element\OptionalMultiCheckbox::class,
+            Form\SettingsFieldset::class => Form\SettingsFieldset::class,
             Form\SiteSettingsFieldset::class => Form\SiteSettingsFieldset::class,
             Form\ReferenceFieldset::class => Form\ReferenceFieldset::class,
             Form\ReferenceIndexFieldset::class => Form\ReferenceIndexFieldset::class,
@@ -55,6 +62,7 @@ return [
     ],
     'controller_plugins' => [
         'factories' => [
+            'currentReferenceMetadata' => Service\ControllerPlugin\CurrentReferenceMetadataFactory::class,
             'references' => Service\ControllerPlugin\ReferencesFactory::class,
             'referenceTree' => Service\ControllerPlugin\ReferenceTreeFactory::class,
         ],
@@ -153,7 +161,9 @@ return [
         'block_settings' => [
             'reference' => [
                 'args' => [
-                    'term' => 'dcterms:subject',
+                    'fields' => [
+                        'dcterms:subject',
+                    ],
                     'type' => 'properties',
                     'resource_name' => 'items',
                     'order' => ['alphabetic' => 'ASC'],
@@ -161,9 +171,10 @@ return [
                     'languages' => [],
                 ],
                 'options' => [
+                    'heading' => 'Subjects', // @translate
+                    'by_initial' => false,
                     'link_to_single' => true,
                     'custom_url' => false,
-                    'heading' => 'Subjects', // @translate
                     'skiplinks' => true,
                     'headings' => true,
                     'total' => true,
@@ -174,7 +185,9 @@ return [
             ],
             'referenceIndex' => [
                 'args' => [
-                    'terms' => ['dcterms:subject'],
+                    'fields' => [
+                        'dcterms:subject',
+                    ],
                     'type' => 'properties',
                     'resource_name' => 'items',
                     'order' => ['alphabetic' => 'ASC'],
@@ -189,7 +202,9 @@ return [
             ],
             'referenceTree' => [
                 'heading' => 'Tree of subjects', // @translate
-                'term' => 'dcterms:subject',
+                'fields' => [
+                    'dcterms:subject',
+                ],
                 'tree' => [],
                 'resource_name' => 'items',
                 'query' => [],

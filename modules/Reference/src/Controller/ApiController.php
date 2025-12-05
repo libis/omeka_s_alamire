@@ -42,26 +42,58 @@ class ApiController extends \Omeka\Controller\ApiController
     public function getList()
     {
         $query = $this->cleanQuery();
+
+        // Field may be an array.
+        // Empty string field means meta results.
+        $field = $query['metadata'] ?? [];
+        if (is_array($field)) {
+            $fields = $field;
+        } else {
+            $fields = array_unique(array_filter(array_map('trim', explode(',', $field))));
+            $fields = array_combine($fields, $fields);
+        }
+
+        unset($query['metadata']);
+
         $resourceName = $this->params('resource');
         if ($resourceName) {
             $query['resource_name'] = $resourceName;
         }
 
-        // Field may be an array.
-        // Empty string field means meta results.
-        $field = $query['metadata'] ?? [];
-        $fields = is_array($field) ? $field : [$field];
-        $fields = array_unique($fields);
-
-        // Either "field" or "text" is required.
-        if (empty($fields)) {
-            return new ApiJsonModel([], $this->getViewOptions());
-        }
-        unset($query['metadata']);
-
         $options = $query;
-        $query = $options['query'] ?? [];
-        unset($options['query']);
+        if (array_key_exists('query', $options)) {
+            $query = is_array($options['query']) ? $options['query'] : ['text' => $options['query']];
+        }
+
+        if (isset($options['option']) && is_array($options['option'])) {
+            $options = $options['option'];
+        }
+
+        unset(
+            $query['query'],
+            $query['option'],
+            $options['query'],
+            $options['option']
+        );
+
+        // Text is full text, but full text doesn't work via api.
+        if (array_key_exists('text', $query) && strlen($query['text'])) {
+            $query['property'][] = [
+                'joiner' => 'and',
+                'property' => '',
+                'type' => 'in',
+                'text' => $query['text'],
+            ];
+        }
+        unset(
+            $query['text'],
+            $query['per_page'],
+            $query['page'],
+            $query['sort_by'],
+            $query['sort_order'],
+            $query['offset'],
+            $query['limit']
+        );
 
         $result = $this->references($fields, $query, $options)->list();
         return new ApiJsonModel($result, $this->getViewOptions());
@@ -138,10 +170,9 @@ class ApiController extends \Omeka\Controller\ApiController
         if (empty($query['site_id']) && !empty($query['site_slug'])) {
             $siteSlug = $query['site_slug'];
             if ($siteSlug) {
-                $api = $this->api();
-                $siteId = $api->searchOne('sites', ['slug' => $siteSlug], ['initialize' => false, 'returnScalar' => 'id'])->getContent();
-                if ($siteId) {
-                    $query['site_id'] = $siteId;
+                try {
+                    $query['site_id'] = $this->api->read('sites', ['slug' => $siteSlug], [], ['initialize' => false, 'finalize' => false])->getContent()->getId();
+                } catch (\Exception $e) {
                 }
             }
         }

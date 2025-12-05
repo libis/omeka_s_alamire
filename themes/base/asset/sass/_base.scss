@@ -796,6 +796,8 @@ h5.title{
 .trans-text{
   max-height: 300px;
   overflow: auto;
+
+  p{margin-bottom:0.5rem;}
 }
 
 .inventory-wrapper{  
@@ -1494,6 +1496,15 @@ footer.footer{
       justify-content: flex-start;
     }
   }
+}
+
+.read-toggle{
+  display: block;
+  border-top: 1px solid #dbdbdb;
+  padding-bottom:1rem;
+  padding-top:0.2rem;
+  font-weight: bold;
+  font-size: 0.9rem;
 }
 
 @media (hover: none) {

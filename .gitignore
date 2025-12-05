@@ -1,5 +1,7 @@
 /config/database.ini
 /files
 /logs
+/themesOLD
+/modulesOLD
 /node_modules
 /themes/base/node_modules

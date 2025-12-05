@@ -14,9 +14,9 @@ class SetsForm extends Form
         $endpoint = $this->getOption('endpoint');
         $formats = $this->getOption('formats');
         $sets = $this->getOption('sets') ?: [];
-        $harvestAllRecords = $this->getOption('harvest_all_records');
         $from = $this->getOption('from');
         $until = $this->getOption('until');
+        $harvestAllRecords = $this->getOption('harvest_all_records');
         $predefinedSets = $this->getOption('predefined_sets');
         $favoriteFormat = $this->getOption('favorite_format');
 
@@ -46,7 +46,6 @@ class SetsForm extends Form
                 ],
             ])
             ->add([
-
 
 
                 'type' => Element\Hidden::class,

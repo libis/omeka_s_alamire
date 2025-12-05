@@ -4,7 +4,7 @@ namespace Reference\Form;
 
 use Laminas\Form\Element;
 use Laminas\Form\Fieldset;
-use Omeka\Form\Element\PropertySelect;
+use Omeka\Form\Element as OmekaElement;
 
 class ReferenceTreeFieldset extends Fieldset
 {
@@ -16,25 +16,25 @@ class ReferenceTreeFieldset extends Fieldset
                 'type' => Element\Text::class,
                 'options' => [
                     'label' => 'Block title', // @translate
-                    'info' => 'Heading for the block, if any. The placeholder {total} can be used.', // @translate
                 ],
                 'attributes' => [
                     'id' => 'reference-tree-heading',
                 ],
             ])
             ->add([
-                'name' => 'o:block[__blockIndex__][o:data][term]',
-                'type' => PropertySelect::class,
+                'name' => 'o:block[__blockIndex__][o:data][fields]',
+                'type' => OmekaElement\PropertySelect::class,
                 'options' => [
-                    'label' => 'Property', // @translate
+                    'label' => 'Properties', // @translate
                     'term_as_value' => true,
                     'empty_option' => '',
                 ],
                 'attributes' => [
-                    'id' => 'reference-tree-term',
+                    'id' => 'reference-tree-fields',
                     'required' => true,
+                    'multiple' => true,
                     'class' => 'chosen-select',
-                    'data-placeholder' => 'Select a property…', // @translate
+                    'data-placeholder' => 'Select properties…', // @translate
                 ],
             ])
             ->add([
@@ -87,15 +87,15 @@ Asia
             ])
             ->add([
                 'name' => 'o:block[__blockIndex__][o:data][query]',
-                'type' => Element\Text::class,
+                'type' => OmekaElement\Query::class,
                 'options' => [
-                    'label' => 'Query to limit resources', // @translate
-                    'info' => 'Limit the reference to a particular subset of resources, for example a site, via an advanced search query.', // @translate
-                    'documentation' => 'https://omeka.org/s/docs/user-manual/sites/site_pages/#browse-preview',
+                    'label' => 'Search pool query', // @translate
+                    'info' => 'Restrict references to a particular subset of resources, for example a site.', // @translate
+                    'query_resource_type' => null,
+                    'query_partial_excludelist' => ['common/advanced-search/site'],
                 ],
                 'attributes' => [
                     'id' => 'reference-tree-query',
-                    'class' => 'chosen-select',
                 ],
             ])
             ->add([
@@ -114,6 +114,7 @@ Asia
                 'attributes' => [
                     'id' => 'reference-tree-query_type',
                     'class' => 'chosen-select',
+                    'value' => 'eq',
                 ],
             ])
             ->add([

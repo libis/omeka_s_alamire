@@ -159,6 +159,7 @@ class IndexController extends AbstractActionController
         $post = $this->params()->fromPost();
         $from =  $post['from'];
         $until =  $post['until'];
+
         $filters = [];
         $filters['whitelist'] = $post['filters_whitelist'];
         $filters['blacklist'] = $post['filters_blacklist'];
@@ -261,9 +262,9 @@ class IndexController extends AbstractActionController
                 'endpoint' => $endpoint,
                 'set_spec' => $setSpec,
                 'item_set_id' => $set['item_set_id'],
-                'has_err' => 0,
                 'from' => $from,
                 'until' => $until,
+                'has_err' => 0,
                 'metadata_prefix' => $set['metadata_prefix'],
                 'resource_type' => 'items',
                 'filters' => $filters,

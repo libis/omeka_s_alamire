@@ -63,18 +63,16 @@ class ReferenceTree extends AbstractBlockLayout
             $data['resource_name'] = 'items';
         }
         $query = [];
-        parse_str((string) $data['query'], $query);
+        parse_str(trim(ltrim((string) $data['query'], "? \t\n\r\0\x0B\u{a0}\u{202f}")), $query);
         $data['query'] = $query;
 
         // Normalize options.
-        $data['link_to_single'] = (bool) $data['link_to_single'] ?? true;
+        $data['link_to_single'] = (bool) ($data['link_to_single'] ?? true);
         $data['custom_url'] = (bool) $data['custom_url'];
         $data['total'] = (bool) $data['total'];
         $data['branch'] = (bool) $data['branch'];
         $data['expanded'] = (bool) $data['expanded'];
-        if (empty($data['query_type'])) {
-            $data['query_type'] = 'eq';
-        }
+        $data['query_type'] = $data['query_type'] ?? 'eq';
 
         $block->setData($data);
     }
@@ -95,7 +93,7 @@ class ReferenceTree extends AbstractBlockLayout
             $data = $block->data() + $defaultSettings;
             if (is_array($data['query'])) {
                 $data['query'] = urldecode(
-                    http_build_query($data['query'], "\n", '&', PHP_QUERY_RFC3986)
+                    http_build_query($data['query'], '', '&', PHP_QUERY_RFC3986)
                 );
             }
         } else {
@@ -111,6 +109,8 @@ class ReferenceTree extends AbstractBlockLayout
         }
 
         $fieldset = $formElementManager->get($blockFieldset);
+        $fieldset->get('o:block[__blockIndex__][o:data][query]')
+            ->setOption('query_resource_type', $data['resource_type'] ?? 'items');
         $fieldset->populateValues($dataForm);
 
         return $view->formCollection($fieldset);
@@ -118,18 +118,23 @@ class ReferenceTree extends AbstractBlockLayout
 
     public function prepareRender(PhpRenderer $view): void
     {
-        $view->headLink()->appendStylesheet($view->assetUrl('vendor/jquery-simplefolders/main.css', 'Reference'));
-        $view->headScript()->appendFile($view->assetUrl('vendor/jquery-simplefolders/main.js', 'Reference'), 'text/javascript', ['defer' => 'defer']);
+        $assetUrl = $view->plugin('assetUrl');
+        $view->headLink()->appendStylesheet($assetUrl('vendor/jquery-simplefolders/main.css', 'Reference'));
+        $view->headScript()->appendFile($assetUrl('vendor/jquery-simplefolders/main.js', 'Reference'), 'text/javascript', ['defer' => 'defer']);
     }
 
     public function render(PhpRenderer $view, SitePageBlockRepresentation $block)
     {
-        $options = $block->data() + ['heading' => '', 'tree' => [], 'query' => []];
+        $options = $block->data() + [
+            'heading' => '',
+            'tree' => [],
+            'query' => [],
+        ];
 
         $heading = $options['heading'];
         $tree = $options['tree'];
         $query = $options['query'];
-        unset($options['heading'], $options['tree'], $options['query']);
+        unset($options['heading'], $options['tree']);
 
         $template = $options['template'] ?? self::PARTIAL_NAME;
         unset($options['template']);
@@ -143,7 +148,7 @@ class ReferenceTree extends AbstractBlockLayout
             'options' => $options,
         ];
 
-        return $view->resolver($template)
+        return $template !== self::PARTIAL_NAME && $view->resolver($template)
             ? $view->partial($template, $vars)
             : $view->partial(self::PARTIAL_NAME, $vars);
     }

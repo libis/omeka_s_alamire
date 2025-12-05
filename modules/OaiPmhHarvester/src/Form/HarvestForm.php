@@ -50,8 +50,7 @@ class HarvestForm extends Form
 humanities:serie-beta',
                 ],
             ])
-            ->add([
-
+             ->add([
 
 
                 'name' => 'from',

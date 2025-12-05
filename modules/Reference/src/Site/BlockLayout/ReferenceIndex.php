@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 namespace Reference\Site\BlockLayout;
 
 use Laminas\View\Renderer\PhpRenderer;
@@ -41,7 +42,7 @@ class ReferenceIndex extends AbstractBlockLayout
         $data = $block->getData();
 
         // Check if data are already formatted, checking the main value.
-        if (!empty($data['args']['terms'])) {
+        if (!empty($data['args']['fields'])) {
             return;
         }
 
@@ -54,14 +55,14 @@ class ReferenceIndex extends AbstractBlockLayout
         unset($data['args']['properties']);
         unset($data['args']['resource_classes']);
 
-        $data['args']['terms'] = [];
+        $data['args']['fields'] = [];
         if (!empty($properties)) {
-            $data['args']['terms'] = $properties;
+            $data['args']['fields'] = $properties;
         }
         if (!empty($resourceClasses)) {
-            $data['args']['terms'] = array_merge($data['args']['terms'], $resourceClasses);
+            $data['args']['fields'] = array_merge($data['args']['fields'], $resourceClasses);
         }
-        if (empty($data['args']['terms'])) {
+        if (empty($data['args']['fields'])) {
             $errorStore->addError('properties', 'To create a list of references, there must be properties or resource classes.'); // @translate
             return;
         }
@@ -106,7 +107,7 @@ class ReferenceIndex extends AbstractBlockLayout
             $data = $block->data() + $defaultSettings;
             if (is_array($data['args']['query'])) {
                 $data['args']['query'] = urldecode(
-                    http_build_query($data['args']['query'], "\n", '&', PHP_QUERY_RFC3986)
+                    http_build_query($data['args']['query'], '', '&', PHP_QUERY_RFC3986)
                 );
             }
         } else {
@@ -114,14 +115,14 @@ class ReferenceIndex extends AbstractBlockLayout
             $data['args']['query'] = 'site_id=' . $site->id();
         }
 
-        foreach ($data['args']['terms'] as $term) {
+        foreach ($data['args']['fields'] as $term) {
             if ($this->isResourceClass($term)) {
                 $data['args']['resource_classes'][] = $term;
             } else {
                 $data['args']['properties'][] = $term;
             }
         }
-        unset($data['args']['terms']);
+        unset($data['args']['fields']);
 
         $data['args']['order'] = (key($data['args']['order']) === 'alphabetic' ? 'alphabetic' : 'total') . ' ' . reset($data['args']['order']);
 
@@ -152,10 +153,12 @@ class ReferenceIndex extends AbstractBlockLayout
 
         // TODO Update forms and saved params.
         // Use new format for references.
-        $metadata = $args['terms'];
+        $fields = $args['fields'];
         $query = $args['query'];
-        unset($args['terms']);
-        unset($args['query']);
+        unset(
+            $args['fields'],
+            $args['query']
+        );
         $options = $options + $args;
 
         $languages = @$options['languages'];
@@ -173,12 +176,12 @@ class ReferenceIndex extends AbstractBlockLayout
 
         $vars = [
             'block' => $block,
-            'metadata' => $metadata,
+            'fields' => $fields,
             'query' => $query,
             'options' => $options,
         ];
 
-        return $view->resolver($template)
+        return $template !== self::PARTIAL_NAME && $view->resolver($template)
             ? $view->partial($template, $vars)
             : $view->partial(self::PARTIAL_NAME, $vars);
     }
@@ -186,14 +189,12 @@ class ReferenceIndex extends AbstractBlockLayout
     protected function isResourceClass($term)
     {
         static $resourceClasses;
-
         if (is_null($resourceClasses)) {
             $resourceClasses = [];
             foreach ($this->api->search('resource_classes')->getContent() as $resourceClass) {
-                $resourceClasses[$resourceClass->term()] = $resourceClass;
+                $resourceClasses[$resourceClass->term()] = true;
             }
         }
-
         return isset($resourceClasses[$term]);
     }
 }
