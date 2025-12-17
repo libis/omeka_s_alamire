@@ -482,6 +482,7 @@ $pdf= "";
                     $related_composition = [];
                     foreach ($linked as $link):
                       $link = $link->resource();
+                      echo $link->value("alamire:identifier")."<br>";
                       if (!$link) continue;
                       $related_composition[$link->value("alamire:identifier") . ''] = $link;
                     endforeach;
@@ -518,7 +519,7 @@ $pdf= "";
                                 $comp_record = null;
                             }
 
-                            $comp_record = $related_composition[$comp["id"]];
+                            //$comp_record = $related_composition[$comp["id"]];
                             ?>
                             <tr id="<?php echo $parent_id; ?>">
                             <?php elseif (sizeof($structure) > 1): ?>
@@ -642,6 +643,7 @@ $pdf= "";
         $ints = $item->value("alamire:interstitialInfo", ['all' => true]);
         foreach ($ints as $int):
 
+          
           $expl = explode('$$', $int . '');
 
           //if has edition
@@ -654,13 +656,14 @@ $pdf= "";
               "link" => trim($expl[5]),
               'pu' => trim($expl[1])
             ];
-          else:
+          else:           
+            
             if(sizeof($expl) < 5) continue;
             $appears[trim($expl[1])] = [
               'title' => trim($expl[1]),
               "fol" => trim($expl[3]),
               "part" =>  trim($expl[2]),
-              "link" => trim($expl[4]),
+              "link" => trim($expl[5]), //link should be in here
               'pu' => trim($expl[1])
             ];
           endif;
@@ -695,8 +698,20 @@ $pdf= "";
                             $url = str_replace(" ", "", $url);
                             ?>
                             <a class="resource-link" href="<?php echo $url; ?>"><?php echo $pu->displayTitle(); ?></a>
-                            <?php echo $in["fol"] ? "<span style='font-style:italic;'>fol. " . $in["fol"] . "</span>" : ""; ?>
+                            <?php if ($auth && $in["link"]): ?>
+                              <a class="resource-link" target="_blank" href="<?php echo $in["link"]; ?>" style="font-style:italic;margin-left:5px;">
+                            <?php endif; ?>
+                            <?php if ($in["fol"]):
+                              if(str_contains($in["fol"],"fol")):
+                                echo $in["fol"]? "<span style='font-style:italic;'>" . $in["fol"] . "</span>" : "";
+                              else:
+                                echo $in["fol"]? "<span style='font-style:italic;'>fol. " . $in["fol"] . "</span>" : "";  
+                              endif;                                
+                            endif;?>  
                             <?php echo $in["part"] ? "(" . $in["part"] . ")" : ""; ?>
+                            <?php if ($auth && $in["link"]): ?>
+                              </a>
+                            <?php endif; ?>
                           <?php else: ?>
                             <?php echo $in["pu"]; ?>
                           <?php endif; ?>
