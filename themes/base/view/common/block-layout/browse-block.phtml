@@ -49,10 +49,9 @@ $translate = $this->plugin('translate');
             ?>
             <a href="<?php echo $url;?>">
             <div class="card equal-height">
-              <div class="card-bg-img-2"
-                style="background:url(<?php echo  $mediaurl;?>) no-repeat center 20%;background-size: cover;"
-                >
-              </div>
+              <div class="">
+                <img src="<?php echo $mediaurl;?>" alt="<?php $resource->value('alamire:title');?>" style="width:100%; height:auto;">
+                        </div>
               <header class="card-header" style="margin-bottom:0">
                 <p class="is-text" style="padding:0.5rem 0">
                     <a href="<?php echo $url;?>"><?php echo $resource->value('alamire:title');?></a>
