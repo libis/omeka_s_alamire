@@ -95,6 +95,9 @@ $pdf= "";
         // If the URL might come with HTML-escaped ampersands (&amp;), unescape first:
         if(str_contains($watermarkURI, "representation")):
           $manifestUrl = str_replace("representation", "manifest", $watermarkURI);
+          if($manifestUrl):
+            $manifestUrl = $manifestUrl."?manifest=".$manifestUrl;  
+          endif;
         endif;
       ?>  
       <?php if($manifestUrl): ?>
