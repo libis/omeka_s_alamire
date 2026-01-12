@@ -295,6 +295,11 @@ endif;
             endif;
             $values['alamire:furtherBibliography']['values'] = "";
           ?>   
+          <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscript'):
+            //library record
+            $relatedManuscript = explode('$$',$value->asHtml());
+            echo '<a target="_blank" href="'.$relatedManuscript[0].'">'.$relatedManuscript[2].'</a>';
+            ?>  
           <?php elseif($propertyData['property']->term() == 'alamire:relatedManuscriptID'):
             $id = strtolower($value->asHtml());
             echo '<a target="_blank" href="/item/'.$id.'">'.$value->asHtml().'</a>';

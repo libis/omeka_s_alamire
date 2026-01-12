@@ -8,6 +8,7 @@ services:
     volumes:
       - ./files/:/var/www/html/files/
       - ./modules/OaiPmhHarvester/:/var/www/html/modules/OaiPmhHarvester/
+      - ./modules/BrowseBlock/:/var/www/html/modules/BrowseBlock/
       - ./themes/:/var/www/html/themes/
       - ./config/:/var/www/html/config/
     restart: "no"

@@ -62,9 +62,9 @@ $translate = $this->plugin('translate');
       </div>
       <?php endforeach; ?>
     </div>
-    <?php if ($this->linkText):?>
+    <?php if ($this->linkText && $this->linkUrl):?>
       <div class="has-text-centered">
-        <a href="<?php echo '/'.$type.'?q='?>" class="button is-primary">
+        <a href="<?php echo $this->linkUrl;?>" class="button is-primary">
           <?php echo $this->linkText;?>
         </a>
       </div>

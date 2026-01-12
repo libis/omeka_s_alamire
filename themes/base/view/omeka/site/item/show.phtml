@@ -28,24 +28,33 @@ $pdf= "";
 <?php if (!$embedMedia && $itemMedia): ?>
   <div class="container thumbnails">
     <div class="has-text-centered">
+      <?php $i=0;?>
       <?php foreach ($itemMedia as $med): ?>
         <?php if($med->mediaType() == "image/jpeg"):?>
           <?php $url = str_replace('http:', '', $med->thumbnailUrl('large')); ?>
           <?php if ($med->value("dcterms:description") && $auth): ?>
             <?php if (str_contains($med->value('alamire:description') . '', "representation")): ?>
               <?php $repr = str_replace("lib.is/", "data.idemdatabase.org/", $med->value('dcterms:description')); ?>
-              <a target="_blank" href="<?php echo $repr; ?>">
+                <a target="_blank" href="<?php echo $repr; ?>">
               <?php else: ?>
                 <a target="_blank" href="<?php echo $med->value('dcterms:description'); ?>">
                 <?php endif; ?>
-              <?php endif; ?>
+            <?php endif; ?>
+
+            <?php 
+            //don't show if first media of a Library records except when there is only one image
+            if($type == "Library record" && $i==0 && count($itemMedia)>2 ):
+              //do nothing
+            else:?>
               <img src="<?php echo $url; ?>">
-              <?php if ($med->value("dcterms:description") && $auth): ?>
-                </a>
-              <?php endif; ?>
+            <?php endif;?>  
+            <?php if ($med->value("dcterms:description") && $auth): ?>
+              </a>
+            <?php endif; ?>
           <?php elseif($med->mediaType() == "application/pdf"):?>
             <?php $pdf=$med->originalUrl();?>
           <?php endif;?>      
+          <?php $i++;?>
         <?php endforeach; ?>
     </div>
   </div>
@@ -126,7 +135,7 @@ $pdf= "";
   <div class="columns">
     <div class="column  is-12">
       <div style="padding:1.5rem 0">        
-        <a title="download full pdf" class="button is-primary is-small" download="<?= $download_name ?>" href="<?php echo $pdf;?>">Download full pdf</a>
+        <a title="download full pdf" target="_blank" class="button is-primary is-small" href="<?php echo $pdf;?>">Download full pdf</a>
       </div>
       <div>
         <object  

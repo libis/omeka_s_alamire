@@ -42,7 +42,10 @@ class BrowseBlock extends AbstractBlockLayout
         ]);
         $form->add([
             'name' => 'o:block[__blockIndex__][o:data][text]',
-            'type' => Element\Text::class,
+            'type' => Element\Textarea::class,
+            'attributes' => [
+                 'class' => 'block-html full wysiwyg',
+            ],    
             'options' => [
                 'label' => 'Description', // @translate
                 'info' => 'Description that appears above the items'
@@ -98,6 +101,15 @@ class BrowseBlock extends AbstractBlockLayout
             ],
         ]);
 
+        $form->add([
+            'name' => 'o:block[__blockIndex__][o:data][link-url]',
+            'type' => Element\Text::class,
+            'options' => [
+                'label' => 'Link url', // @translate
+                'info' => 'Url for the link button', // @translate
+            ],
+        ]);
+
         $form->setData([
             'o:block[__blockIndex__][o:data][resource_type]' => $data['resource_type'],
             'o:block[__blockIndex__][o:data][query]' => $data['query'],
@@ -106,6 +118,7 @@ class BrowseBlock extends AbstractBlockLayout
             'o:block[__blockIndex__][o:data][heading]' => $data['heading'],
             'o:block[__blockIndex__][o:data][limit]' => $data['limit'],
             'o:block[__blockIndex__][o:data][link-text]' => $data['link-text'],
+            'o:block[__blockIndex__][o:data][link-url]' => $data['link-url'],
         ]);
 
         return $view->formCollection($form);
@@ -148,6 +161,7 @@ class BrowseBlock extends AbstractBlockLayout
             'resources' => $resources,
             'heading' => $block->dataValue('heading'),
             'linkText' => $block->dataValue('link-text'),
+            'linkUrl' => $block->dataValue('link-url'),
             'query' => $originalQuery,
         ]);
     }
