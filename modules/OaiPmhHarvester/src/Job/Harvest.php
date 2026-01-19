@@ -611,7 +611,7 @@ class Harvest extends AbstractJob
                 }
 
             //add resources
-            if(strpos($args["endpoint"], 'MPComposition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
+            if(strpos($args["endpoint"], 'Composition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
                 
                 
                 //create links to production units in compositions
@@ -649,12 +649,13 @@ class Harvest extends AbstractJob
         endforeach;*/
         foreach ($temp_img as $image) {     
             $imageUrl = $image;
-            if(str_contains($imageUrl.'',"pdf") && isset($elementTexts["alamire:filename"])):
+            $filename = $imageUrl; 
+            /*if(str_contains($imageUrl.'',"pdf") && isset($elementTexts["alamire:filename"])):
                 /*$filename = $elementTexts["alamire:filename"][0]["@value"];
-                $filename = str_replace("jpg","pdf",$filename);*/
+                $filename = str_replace("jpg","pdf",$filename);
             else:
                 $filename = $imageUrl;    
-            endif;    
+            endif;*/
             $imageUrl = explode(" $$ ",$imageUrl.'');
             $viewer = '';
             if(isset($imageUrl[1])):
