@@ -644,14 +644,14 @@ class Harvest extends AbstractJob
         foreach($elementTexts['alamire:original'] as $img):
            $temp_img[] = $img["@value"];
         endforeach;   
-        foreach($elementTexts['alamire:download'] as $img):
+        /*foreach($elementTexts['alamire:download'] as $img):
            $temp_img[] = $img["@value"];
-        endforeach;  
+        endforeach;*/
         foreach ($temp_img as $image) {     
             $imageUrl = $image;
             if(str_contains($imageUrl.'',"pdf") && isset($elementTexts["alamire:filename"])):
-                $filename = $elementTexts["alamire:filename"][0]["@value"];
-                $filename = str_replace("jpg","pdf",$filename);
+                /*$filename = $elementTexts["alamire:filename"][0]["@value"];
+                $filename = str_replace("jpg","pdf",$filename);*/
             else:
                 $filename = $imageUrl;    
             endif;    

@@ -189,15 +189,16 @@ $pdf= "";
           </div>
         <?php endif; ?>
         <?php echo $item->displayValues(); ?>
-        <?php if ($item->value('alamire:relatedManuscript')): ?>
+        <?php if ($item->value('alamire:relatedManuscript') && $type == 'Library record'): ?>
           <?php 
             $relatedManuscript = explode('$$',$item->value('alamire:relatedManuscript')->asHtml());  
           ?>
           <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;margin-right:2rem;" href="<?php echo $relatedManuscript[0]; ?>">
             <span>VIEW SOURCE</span>
           </a>
-        </div>
+        
         <?php endif;?>
+        </div>
         <?php if ($type == "Chant"): ?>
           <div class="column is-5">
             <h4 class="has-text-weight-semibold is-6 section-head">Folio: <?php echo $item->value('alamire:folio'); ?></h4>
