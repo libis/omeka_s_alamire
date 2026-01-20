@@ -69,8 +69,9 @@ class BrowseBlock extends AbstractBlockLayout
             'options' => [
                 'label' => 'Number of columns', // @translate
                 'value_options' => [
-                    'is-half' => '2',  // @translate
-                    'is-one-third' => '3',  // @translate
+                    'is-6' => '2',  // @translate
+                    'is-4' => '3',  // @translate
+                    'is-3' => '4',
                 ],
             ],
         ]);
