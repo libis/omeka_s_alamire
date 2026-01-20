@@ -532,6 +532,7 @@ $pdf= "";
                       $i = 0; ?>
                       <?php foreach ($pu->value("alamire:relatedCompositionFull", ['all' => true]) as $comp):
                         $comp = explode("$$", $comp->asHtml());
+                        
                         $comp = [
                           "id" => trim($comp[0]),
                           "structure" => trim($comp[1]),
@@ -539,8 +540,10 @@ $pdf= "";
                           "folio" => trim($comp[3]),
                           "page" => trim($comp[4]),
                           "link" => trim($comp[5]),
-                          "rank" => trim($comp[6])
+                          "rank" => trim($comp[6]),
+                          "part" => trim($comp[7])
                         ];
+                        
                       ?>
                         <?php $structure = explode(";", $comp['structure']); ?>
                         <?php if ($comp): ?>
@@ -568,12 +571,17 @@ $pdf= "";
                               <?php endif; ?>
                             </td>
                             <td>
+                              <?php 
+                                if($comp["part"]):
+                                    $comp["title"] = "<span style='color:#a6361f'>".$comp["part"]."</span> ".$comp["title"];
+                                endif
+                              ?>
                               <?php if ($comp["structure"]): ?>
                                 <?php if (sizeof($structure) > 1): ?>
                                   <span style="margin-left:<?php echo (1.2 * sizeof($structure)) ?>rem;"><?php echo $comp["title"]; ?></span>
-                                <?php elseif ($comp_record): ?>
+                                <?php elseif ($comp_record): ?>                                  
                                   <a href="<?php echo $comp_record->url(); ?>"><?php echo $comp["title"]; ?></a>
-                                <?php else: ?>
+                                <?php else: ?>                                  
                                   <?php echo $comp["title"]; ?>
                                 <?php endif; ?>
                               <?php endif; ?>

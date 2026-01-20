@@ -93,7 +93,7 @@ class Custom extends AbstractHelper
             $composer = implode("; ", $sort_cites);
 
             if(isset($irel[9])):
-                $irel[3] = "<span style='#a6361f'>".$irel[9]."</span> ".$irel[3];
+                $irel[3] = "<span style='color:#a6361f'>".$irel[9]."</span> ".$irel[3];
             endif;    
             if($depth > 0):
                 echo  "<td>" . $seq . $composer . '</td><td><span style="margin-left: ' . ($depth * 1.2) . 'rem;">' . $irel[3] . '</span></td>';
