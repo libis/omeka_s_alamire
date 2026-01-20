@@ -148,10 +148,12 @@ $pdf= "";
       </div>              
     </div>
   </div>
-  <div class="icon-text" style="padding:0 0 1rem 0">
-    <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $item->value('alamire:publicationUrl')?>">
-    <span>PURCHASE PRINTED VERSION</span></a>
-  </div>  
+  <?php if($item->value('alamire:publicationUrl')):?>
+    <div class="icon-text" style="padding:0 0 1rem 0">
+      <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $item->value('alamire:publicationUrl')?>">
+      <span>PURCHASE PRINTED VERSION</span></a>
+    </div>  
+  <?php endif;?>
 <?php endif;?>  
 
 <div class="container metadata-container">
