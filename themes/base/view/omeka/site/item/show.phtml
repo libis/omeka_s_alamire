@@ -534,6 +534,11 @@ $pdf= "";
                       $i = 0; ?>
                       <?php foreach ($pu->value("alamire:relatedCompositionFull", ['all' => true]) as $comp):
                         $comp = explode("$$", $comp->asHtml());
+
+                        //don't use incomplete entries
+                        if(sizeof($comp) < 8){
+                          continue;
+                        }
                         
                         $comp = [
                           "id" => trim($comp[0]),
