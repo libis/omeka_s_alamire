@@ -35,27 +35,22 @@ $pdf= "";
           <?php if ($med->value("dcterms:description") && $auth): ?>
             <?php if (str_contains($med->value('alamire:description') . '', "representation")): ?>
               <?php $repr = str_replace("lib.is/", "data.idemdatabase.org/", $med->value('dcterms:description')); ?>
-                <a target="_blank" href="<?php echo $repr; ?>">
-              <?php else: ?>
-                <a target="_blank" href="<?php echo $med->value('dcterms:description'); ?>">
-                <?php endif; ?>
+              <a target="_blank" href="<?php echo $repr; ?>">
+            <?php else: ?>
+              <a target="_blank" href="<?php echo $med->value('dcterms:description'); ?>">
             <?php endif; ?>
+          <?php endif; ?>
 
-            <?php 
-            //don't show if first media of a Library records except when there is only one image
-            if($type == "Library record" && $i==0 && count($itemMedia)>2 ):
-              //do nothing
-            else:?>
-              <img src="<?php echo $url; ?>">
-            <?php endif;?>  
-            <?php if ($med->value("dcterms:description") && $auth): ?>
-              </a>
-            <?php endif; ?>
-          <?php elseif($med->mediaType() == "application/pdf"):?>
-            <?php $pdf=$med->originalUrl();?>
-          <?php endif;?>      
-          <?php $i++;?>
-        <?php endforeach; ?>
+          <img src="<?php echo $url; ?>">
+
+          <?php if ($med->value("dcterms:description") && $auth): ?>
+            </a>
+          <?php endif; ?>
+        <?php elseif($med->mediaType() == "application/pdf"):?>
+          <?php $pdf=$med->originalUrl();?>
+        <?php endif;?>      
+        <?php $i++;?>
+      <?php endforeach; ?>
     </div>
   </div>
 <?php endif; ?>
