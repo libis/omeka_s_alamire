@@ -186,11 +186,11 @@ $pdf= "";
           </div>
         <?php endif; ?>
         <?php echo $item->displayValues(); ?>
-        <?php if ($item->value('alamire:relatedManuscript') && $type == 'Library record'): ?>
+        <?php if ($item->value('alamire:sourceUrl') && $type == 'Library record'): ?>
           <?php 
-            $relatedManuscript = explode('$$',$item->value('alamire:relatedManuscript')->asHtml());  
+            $sourceUrl = explode('$$',$item->value('alamire:sourceUrl')->asHtml());  
           ?>
-          <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;margin-right:2rem;" href="<?php echo $relatedManuscript[0]; ?>">
+          <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;margin-right:2rem;" href="<?php echo $sourceUrl[0]; ?>">
             <span>VIEW SOURCE</span>
           </a>
         
