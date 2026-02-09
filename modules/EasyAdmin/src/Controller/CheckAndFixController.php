@@ -86,17 +86,21 @@ class CheckAndFixController extends AbstractActionController
             case 'files_hash_check':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\FileHash::class, $defaultParams);
                 break;
-            case 'files_dimension_check':
-            case 'files_dimension_fix':
-                $job = $dispatcher->dispatch(\EasyAdmin\Job\FileDimension::class, $defaultParams);
-                break;
             case 'files_media_type_check':
             case 'files_media_type_fix':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\FileMediaType::class, $defaultParams);
                 break;
+            case 'files_dimension_check':
+            case 'files_dimension_fix':
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\FileDimension::class, $defaultParams);
+                break;
             case 'media_position_check':
             case 'media_position_fix':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\MediaPosition::class, $defaultParams);
+                break;
+            case 'db_resource_incomplete_check':
+            case 'db_resource_incomplete_fix':
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbResourceIncomplete::class, $defaultParams);
                 break;
             case 'item_no_value':
             case 'item_no_value_fix':
@@ -109,6 +113,13 @@ class CheckAndFixController extends AbstractActionController
             case 'db_resource_title_check':
             case 'db_resource_title_fix':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\DbResourceTitle::class, $defaultParams);
+                break;
+            case 'db_item_primary_media_check':
+            case 'db_item_primary_media_fix':
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbItemPrimaryMedia::class, $defaultParams);
+            case 'db_value_annotation_template_check':
+            case 'db_value_annotation_template_fix':
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbValueAnnotationTemplate::class, $defaultParams);
                 break;
             case 'db_content_lock_check':
             case 'db_content_lock_clean':
@@ -127,6 +138,15 @@ class CheckAndFixController extends AbstractActionController
             case 'db_log_check':
             case 'db_log_clean':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\DbLog::class, $defaultParams + $params['database']['db_log']);
+                break;
+            case 'backup_install':
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\Backup::class, $defaultParams + $params['backup']['backup_install']);
+                break;
+            case 'cache_check':
+            case 'cache_fix':
+                // This is not a job, because it is instant.
+                $this->checkCache($params['cache']['cache_clear'], $process === 'cache_fix');
+                $job = null;
                 break;
             case 'db_fulltext_index':
                 $job = $dispatcher->dispatch(\Omeka\Job\IndexFulltextSearch::class);
@@ -147,39 +167,107 @@ class CheckAndFixController extends AbstractActionController
                 ]);
                 $eventManager->triggerEvent(new MvcEvent('easyadmin.job', null, $args));
                 $jobClass = $args['job'];
-                 if (!$jobClass) {
-                    $this->messenger()->addError(new PsrMessage(
+                 if ($jobClass) {
+                     $job = $dispatcher->dispatch($jobClass, $args['args']);
+                 } else {
+                     $job = null;
+                     $this->messenger()->addError(new PsrMessage(
                         'Unknown process "{process}"', // @translate
                         ['process' => $process]
                     ));
-                    return $view;
                 }
-                $job = $dispatcher->dispatch($jobClass, $args['args']);
                 break;
         }
 
-        $urlHelper = $this->url();
-        $message = new PsrMessage(
-            'Processing checks in background (job {link_job}#{job_id}{ae}, {link_log}logs{ae}).', // @translate
-            [
-                'link_job' => sprintf(
-                    '<a href="%s">',
-                    htmlspecialchars($urlHelper->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
-                ),
-                'job_id' => $job->getId(),
-                'ae' => '</a>',
-                'link_log' => sprintf(
-                    '<a href="%s">',
-                    htmlspecialchars($urlHelper->fromRoute('admin/log/default', [], ['query' => ['job_id' => $job->getId()]]))
-                )
-            ]
-        );
-        $message->setEscapeHtml(false);
-        $this->messenger()->addSuccess($message);
+        if ($job) {
+            $urlPlugin = $this->url();
+            $message = new PsrMessage(
+                'Processing checks in background (job {link_job}#{job_id}{ae}, {link_log}logs{ae}).', // @translate
+                [
+                    'link_job' => sprintf(
+                        '<a href="%s">',
+                        htmlspecialchars($urlPlugin->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
+                    ),
+                    'job_id' => $job->getId(),
+                    'ae' => '</a>',
+                    'link_log' => sprintf(
+                        '<a href="%s">',
+                        htmlspecialchars($urlPlugin->fromRoute('admin/log/default', [], ['query' => ['job_id' => $job->getId()]]))
+                    )
+                ]
+            );
+            $message->setEscapeHtml(false);
+            $this->messenger()->addSuccess($message);
+        }
 
         // Reset the form after a submission.
         $form = $this->getForm(\EasyAdmin\Form\CheckAndFixForm::class);
         return $view
             ->setVariable('form', $form);
+    }
+
+    protected function checkCache(array $options, bool $fix): void
+    {
+        /** @var \Omeka\Mvc\Controller\Plugin\Messenger $messenger  */
+        $messenger = $this->messenger();
+        if (empty($options['type'])) {
+            $messenger->addWarning('No type of cache selected.'); // @translate
+            return;
+        }
+
+        if (in_array('code', $options['type'])) {
+            $hasCache = function_exists('opcache_reset');
+            if ($hasCache) {
+                $result = @opcache_get_status(false);
+                if (!$result) {
+                    $messenger->addWarning('An issue occurred when checking status of "opcache" or the status is not enabled.'); // @translate
+                } else {
+                    /*
+                    $resultConfig = @opcache_get_configuration();
+                    $msg = new PsrMessage(nl2br(htmlspecialchars(json_encode($resultConfig, 448), ENT_NOQUOTES | ENT_SUBSTITUTE | ENT_XHTML)));
+                    $msg->setEscapeHtml(false);
+                    $messenger->addSuccess($msg);
+                    */
+                    $msg = new PsrMessage(nl2br(htmlspecialchars(json_encode($result, 448), ENT_NOQUOTES | ENT_SUBSTITUTE | ENT_XHTML)));
+                    $msg->setEscapeHtml(false);
+                    $messenger->addSuccess($msg);
+                }
+                if ($fix) {
+                    $result = opcache_reset();
+                    if ($result) {
+                        $messenger->addSuccess('The cache "opcache" was reset.'); // @translate
+                    } else {
+                        $messenger->addWarning('The cache "opcache" is disabled.'); // @translate
+                    }
+                }
+            } else {
+                $messenger->addWarning('The php extension "opcache" is not available.'); // @translate
+            }
+        }
+
+        if (in_array('data', $options['type'])) {
+            $hasCache = function_exists('apcu_clear_cache');
+            if ($hasCache) {
+                $result = @apcu_cache_info(true);
+                if (!$result) {
+                    $messenger->addWarning('An issue occurred when checking status of "apcu" or the status is disabled.'); // @translate
+                } else {
+                    $msg = new PsrMessage(nl2br(htmlspecialchars(json_encode($result, 448), ENT_NOQUOTES | ENT_SUBSTITUTE | ENT_XHTML)));
+                    $msg->setEscapeHtml(false);
+                    $messenger->addSuccess($msg);
+                }
+                if ($fix) {
+                    apcu_clear_cache();
+                    $messenger->addSuccess('The cache "apcu" was reset.'); // @translate
+                }
+            } else {
+                $messenger->addWarning('The php extension "apcu" is not available.'); // @translate
+            }
+        }
+
+        if (in_array('path', $options['type'])) {
+            $result = @clearstatcache(true);
+            $messenger->addSuccess('The cache of real paths was reset.'); // @translate
+        }
     }
 }

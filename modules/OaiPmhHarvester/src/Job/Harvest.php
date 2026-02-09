@@ -198,12 +198,12 @@ class Harvest extends AbstractJob
                 if (isset($args['set_spec']) && strlen((string) $args['set_spec'])) {
                     $url .= '&set=' . $args['set_spec'];
                 }
-                if ($args['from']) {
+                if (strlen($args['from'])) {
                     $url .= '&from=' . $args['from'];
                 }else{
                     $url .= '&from=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('-1 months'));
                 }
-                if ($args['until']) {
+                if (strlen($args['until'])) {
                     $url .= '&until=' . $args['until'];
                 }else{  
                     $url .= '&until=' . gmdate('Y-m-d\TH:i:s\Z', strtotime('+1 days'));
@@ -538,45 +538,7 @@ class Harvest extends AbstractJob
                     endif;    
                 }
             }
-            //add media if Beeld or Collectie
-            if($localName == 'original' || $localName == 'download'){
-                //$this->logger->info("media - 1");                
-                foreach ($dcMetadata->$localName as $imageUrl) {      
-                    if(str_contains($imageUrl.'',"pdf")):
-                        continue;
-                    endif;    
-                    $imageUrl = explode(" $$ ",$imageUrl.'');
-                    $viewer = '';
-                    if(isset($imageUrl[1])):
-                        $viewer = $imageUrl[1];
-                    endif;
-                    $imageUrl = $imageUrl[0]; 
-                    
-                    //$this->logger->info($imageUrl[1]);
-                    $media[$imgc]= [
-                      'o:ingester' => 'url',
-                      'o:source' => $imageUrl.'',
-                      'ingest_url' => $imageUrl.'',
-                      'dcterms:title' => [
-                          [
-                              'type' => 'literal',
-                              '@language' => '',
-                              '@value' => $localName.'',
-                              'property_id' => 1,
-                          ],
-                      ],
-                      'dcterms:description' => [
-                        [
-                            'type' => 'literal',
-                            '@language' => '',
-                            '@value' => $viewer.'',
-                            'property_id' => 4,
-                        ],
-                    ],
-                  ];
-                  $imgc++;
-                }
-            }    
+            
 
             //create links to production units in manuscripts and printed sources
             if($localName == 'relatedProductionUnit'){
@@ -649,7 +611,7 @@ class Harvest extends AbstractJob
                 }
 
             //add resources
-            if(strpos($args["endpoint"], 'MPComposition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
+            if(strpos($args["endpoint"], 'Composition') !== false || strpos($args["endpoint"], 'ProductionUnit') !== false || strpos($args["endpoint"], 'PrintedSource') !== false):
                 
                 
                 //create links to production units in compositions
@@ -676,6 +638,57 @@ class Harvest extends AbstractJob
                 }
             endif;
         }
+
+        //add media
+        $temp_img = [];
+        foreach($elementTexts['alamire:original'] as $img):
+           $temp_img[] = $img["@value"];
+        endforeach;   
+        /*foreach($elementTexts['alamire:download'] as $img):
+           $temp_img[] = $img["@value"];
+        endforeach;*/
+        foreach ($temp_img as $image) {     
+            $imageUrl = $image;
+            $filename = $imageUrl; 
+            /*if(str_contains($imageUrl.'',"pdf") && isset($elementTexts["alamire:filename"])):
+                /*$filename = $elementTexts["alamire:filename"][0]["@value"];
+                $filename = str_replace("jpg","pdf",$filename);
+            else:
+                $filename = $imageUrl;    
+            endif;*/
+            $imageUrl = explode(" $$ ",$imageUrl.'');
+            $viewer = '';
+            if(isset($imageUrl[1])):
+                $viewer = $imageUrl[1];
+            endif;
+            $imageUrl = $imageUrl[0]; 
+            
+            //$this->logger->info($imageUrl[1]);
+            $media[$imgc]= [
+                'o:ingester' => 'url',
+                'o:filename' => $filename,
+                'o:source' => $filename.'',
+                'ingest_url' => $imageUrl.'',
+                'dcterms:title' => [
+                    [
+                        'type' => 'literal',
+                        '@language' => '',
+                        '@value' => $filename.'',
+                        'property_id' => 1,
+                    ],
+                ],
+                'dcterms:description' => [
+                [
+                    'type' => 'literal',
+                    '@language' => '',
+                    '@value' => $viewer.'',
+                    'property_id' => 4,
+                ],
+            ],
+            ];
+            $imgc++;
+        }
+
         $meta = $elementTexts;
         $imgs = array();
 

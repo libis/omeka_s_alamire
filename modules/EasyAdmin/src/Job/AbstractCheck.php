@@ -84,6 +84,11 @@ abstract class AbstractCheck extends AbstractJob
     protected $filepath;
 
     /**
+     * @var resource|false
+     */
+    protected $handle;
+
+    /**
      * Default options for output (tsv).
      *
      * @var array
@@ -281,14 +286,7 @@ abstract class AbstractCheck extends AbstractJob
         // Avoid issue on very big base.
         $i = 0;
         do {
-            $filename = sprintf(
-                '%s%s%s.%s',
-                $base,
-                $date,
-                $i ? '-' . $i : '',
-                $extension
-            );
-
+            $filename = sprintf('%s%s%s.%s', $base, $date, $i ? '-' . $i : '', $extension);
             $filePath = $destinationDir . '/' . $filename;
             if (!file_exists($filePath)) {
                 try {
@@ -317,5 +315,52 @@ abstract class AbstractCheck extends AbstractJob
 
         $this->filepath = $filePath;
         return $this;
+    }
+
+    /**
+     * Check if a module is active.
+     *
+     * @param string $module
+     * @return bool
+     */
+    protected function isModuleActive(string $module): bool
+    {
+        $services = $this->getServiceLocator();
+        /** @var \Omeka\Module\Manager $moduleManager */
+        $moduleManager = $services->get('Omeka\ModuleManager');
+        $module = $moduleManager->getModule($module);
+        return $module
+            && $module->getState() === \Omeka\Module\Manager::STATE_ACTIVE;
+    }
+
+    /**
+     * Check or create the destination folder.
+     *
+     * @param string $dirPath Absolute path.
+     * @return string|null
+     */
+    protected function checkDestinationDir($dirPath): ?string
+    {
+        if (file_exists($dirPath)) {
+            if (!is_dir($dirPath) || !is_readable($dirPath) || !is_writeable($dirPath)) {
+                $this->getServiceLocator()->get('Omeka\Logger')->err(
+                    'The directory "{path}" is not writeable.', // @translate
+                    ['path' => $dirPath]
+                );
+                return null;
+            }
+            return $dirPath;
+        }
+
+        $result = @mkdir($dirPath, 0775, true);
+        if (!$result) {
+            $this->getServiceLocator()->get('Omeka\Logger')->err(
+                'The directory "{path}" is not writeable: {error}.', // @translate
+                ['path' => $dirPath, 'error' => error_get_last()['message']]
+            );
+            return null;
+        }
+
+        return $dirPath;
     }
 }

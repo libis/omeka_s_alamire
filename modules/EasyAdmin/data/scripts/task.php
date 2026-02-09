@@ -45,11 +45,18 @@ Optional arguments:
 		each job. To find them, check the code, or run a job
 		manually then check the job page in admin interface.
 
+  -k --as-task
+		Process a a simple task and do not create a job. May be
+		used for tasks that do not need to be checked as a job.
+		This is the inverse of the deprecated argument --job.
+
+Deprecated arguments:
   -j --job
 		Create a standard job that will be checkable in admin
 		interface. In any case, all logs are available in logs with
-		a reference code. It allows to process some rare jobs that
-		are not taskable too.
+		a reference code. It allows to process jobs that are not
+		taskable.
+		This option is now set by default and is useless.
 
   -h --help
 		This help.
@@ -58,10 +65,10 @@ MSG;
 
 $taskName = null;
 $userId = null;
-$serverUrl = 'http://localhost';
-$basePath = '/';
+$serverUrl = null;
+$basePath = null;
 $jobArgs = [];
-$asJob = false;
+$asTask = false;
 
 $application = \Omeka\Mvc\Application::init(require OMEKA_PATH . '/application/config/application.config.php');
 $services = $application->getServiceManager();
@@ -78,14 +85,16 @@ if (php_sapi_name() !== 'cli') {
     exit($translator->translate($message) . PHP_EOL);
 }
 
-$shortopts = 'ht:u:b:s:a:j';
-$longopts = ['help', 'task:', 'user-id:', 'base-path:', 'server-url:', 'args:', 'job'];
+$shortopts = 'ht:u:b:s:a:j:k';
+$longopts = ['help', 'task:', 'user-id:', 'base-path:', 'server-url:', 'args:', 'job', 'as-task'];
 $options = getopt($shortopts, $longopts);
 
 if (!$options) {
     echo $translator->translate($help) . PHP_EOL;
     exit();
 }
+
+$errors = [];
 
 foreach ($options as $key => $value) switch ($key) {
     case 't':
@@ -111,19 +120,27 @@ foreach ($options as $key => $value) switch ($key) {
             $message = new Message(
                 'The job arguments are not a valid json object.' // @translate
             );
-            echo $translator->translate($message) . PHP_EOL;
-            exit();
+            $errors[] = $translator->translate($message);
         }
         break;
     case 'j':
     case 'job':
-        $asJob = true;
+        $message = new Message(
+            'The option "--job" is set by default and is deprecated.' // @translate
+        );
+        echo $translator->translate($message) . PHP_EOL;
+        break;
+    case 'k':
+    case 'as-task':
+        $asTask = true;
         break;
     case 'h':
     case 'help':
         $message = new Message($help);
         echo $translator->translate($message) . PHP_EOL;
         exit();
+    default:
+        break;
 }
 
 if (empty($taskName)) {
@@ -173,39 +190,71 @@ if (empty($taskClass)) {
         'The task "%s" should be set and exist.', // @translate
         $taskName
     );
-    exit($translator->translate($message) . PHP_EOL);
+    $errors[] = $translator->translate($message);
 }
 
 if (empty($userId)) {
     $message = new Message(
         'The user id must be set and exist.' // @translate
     );
-    exit($translator->translate($message) . PHP_EOL);
+    $errors[] = $translator->translate($message);
 }
 
 /** @var \Doctrine\ORM\EntityManager $entityManager */
 $entityManager = $services->get('Omeka\EntityManager');
+$hasDatabaseError = false;
 try {
     $user = $entityManager->find(\Omeka\Entity\User::class, $userId);
 } catch (\Exception $e) {
-    $message = new Message(
-        'The database does not exist.' // @translate
-    );
-    exit($translator->translate($message) . PHP_EOL);
+    $message = $e->getMessage();
+    if (mb_strpos($message, 'could not find driver') !== false) {
+        $message = new Message(
+            'Database is not available. Check if php-mysql is installed with the php version available on cli.' // @translate
+        );
+    } else {
+        $message = new Message(
+            'The database does not exist.' // @translate
+        );
+    }
+    $hasDatabaseError = true;
+    $errors[] = $translator->translate($message);
 }
-if (empty($user)) {
+
+if ($userId && empty($user) && !$hasDatabaseError) {
     $message = new Message(
         'The user #%d is set for the task "%s", but doesn’t exist.', // @translate
         $userId,
         $taskName
     );
     $logger->err($message);
-    exit($translator->translate($message) . PHP_EOL);
+    $errors[] = $translator->translate($message);
 }
+
+if (count($errors)) {
+    exit(implode(PHP_EOL, $errors) . PHP_EOL);
+}
+
+// Clean vars.
+unset($errors, $hasDatabaseError, $help, $longopts, $message, $modulePaths, $options, $omekaModulesPath, $shortopts);
 
 if (empty($serverUrl)) {
     $serverUrl = 'http://localhost';
+    $message = new Message(
+        'No server url passed, so use: --server-url "http://localhost"' // @translate
+    );
+    $logger->notice($message); // @translate
+    echo $message . PHP_EOL;
 }
+
+if (empty($basePath)) {
+    $basePath = '/';
+    $message = new Message(
+        'No base path passed, so use: --base-path "/"' // @translate
+    );
+    $logger->notice($message); // @translate
+    echo $message . PHP_EOL;
+}
+
 $serverUrlParts = parse_url($serverUrl);
 $scheme = $serverUrlParts['scheme'];
 $host = $serverUrlParts['host'];
@@ -226,24 +275,10 @@ $serverUrlHelper
     ->setPort($port);
 
 $basePath = '/' . trim((string) $basePath, '/');
-$services->get('ViewHelperManager')->get('BasePath')
-    ->setBasePath($basePath);
+$services->get('ViewHelperManager')->get('BasePath')->setBasePath($basePath);
 $services->get('Router')->setBaseUrl($basePath);
 
 $services->get('Omeka\AuthenticationService')->getStorage()->write($user);
-
-// Since it’s a job not prepared as a job, the logger should be prepared here.
-/** @var \Omeka\Module\Module $module */
-$module = $services->get('Omeka\ModuleManager')->getModule('Log');
-$referenceId = null;
-if ($module && $module->getState() === \Omeka\Module\Manager::STATE_ACTIVE) {
-    $referenceId = 'task:' . str_replace('\\', '/', $taskName) . ':' . (new \DateTime())->format('Ymd-His');
-    $referenceIdProcessor = new \Laminas\Log\Processor\ReferenceId();
-    $referenceIdProcessor->setReferenceId($referenceId);
-    $logger->addProcessor($referenceIdProcessor);
-    $userIdProcessor = new \Log\Processor\UserId($user);
-    $logger->addProcessor($userIdProcessor);
-}
 
 // TODO Log fatal errors.
 // @see \Omeka\Job\DispatchStrategy::handleFatalError();
@@ -256,12 +291,21 @@ $job->setClass($taskClass);
 $job->setArgs($jobArgs);
 $job->setPid(getmypid());
 
-if ($asJob) {
-    $entityManager->persist($job);
-    $entityManager->flush();
-    // Task is not needed: run the job directly below.
-    // $task = new $taskClass($job, $services);
-} else {
+$referenceId = null;
+
+if ($asTask) {
+    // Since it’s a job not prepared as a job, the logger should be prepared here.
+    /** @var \Omeka\Module\Module $module */
+    $module = $services->get('Omeka\ModuleManager')->getModule('Log');
+    if ($module && $module->getState() === \Omeka\Module\Manager::STATE_ACTIVE) {
+        $referenceId = 'task:' . str_replace(['\\', '/Job/'], ['/', '/'], $taskName) . ':' . (new \DateTime())->format('Ymd-His');
+        $referenceIdProcessor = new \Laminas\Log\Processor\ReferenceId();
+        $referenceIdProcessor->setReferenceId($referenceId);
+        $logger->addProcessor($referenceIdProcessor);
+        $userIdProcessor = new \Log\Processor\UserId($user);
+        $logger->addProcessor($userIdProcessor);
+        unset($module);
+    }
     // Since there is no job id, the job should not require it.
     // For example, the `shouldStop()` should not be called.
     // Using a dynamic super-class bypasses this issue in most of the real life
@@ -278,37 +322,42 @@ if ($asJob) {
         }
     }
     $task = new Task($job, $services);
+} else {
+    $entityManager->persist($job);
+    $entityManager->flush();
 }
 
 $jobId = $job->getId();
+
 if ($referenceId && $jobId) {
-    echo $translator->translate(new Message('Task "%s" is starting (job: #%d, reference: %s).', $taskName, $jobId, $referenceId)) . PHP_EOL; // @translate
+    $message = new Message('Task "%1$s" is starting (job: #%2$d, reference: %3$s).', $taskName, $jobId, $referenceId); // @translate
 } elseif ($referenceId) {
-    echo $translator->translate(new Message('Task "%s" is starting (reference: %s).', $taskName, $referenceId)) . PHP_EOL; // @translate
+    $message = new Message('Task "%1$s" is starting (reference: %2$s).', $taskName, $referenceId); // @translate
 } elseif ($job->getId()) {
-    echo $translator->translate(new Message('Task "%s" is starting (job: #%d).', $taskName, $jobId)) . PHP_EOL; // @translate
+    $message = new Message('Task "%1$s" is starting (job: #%2$d).', $taskName, $jobId); // @translate
 } else {
-    echo $translator->translate(new Message('Task "%s" is starting.', $taskName)) . PHP_EOL; // @translate
+    $message = new Message('Task "%1$s" is starting.', $taskName); // @translate
 }
 
+echo $translator->translate($message) . PHP_EOL;
 $logger->info('Task is starting.'); // @translate
 
 try {
-    // Run as standard job when a job is set.
-    if ($asJob) {
+    if ($asTask) {
+        $task->perform();
+    } else {
+        // Run as standard job when a job is set.
         // See Omeka script "perform-job.php".
         $strategy = $services->get('Omeka\Job\DispatchStrategy\Synchronous');
         $services->get('Omeka\Job\Dispatcher')->send($job, $strategy);
         $job->setPid(null);
         $entityManager->flush();
-    } else {
-        $task->perform();
     }
 } catch (\Exception $e) {
-    echo $translator->translate(new Message('Task "%s" has an error: %s', $taskName, $e->getMessage())) . PHP_EOL; // @translate
+    echo $translator->translate(new Message('Task "%1$s" has an error: %2$s', $taskName, $e->getMessage())) . PHP_EOL; // @translate
     $logger->err($e);
     exit();
 }
 
 $logger->info('Task ended.'); // @translate
-echo $translator->translate(new Message('Task "%s" ended.', $taskName)) . PHP_EOL; // @translate
+echo $translator->translate(new Message('Task "%1$s" ended.', $taskName)) . PHP_EOL; // @translate

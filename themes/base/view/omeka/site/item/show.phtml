@@ -28,6 +28,7 @@ $pdf= "";
 <?php if (!$embedMedia && $itemMedia): ?>
   <div class="container thumbnails">
     <div class="has-text-centered">
+      <?php $i=0;?>
       <?php foreach ($itemMedia as $med): ?>
         <?php if($med->mediaType() == "image/jpeg"):?>
           <?php $url = str_replace('http:', '', $med->thumbnailUrl('large')); ?>
@@ -35,18 +36,21 @@ $pdf= "";
             <?php if (str_contains($med->value('alamire:description') . '', "representation")): ?>
               <?php $repr = str_replace("lib.is/", "data.idemdatabase.org/", $med->value('dcterms:description')); ?>
               <a target="_blank" href="<?php echo $repr; ?>">
-              <?php else: ?>
-                <a target="_blank" href="<?php echo $med->value('dcterms:description'); ?>">
-                <?php endif; ?>
-              <?php endif; ?>
-              <img src="<?php echo $url; ?>">
-              <?php if ($med->value("dcterms:description") && $auth): ?>
-                </a>
-              <?php endif; ?>
-          <?php elseif($med->mediaType() == "application/pdf"):?>
-            <?php $pdf=$med->originalUrl();?>
-          <?php endif;?>      
-        <?php endforeach; ?>
+            <?php else: ?>
+              <a target="_blank" href="<?php echo $med->value('dcterms:description'); ?>">
+            <?php endif; ?>
+          <?php endif; ?>
+
+          <img src="<?php echo $url; ?>">
+
+          <?php if ($med->value("dcterms:description") && $auth): ?>
+            </a>
+          <?php endif; ?>
+        <?php elseif($med->mediaType() == "application/pdf"):?>
+          <?php $pdf=$med->originalUrl();?>
+        <?php endif;?>      
+        <?php $i++;?>
+      <?php endforeach; ?>
     </div>
   </div>
 <?php endif; ?>
@@ -66,7 +70,6 @@ $pdf= "";
 
       $query = parse_url($resolv, PHP_URL_QUERY);
       parse_str($query, $params);
-      //var_dump($params);
       $manifestUrl = $params['manifest_url'] ?? null;
     endif;  
   ?>
@@ -96,7 +99,7 @@ $pdf= "";
         if(str_contains($watermarkURI, "representation")):
           $manifestUrl = str_replace("representation", "manifest", $watermarkURI);
           if($manifestUrl):
-            $manifestUrl = $manifestUrl."?manifest=".$manifestUrl;  
+            $manifestUrl = $manifestUrl."?manifest=".$manifestUrl;
           endif;
         endif;
       ?>  
@@ -127,7 +130,7 @@ $pdf= "";
   <div class="columns">
     <div class="column  is-12">
       <div style="padding:1.5rem 0">        
-        <a title="download full pdf" class="button is-primary is-small" download="<?= $download_name ?>" href="<?php echo $pdf;?>">Download full pdf</a>
+        <a title="download full pdf" target="_blank" class="button is-primary is-small" href="<?php echo $pdf;?>">Download full pdf</a>
       </div>
       <div>
         <object  
@@ -140,10 +143,12 @@ $pdf= "";
       </div>              
     </div>
   </div>
-  <div class="icon-text" style="padding:0 0 1rem 0">
-    <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $item->value('alamire:publicationUrl')?>">
-    <span>PURCHASE PRINTED VERSION</span></a>
-  </div>  
+  <?php if($item->value('alamire:publicationUrl')):?>
+    <div class="icon-text" style="padding:0 0 1rem 0">
+      <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;" href="<?php echo $item->value('alamire:publicationUrl')?>">
+      <span>PURCHASE PRINTED VERSION</span></a>
+    </div>  
+  <?php endif;?>
 <?php endif;?>  
 
 <div class="container metadata-container">
@@ -181,6 +186,15 @@ $pdf= "";
           </div>
         <?php endif; ?>
         <?php echo $item->displayValues(); ?>
+        <?php if ($item->value('alamire:sourceUrl') && $type == 'Library record'): ?>
+          <?php 
+            $sourceUrl = explode('$$',$item->value('alamire:sourceUrl')->asHtml());  
+          ?>
+          <a target="_blank" style="font-family: 'Dosis',serif;font-size:1rem;margin-right:2rem;" href="<?php echo $sourceUrl[0]; ?>">
+            <span>VIEW SOURCE</span>
+          </a>
+        
+        <?php endif;?>
         </div>
         <?php if ($type == "Chant"): ?>
           <div class="column is-5">
@@ -501,7 +515,7 @@ $pdf= "";
                     $related_composition = [];
                     foreach ($linked as $link):
                       $link = $link->resource();
-                      echo $link->value("alamire:identifier")."<br>";
+                      //echo $link->value("alamire:identifier")."<br>";
                       if (!$link) continue;
                       $related_composition[$link->value("alamire:identifier") . ''] = $link;
                     endforeach;
@@ -515,6 +529,12 @@ $pdf= "";
                       $i = 0; ?>
                       <?php foreach ($pu->value("alamire:relatedCompositionFull", ['all' => true]) as $comp):
                         $comp = explode("$$", $comp->asHtml());
+
+                        //don't use incomplete entries
+                        if(sizeof($comp) < 8){
+                          continue;
+                        }
+                        
                         $comp = [
                           "id" => trim($comp[0]),
                           "structure" => trim($comp[1]),
@@ -522,8 +542,10 @@ $pdf= "";
                           "folio" => trim($comp[3]),
                           "page" => trim($comp[4]),
                           "link" => trim($comp[5]),
-                          "rank" => trim($comp[6])
+                          "rank" => trim($comp[6]),
+                          "part" => trim($comp[7])
                         ];
+                        
                       ?>
                         <?php $structure = explode(";", $comp['structure']); ?>
                         <?php if ($comp): ?>
@@ -551,12 +573,17 @@ $pdf= "";
                               <?php endif; ?>
                             </td>
                             <td>
+                              <?php 
+                                if($comp["part"]):
+                                    $comp["title"] = "<span style='color:#a6361f'>".$comp["part"]."</span> ".$comp["title"];
+                                endif
+                              ?>
                               <?php if ($comp["structure"]): ?>
                                 <?php if (sizeof($structure) > 1): ?>
                                   <span style="margin-left:<?php echo (1.2 * sizeof($structure)) ?>rem;"><?php echo $comp["title"]; ?></span>
-                                <?php elseif ($comp_record): ?>
+                                <?php elseif ($comp_record): ?>                                  
                                   <a href="<?php echo $comp_record->url(); ?>"><?php echo $comp["title"]; ?></a>
-                                <?php else: ?>
+                                <?php else: ?>                                  
                                   <?php echo $comp["title"]; ?>
                                 <?php endif; ?>
                               <?php endif; ?>
@@ -751,7 +778,6 @@ $pdf= "";
                     <?php $i = 0; ?>
                     <?php foreach ($ints_a as $key => $int): ?>
                       <div class="value resource items" lang="">
-                        <?php $key = str_replace("[", "[RISM ", $key); ?>
                         <?php echo "<span style='font-weight:bold'>" . $key . "</span>"; ?>
                         <?php if ($i == 0): ?>
                           <a style="margin-left:5px;" href="#" class="expand"><i class='fa fa-chevron-up'></i></a>
