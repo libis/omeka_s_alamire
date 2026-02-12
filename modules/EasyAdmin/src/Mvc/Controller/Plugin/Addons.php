@@ -14,7 +14,7 @@ use Log\Stdlib\PsrMessage;
 class Addons extends AbstractPlugin
 {
     /**
-     * @var \Laminas\Http\Client
+     * @var HttpClient
      */
     protected $httpClient;
 
@@ -63,6 +63,9 @@ class Addons extends AbstractPlugin
      */
     protected $addons;
 
+    /**
+     * @param HTTPClient
+     */
     public function __construct(HttpClient $httpClient)
     {
         $this->httpClient = $httpClient;

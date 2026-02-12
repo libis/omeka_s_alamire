@@ -2,20 +2,19 @@
 
 namespace EasyAdmin\Controller;
 
+use Omeka\Stdlib\Message;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Model\ViewModel;
-use Log\Stdlib\PsrMessage;
 
-class CheckAndFixController extends AbstractActionController
+class JobController extends AbstractActionController
 {
     public function indexAction()
     {
-        /** @var \EasyAdmin\Form\CheckAndFixForm $form */
-        $form = $this->getForm(\EasyAdmin\Form\CheckAndFixForm::class);
-        $view = new ViewModel([
-            'form' => $form,
-        ]);
+        $form = $this->getForm(\EasyAdmin\Form\JobsForm::class);
+        $view = new ViewModel;
+        $view
+            ->setVariable('form', $form);
 
         $request = $this->getRequest();
         if (!$request->isPost()) {
@@ -31,45 +30,36 @@ class CheckAndFixController extends AbstractActionController
             return $view;
         }
 
-        $params = $form->getData();
-        unset($params['csrf']);
-
-        // Only first process is managed.
-        $process = null;
-        foreach ($params as $value) {
-            if (is_array($value) && !empty($value['process'])) {
-                $process = $value['process'];
-                break;
-            }
-        }
-
-        if (empty($process)) {
+        if (empty($params['process'])) {
             $this->messenger()->addWarning('No process submitted.'); // @translate
             return $view;
         }
+
+        $params = $form->getData();
+        unset($params['csrf']);
 
         /** @var \Omeka\Mvc\Controller\Plugin\JobDispatcher $dispatcher */
         $dispatcher = $this->jobDispatcher();
 
         $defaultParams = [
-            'process' => $process,
+            'process' => $params['process'],
         ];
 
-        switch ($process) {
+        switch ($params['process']) {
             case 'files_excess_check':
             case 'files_excess_move':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\FileExcess::class, $defaultParams);
                 break;
             case 'files_missing_check_full':
-                $params['files_checkfix']['files_missing']['include_derivatives'] = true;
+                $params['files_missing']['include_derivatives'] = true;
                 // no break
             case 'files_missing_check':
             case 'files_missing_fix':
             case 'files_missing_fix_db':
-                $job = $dispatcher->dispatch(\EasyAdmin\Job\FileMissing::class, $defaultParams + $params['files_checkfix']['files_missing']);
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\FileMissing::class, $params['files_missing'] + $defaultParams);
                 break;
             case 'files_derivative':
-                $job = $dispatcher->dispatch(\EasyAdmin\Job\FileDerivative::class, $defaultParams + $params['files_checkfix']['files_derivative']);
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\FileDerivative::class, $params['files_derivative'] + $defaultParams);
                 break;
             case 'files_media_no_original':
             case 'files_media_no_original_fix':
@@ -90,10 +80,6 @@ class CheckAndFixController extends AbstractActionController
             case 'files_dimension_fix':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\FileDimension::class, $defaultParams);
                 break;
-            case 'files_media_type_check':
-            case 'files_media_type_fix':
-                $job = $dispatcher->dispatch(\EasyAdmin\Job\FileMediaType::class, $defaultParams);
-                break;
             case 'media_position_check':
             case 'media_position_fix':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\MediaPosition::class, $defaultParams);
@@ -104,15 +90,11 @@ class CheckAndFixController extends AbstractActionController
                 break;
             case 'db_utf8_encode_check':
             case 'db_utf8_encode_fix':
-                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbUtf8Encode::class, $defaultParams + $params['resource_values']['db_utf8_encode']);
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbUtf8Encode::class, $params['db_utf8_encode'] + $defaultParams);
                 break;
             case 'db_resource_title_check':
             case 'db_resource_title_fix':
                 $job = $dispatcher->dispatch(\EasyAdmin\Job\DbResourceTitle::class, $defaultParams);
-                break;
-            case 'db_content_lock_check':
-            case 'db_content_lock_clean':
-                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbContentLock::class, $defaultParams + $params['database']['db_content_lock']);
                 break;
             case 'db_job_check':
             case 'db_job_fix':
@@ -121,12 +103,11 @@ class CheckAndFixController extends AbstractActionController
                 break;
             case 'db_session_check':
             case 'db_session_clean':
-            case 'db_session_recreate':
-                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbSession::class, $defaultParams + $params['database']['db_session']);
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbSession::class, $params['db_session'] + $defaultParams);
                 break;
             case 'db_log_check':
             case 'db_log_clean':
-                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbLog::class, $defaultParams + $params['database']['db_log']);
+                $job = $dispatcher->dispatch(\EasyAdmin\Job\DbLog::class, $params['db_log'] + $defaultParams);
                 break;
             case 'db_fulltext_index':
                 $job = $dispatcher->dispatch(\Omeka\Job\IndexFulltextSearch::class);
@@ -140,7 +121,7 @@ class CheckAndFixController extends AbstractActionController
             default:
                 $eventManager = $this->getEventManager();
                 $args = $eventManager->prepareArgs([
-                    'process' => $process,
+                    'process' => $params['process'],
                     'params' => $params,
                     'job' => null,
                     'args' => [],
@@ -148,10 +129,7 @@ class CheckAndFixController extends AbstractActionController
                 $eventManager->triggerEvent(new MvcEvent('easyadmin.job', null, $args));
                 $jobClass = $args['job'];
                  if (!$jobClass) {
-                    $this->messenger()->addError(new PsrMessage(
-                        'Unknown process "{process}"', // @translate
-                        ['process' => $process]
-                    ));
+                    $this->messenger()->addError('Unknown process {process}', ['process' => $params['process']]); // @translate
                     return $view;
                 }
                 $job = $dispatcher->dispatch($jobClass, $args['args']);
@@ -159,26 +137,28 @@ class CheckAndFixController extends AbstractActionController
         }
 
         $urlHelper = $this->url();
-        $message = new PsrMessage(
-            'Processing checks in background (job {link_job}#{job_id}{ae}, {link_log}logs{ae}).', // @translate
-            [
-                'link_job' => sprintf(
-                    '<a href="%s">',
-                    htmlspecialchars($urlHelper->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
-                ),
-                'job_id' => $job->getId(),
-                'ae' => '</a>',
-                'link_log' => sprintf(
-                    '<a href="%s">',
-                    htmlspecialchars($urlHelper->fromRoute('admin/log/default', [], ['query' => ['job_id' => $job->getId()]]))
-                )
-            ]
+        // TODO Don't use PsrMessage for now to fix issues with Doctrine and inexisting file to remove.
+        $message = new Message(
+            'Processing checks in background (job %1$s#%2$d%3$s, %4$slogs%3$s).', // @translate
+            sprintf(
+                '<a href="%s">',
+                htmlspecialchars($urlHelper->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId()]))
+            ),
+            $job->getId(),
+            '</a>',
+            sprintf(
+                '<a href="%s">',
+                // Check if module Log is enabled (avoid issue when disabled).
+                htmlspecialchars(class_exists(\Log\Stdlib\PsrMessage::class)
+                    ? $urlHelper->fromRoute('admin/log/default', [], ['query' => ['job_id' => $job->getId()]])
+                    : $urlHelper->fromRoute('admin/id', ['controller' => 'job', 'id' => $job->getId(), 'action' => 'log'])
+            ))
         );
         $message->setEscapeHtml(false);
         $this->messenger()->addSuccess($message);
 
         // Reset the form after a submission.
-        $form = $this->getForm(\EasyAdmin\Form\CheckAndFixForm::class);
+        $form = $this->getForm(\EasyAdmin\Form\JobsForm::class);
         return $view
             ->setVariable('form', $form);
     }
