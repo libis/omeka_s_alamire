@@ -649,19 +649,20 @@ class Harvest extends AbstractJob
         endforeach;*/
         foreach ($temp_img as $image) {     
             $imageUrl = $image;
-            $filename = $imageUrl; 
+            
             /*if(str_contains($imageUrl.'',"pdf") && isset($elementTexts["alamire:filename"])):
                 /*$filename = $elementTexts["alamire:filename"][0]["@value"];
                 $filename = str_replace("jpg","pdf",$filename);
             else:
                 $filename = $imageUrl;    
             endif;*/
-            $imageUrl = explode(" $$ ",$imageUrl.'');
+            $imageUrl = explode("$$",$imageUrl.'');
             $viewer = '';
             if(isset($imageUrl[1])):
-                $viewer = $imageUrl[1];
+                $viewer = trim($imageUrl[1]);
             endif;
-            $imageUrl = $imageUrl[0]; 
+            $imageUrl = trim($imageUrl[0]); 
+            $filename = $imageUrl; 
             
             //$this->logger->info($imageUrl[1]);
             $media[$imgc]= [
