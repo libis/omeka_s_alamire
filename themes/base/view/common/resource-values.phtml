@@ -186,7 +186,10 @@ endif;
               endif;  
             ?>  
           <?php elseif($propertyData['property']->term() == 'alamire:description'):?>  
-            <div style="margin-bottom:0.5rem;"><?php echo $value;?></div>
+            <div style="margin-bottom:0.5rem;">
+              <?php $text = str_replace("www.idem","idem",$value->asHtml());?>
+              <?php echo $text;?>
+            </div>
           <?php elseif($propertyData['property']->term() == 'alamire:bibliographicCitation'):
             if($values['alamire:bibliographicCitation']['values']):
               $cites = $values['alamire:bibliographicCitation']['values'];
