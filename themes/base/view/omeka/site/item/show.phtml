@@ -509,15 +509,15 @@ $pdf= "";
               <div class="hidden-content" style="display:none">
                 <div class="metadata">
                   <?php echo $pu->displayValues(); ?>
-                  <?php $linked = $pu->subjectValues();
-                  if (isset($linked["alamire:relatedProductionUnit"])):
-                    $linked = $linked["alamire:relatedProductionUnit"];
+                  <?php //$linked = $pu->subjectValues();
+                  if ($pu->value("alamire:relatedComposition")):                    
                     $related_composition = [];
-                    foreach ($linked as $link):
-                      $link = $link->resource();
-                      //echo $link->value("alamire:identifier")."<br>";
-                      if (!$link) continue;
-                      $related_composition[$link->value("alamire:identifier") . ''] = $link;
+                    foreach ($pu->value("alamire:relatedComposition", ['all' => true]) as $related_comp):
+                      $related_comp = $related_comp->valueResource();
+                      if($related_comp):
+                      //echo $related_comp->value("alamire:identifier");
+                      $related_composition[$related_comp->value("alamire:identifier") . ''] = $related_comp;
+                      endif;
                     endforeach;
                   endif;
                   ?>
