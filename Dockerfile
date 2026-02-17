@@ -60,10 +60,15 @@ COPY extra.ini /usr/local/etc/php/conf.d/
 # ImageMagick settings - flexible approach for different versions
 RUN find /etc -name policy.xml -exec sed -i 's/^.*policy.*coder.*none.*PDF.*//' {} \;
 
-# Mail config
+# Mail configuration
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    exim4 \
+    exim4-daemon-light \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY update-exim4.conf.conf /etc/exim4/update-exim4.conf.conf
-RUN chmod -R 775 /etc/exim4/
-RUN update-exim4.conf
+RUN chmod -R 775 /etc/exim4/ \
+    && update-exim4.conf
 
 CMD ["apache2-foreground"]
 
