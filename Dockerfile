@@ -3,8 +3,7 @@ FROM php:8.0.28-apache
 RUN a2enmod rewrite
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get -qq update && apt-get -qq -y upgrade
-RUN apt-get -qq update && apt-get -qq -y --no-install-recommends install \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \  
     unzip \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
@@ -20,13 +19,11 @@ RUN apt-get -qq update && apt-get -qq -y --no-install-recommends install \
     cron \
     ffmpeg \
     rsync \
-    dos2unix
-
-# Mail
-RUN apt-get update && \
-    apt-get install -y net-tools && \
-    apt-get install -y rsyslog
-RUN apt-get install -y mailutils
+    dos2unix \
+    net-tools \
+    rsyslog \
+    mailutils \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install the PHP extensions we need
 RUN docker-php-ext-install -j$(nproc) iconv pdo pdo_mysql mysqli
@@ -60,8 +57,8 @@ RUN touch /var/log/cron.log
 # PHP settings
 COPY extra.ini /usr/local/etc/php/conf.d/
 
-# Image magick settings
-RUN sed -i 's/^.*policy.*coder.*none.*PDF.*//' /etc/ImageMagick-6/policy.xml
+# ImageMagick settings - flexible approach for different versions
+RUN find /etc -name policy.xml -exec sed -i 's/^.*policy.*coder.*none.*PDF.*//' {} \;
 
 # Mail config
 COPY update-exim4.conf.conf /etc/exim4/update-exim4.conf.conf
