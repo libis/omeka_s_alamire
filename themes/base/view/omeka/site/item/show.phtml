@@ -324,7 +324,7 @@ $pdf= "";
       <?php endif; ?>
 
       <?php if ($type == "Composition" || $type == "Chant"): ?>
-        <div class="columns">
+        <div class="columns Copyright">
           <div class="column is-12">
             <h4 class="has-text-weight-semibold is-6 section-head" style="margin-top:1rem;">Copyright</h4>
           </div>
@@ -1008,7 +1008,7 @@ $subjectValues = $item->displaySubjectValues($page, 25, $property);
 
     $('.thumbnails').appendTo('.filter-nav');
     $(".Inventory").appendTo("#polyphony");
-    $(".inventory-wrapper").insertBefore(".Bibliography");
+    $(".inventory-wrapper").insertBefore(".Copyright");
     $(".production-unit-comp-wrapper").insertBefore(".Category");
 
     $('.collapsible').click(function() {
