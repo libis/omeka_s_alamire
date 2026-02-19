@@ -47,7 +47,7 @@ $pdf= "";
             </a>
           <?php endif; ?>
         <?php elseif($med->mediaType() == "application/pdf"):?>
-          <?php $pdf=$med->originalUrl();?>
+          <?php $pdf= str_replace('http:', 'https:', $med->originalUrl());?>
         <?php endif;?>      
         <?php $i++;?>
       <?php endforeach; ?>
