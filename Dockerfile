@@ -1,4 +1,4 @@
-FROM php:8.0.28-apache
+FROM php:8.2-apache
 
 RUN a2enmod rewrite
 
@@ -61,7 +61,7 @@ RUN touch /var/log/cron.log
 COPY extra.ini /usr/local/etc/php/conf.d/
 
 # Image magick settings
-RUN sed -i 's/^.*policy.*coder.*none.*PDF.*//' /etc/ImageMagick-6/policy.xml
+RUN find /etc -name policy.xml -exec sed -i 's/^.*policy.*coder.*none.*PDF.*//' {} \;
 
 # Mail config
 COPY update-exim4.conf.conf /etc/exim4/update-exim4.conf.conf
